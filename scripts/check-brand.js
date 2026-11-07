@@ -8,7 +8,9 @@ const path = require('node:path');
 const repository = 'Jefferies-Tube-Solutions/jefferies-navigation';
 const whiteLockup = 'assets/brand/navigation-lockup-white.png';
 const deepSpaceLockup = 'assets/brand/navigation-lockup-deep-space.png';
+const backgroundLockup = 'assets/brand/navigation-lockup-background.png';
 const artwork = Object.freeze({
+    [backgroundLockup]: 'ecb31199fd5cb1d6972da0fc2aacdf379361c3e853706eb8a65957b38979eb89',
     [whiteLockup]: 'd6ecf4c931250da855f4b051df9003a5c0fe6a975631494d6d67ec1fc9857f08',
     [deepSpaceLockup]: 'f19e85d9886b44e57a634b7d5eae9cec96f9e856bc078eef799f28086747e451',
     'assets/navigation-compass.png': '793f2f612bf899de6847b497719d51a9ac7ef38c7f8b6bbe7517e717c7257040'
@@ -53,10 +55,9 @@ function validateBrand(brand) {
         '</p>',
         '',
         '<p align="center">',
-        `  <img src="${whiteLockup}#gh-dark-mode-only" alt="Jefferies Navigation full logo with white text" width="760">`,
-        `  <img src="${deepSpaceLockup}#gh-light-mode-only" alt="Jefferies Navigation full logo with Deep Space text" width="760">`,
+        `  <img src="${backgroundLockup}" alt="Jefferies Navigation full logo on Deep Space" width="760">`,
         '</p>'
-    ].join('\n'), 'README header must use only the approved theme-specific Navigation lockups below the status badge');
+    ].join('\n'), 'README header must use one approved Deep Space Navigation lockup below the status badge');
     const sections = [
         'Mission Directive', 'System Registry', 'Commissioning', 'Operational Protocol',
         'Verification', 'Fault Isolation and Recovery', 'Manuals', 'Operations Log', 'Approved artwork'
