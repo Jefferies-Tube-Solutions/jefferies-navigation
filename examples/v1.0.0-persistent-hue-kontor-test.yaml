@@ -1,14 +1,14 @@
-# Honeycomb Menu NG v1.0.4 - Persistent Center Test 14
+# Jefferies Navigation v1.0.4 - Persistent Center Test 14
 # Reference entity: light.hue_kontor
 #
 # Test goals:
 # 1. The center hexagon is always visible.
 # 2. Single tap toggles light.hue_kontor.
-# 3. Hold opens the six-button Honeycomb ring without toggling the light.
+# 3. Hold opens the six-button Jefferies Navigation ring without toggling the light.
 # 4. Closing the ring leaves the persistent center visible.
 # 5. External state changes are reflected by the wrapped center card.
 
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 entity: light.hue_kontor
 icon: mdi:lightbulb
 size: 82
@@ -74,7 +74,7 @@ menu:
       autoclose: false
       tap_action:
         action: fire-dom-event
-        honeycomb_menu:
+        jts_n_menu:
           entity: light.hue_kontor
           nested_expand: true
           inherit_inner: true

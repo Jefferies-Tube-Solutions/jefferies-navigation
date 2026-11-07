@@ -91,17 +91,17 @@ the pulse until valid, and never become untrusted CSS. For an existing measured
 sensor with normalized health attributes, this example changes only presentation:
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: generic
 entity: sensor.charging_power_a
 name: Power A
 tap_action: {action: none}
 hold_action: {action: none}
 energy_wave:
-  active: 'HCJS: return entity.attributes.active === true;'
-  available: 'HCJS: return entity.attributes.available === true;'
-  fault: 'HCJS: return entity.attributes.fault !== false;'
-  power_w: 'HCJS: return Number(entity.state);'
+  active: 'JTSJS: return entity.attributes.active === true;'
+  available: 'JTSJS: return entity.attributes.available === true;'
+  fault: 'JTSJS: return entity.attributes.fault !== false;'
+  power_w: 'JTSJS: return Number(entity.state);'
   speed_mode: power
   max_power_w: 11000
   min_cycle_ms: 900
@@ -141,7 +141,7 @@ Lit and the CSS **color** property, never injected as HTML/CSS declarations or
 interpreted as an SVG paint URL.
 
 Existing frontend HA JS templates also work, for example
-`color: 'HCJS: return entity.attributes.accent;'`. They use the existing template
+`color: 'JTSJS: return entity.attributes.accent;'`. They use the existing template
 evaluator and update dependencies; no new expression language or polling.
 Invalid literal configuration fails validation. A missing, invalid or throwing
 template result suppresses the contour until valid, leaving the cube/actions

@@ -1,4 +1,4 @@
-"""Issue #138: permanent dev resource, real HTTP caching and bee version.
+"""Issue #138: permanent dev resource, real HTTP caching and compass version.
 Browser plugin not available; repository Playwright Chromium, synthetic HA only.
 """
 import argparse, hashlib, json, os, shutil, subprocess, tempfile, threading, unittest
@@ -14,9 +14,9 @@ class DevHandler(Handler):
     def do_GET(self):
         path=urlsplit(self.path).path
         if path=='/' and self.server.dev_mode:
-            payload=(ROOT/'test/browser/fixture.html').read_bytes().replace(b'window.nativeFavoritesOnly=false;',b'window.nativeFavoritesOnly=true;').replace(b"await import('/bundle.js');",b"await import('/local/honeycomb-dev/honeycomb-menu-ng.js');")
+            payload=(ROOT/'test/browser/fixture.html').read_bytes().replace(b'window.nativeFavoritesOnly=false;',b'window.nativeFavoritesOnly=true;').replace(b"await import('/bundle.js');",b"await import('/local/jts-n-dev/jefferies-navigation.js');")
             self.send_response(200);self.send_header('Content-Type','text/html');self.end_headers();self.wfile.write(payload);return
-        if path.startswith('/local/honeycomb-dev/'):
+        if path.startswith('/local/jts-n-dev/'):
             self.server.requests.append(self.path)
             name=path.rsplit('/',1)[1]
             if name=='manifest.json':
@@ -39,23 +39,23 @@ class DevBuild(Navigation):
         version=self.page.evaluate('ng.version').split('+',1)[0].removesuffix('-dev')
         return 'v'+version.replace('-beta.',' beta ')
 
-    def test_actual_version_with_flight_and_keyboard_no_layout_shift(self):
+    def test_actual_version_with_calibration_and_keyboard_no_layout_shift(self):
         self.hub({'logo':True,'items':[{'type':'light','entity':'light.zone_a','slot':1,'name':'Light A'}]});self.settle()
         self.page.clock.install()
         technical=self.page.evaluate('ng.version');expected=self.expected_label()
         before=self.controls().evaluate_all('els=>els.map(e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})')
-        bee=self.cell(0);target=bee.locator('.interaction-surface')
+        compass=self.cell(0);target=compass.locator('.interaction-surface')
         box=target.bounding_box();self.page.clock.pause_at(datetime.fromtimestamp((self.page.evaluate('Date.now()')+30)/1000,timezone.utc))
         point=(box['x']+box['width']/2,box['y']+box['height']/2)
         if self.viewport['width']<500:self.page.touchscreen.tap(*point)
         else:self.page.mouse.click(*point)
         self.page.clock.run_for(35)
-        label=bee.locator('.bee-version');self.assertTrue(label.is_visible());self.assertEqual(' '.join(label.text_content().split()),expected)
+        label=compass.locator('.compass-version');self.assertTrue(label.is_visible());self.assertEqual(' '.join(label.text_content().split()),expected)
         self.assertEqual(label.get_attribute('role'),'status');self.assertEqual(label.get_attribute('aria-live'),'polite');self.assertNotEqual(label.evaluate('e=>getComputedStyle(e).position'),'absolute');self.assertEqual(label.get_attribute('aria-label'),expected)
-        self.assertTrue(bee.locator('.bee-icon').evaluate('e=>e.classList.contains("flap")'))
-        self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-issue138-bee-version.png'))
+        self.assertTrue(compass.locator('.compass-icon').evaluate('e=>e.classList.contains("calibrating")'))
+        self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-issue138-compass-version.png'))
         self.assertEqual(self.controls().evaluate_all('els=>els.map(e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})'),before)
-        self.page.clock.run_for(3100);self.assertEqual(label.count(),0);self.assertFalse(bee.locator('.bee-icon').evaluate('e=>e.classList.contains("flap")'))
+        self.page.clock.run_for(3100);self.assertEqual(label.count(),0);self.assertFalse(compass.locator('.compass-icon').evaluate('e=>e.classList.contains("calibrating")'))
         for key in ['Enter','Space']:
             target.press(key);self.page.clock.run_for(35);self.assertEqual(' '.join(label.text_content().split()),expected)
             self.page.clock.run_for(3100);self.assertEqual(label.count(),0)
@@ -63,43 +63,43 @@ class DevBuild(Navigation):
     def test_reduced_motion_feedback_and_pending_frame_cleanup(self):
         self.page.emulate_media(reduced_motion='reduce');self.hub({'logo':True,'items':[{'type':'light','entity':'light.zone_a','slot':1}]});self.settle()
         self.page.clock.install();self.page.clock.pause_at(datetime.fromtimestamp((self.page.evaluate('Date.now()')+30)/1000,timezone.utc))
-        bee=self.cell(0);bee.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
-        self.assertEqual(bee.locator('.bee-icon').evaluate('e=>getComputedStyle(e).animationName'),'none')
-        self.assertEqual(bee.locator('.bee-version').get_attribute('aria-label'),self.expected_label())
-        self.page.clock.run_for(3100);self.assertEqual(bee.locator('.bee-version').count(),0)
-        bee.evaluate('e=>{window.removedBee=e;e._flapBee();e.remove()}');self.page.clock.run_for(35)
-        self.assertEqual(self.page.evaluate('({flapping:removedBee._beeFlapping,timer:removedBee._beeFlapTimer,frame:removedBee._beeAnimationFrame})'),{'flapping':False,'timer':None,'frame':None})
+        compass=self.cell(0);compass.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
+        self.assertEqual(compass.locator('.compass-icon').evaluate('e=>getComputedStyle(e).animationName'),'none')
+        self.assertEqual(compass.locator('.compass-version').get_attribute('aria-label'),self.expected_label())
+        self.page.clock.run_for(3100);self.assertEqual(compass.locator('.compass-version').count(),0)
+        compass.evaluate('e=>{window.removedCompass=e;e._inspectCompass();e.remove()}');self.page.clock.run_for(35)
+        self.assertEqual(self.page.evaluate('({revealed:removedCompass._compassRevealed,timer:removedCompass._compassRevealTimer,frame:removedCompass._compassAnimationFrame})'),{'revealed':False,'timer':None,'frame':None})
         self.assert_no_commands()
     def test_rapid_version_activation_restarts_one_feedback_and_cleans_up(self):
         self.hub({'logo':True,'items':[{'type':'light','entity':'light.zone_a','slot':1}]});self.settle()
         self.page.clock.install();self.page.clock.pause_at(datetime.fromtimestamp((self.page.evaluate('Date.now()')+30)/1000,timezone.utc))
-        bee=self.cell(0);bee.evaluate('e=>{for(let i=0;i<10;i++)e._executeAction({action:"honeycomb-bee-flap"})}');self.page.clock.run_for(35)
-        self.assertEqual(bee.locator('.bee-version').count(),1)
-        self.page.clock.run_for(300);bee.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
-        self.page.clock.run_for(200);self.assertEqual(bee.locator('.bee-version').count(),1)
-        self.page.clock.run_for(2900);self.assertEqual(bee.locator('.bee-version').count(),0)
-        self.assertEqual(bee.evaluate('e=>[e._beeFlapTimer,e._beeAnimationFrame]'),[None,None]);self.assert_no_commands()
+        compass=self.cell(0);compass.evaluate('e=>{for(let i=0;i<10;i++)e._executeAction({action:"jts-n-compass-inspect"})}');self.page.clock.run_for(35)
+        self.assertEqual(compass.locator('.compass-version').count(),1)
+        self.page.clock.run_for(300);compass.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
+        self.page.clock.run_for(200);self.assertEqual(compass.locator('.compass-version').count(),1)
+        self.page.clock.run_for(2900);self.assertEqual(compass.locator('.compass-version').count(),0)
+        self.assertEqual(compass.evaluate('e=>[e._compassRevealTimer,e._compassAnimationFrame]'),[None,None]);self.assert_no_commands()
     def test_version_text_inside_actual_fill_at_sizes_and_animation_frames(self):
         self.page.clock.install()
         for size in [41,60,82,110]:
             if self.page.evaluate('!!window.hub'):self.page.evaluate('hub.remove()')
             self.hub({'logo':True,'size':size,'items':[{'type':'light','entity':'light.zone_a','slot':1}]});self.settle()
-            bee=self.cell(0);box=bee.bounding_box();self.page.clock.pause_at(datetime.fromtimestamp((self.page.evaluate('Date.now()')+30)/1000,timezone.utc))
-            bee.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
+            compass=self.cell(0);box=compass.bounding_box();self.page.clock.pause_at(datetime.fromtimestamp((self.page.evaluate('Date.now()')+30)/1000,timezone.utc))
+            compass.locator('.interaction-surface').press('Enter');self.page.clock.run_for(35)
             for delta in [0,60,100,180]:
                 self.page.clock.run_for(delta)
-                self.assertTrue(bee.evaluate("""e=>{
+                self.assertTrue(compass.evaluate("""e=>{
                     const polygon=e.shadowRoot.querySelector('.hex-fill'),inverse=polygon.getScreenCTM().inverse();
-                    return [...e.shadowRoot.querySelectorAll('.bee-version span')].every(text=>{
+                    return [...e.shadowRoot.querySelectorAll('.compass-version span')].every(text=>{
                         const r=text.getBoundingClientRect();return [[r.left,r.top],[r.right,r.top],[r.left,r.bottom],[r.right,r.bottom]].every(([x,y])=>{
                             const p=new DOMPoint(x,y).matrixTransform(inverse);return polygon.isPointInFill(p);
                         });
                     });
                 }"""),f'Text fits all six fill edges, size {size}')
-                self.assertEqual(bee.bounding_box(),box)
-            self.assertEqual(' '.join(bee.locator('.bee-version').text_content().split()),self.expected_label())
+                self.assertEqual(compass.bounding_box(),box)
+            self.assertEqual(' '.join(compass.locator('.compass-version').text_content().split()),self.expected_label())
             self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-issue138-contained-{size}.png'))
-            self.page.clock.run_for(2800);self.assertEqual(bee.locator('.bee-version').count(),0)
+            self.page.clock.run_for(2800);self.assertEqual(compass.locator('.compass-version').count(),0)
             self.page.clock.resume()
         self.assert_no_commands()
 
@@ -115,47 +115,47 @@ class Loader(unittest.TestCase):
             for i,directory in enumerate(self.packages):
                 manifest=json.loads((directory/'manifest.json').read_text())
                 subprocess.check_call(['node',str(directory/'install-dev.cjs'),'--www',str(www)],stdout=subprocess.DEVNULL)
-                self.server.active=www/'honeycomb-dev';self.server.packages=[]
+                self.server.active=www/'jts-n-dev';self.server.packages=[]
                 assert (self.server.active/manifest['file']).read_bytes()==(directory/manifest['file']).read_bytes()
                 assert (self.server.active/'manifest.json').read_bytes()==(directory/'manifest.json').read_bytes()
                 if i==0:page.goto(self.url)
                 else:page.reload()
                 page.wait_for_function('window.ready')
-                self.assertEqual(page.title(),'Honeycomb shared cube test');self.assertTrue(page.locator('h1').is_visible())
-                self.assertEqual(page.evaluate('window.honeycombNG.version'),manifest['version']);self.assertEqual(page.evaluate('window.honeycombNG.commit'),manifest['commit'])
+                self.assertEqual(page.title(),'Jefferies Navigation shared cube test');self.assertTrue(page.locator('h1').is_visible())
+                self.assertEqual(page.evaluate('window.jefferiesNavigation.version'),manifest['version']);self.assertEqual(page.evaluate('window.jefferiesNavigation.commit'),manifest['commit'])
                 page.evaluate('''()=>{window.defineCalls=0;const define=customElements.define.bind(customElements);customElements.define=(...args)=>{defineCalls++;return define(...args)}}''')
-                page.evaluate('''async()=>{await Promise.all([import('/local/honeycomb-dev/honeycomb-menu-ng.js?duplicate=1'),import('/local/honeycomb-dev/honeycomb-menu-ng.js?duplicate=2')])}''')
+                page.evaluate('''async()=>{await Promise.all([import('/local/jts-n-dev/jefferies-navigation.js?duplicate=1'),import('/local/jts-n-dev/jefferies-navigation.js?duplicate=2')])}''')
                 self.assertEqual(page.evaluate('defineCalls'),0);self.assertEqual(len(self.server.manifest_queries),i+1)
                 page.evaluate('''()=>{pushState('light.zone_a','off',{friendly_name:'Light A',supported_color_modes:['hs','color_temp']});makeHub({logo:'auto',items:[{type:'light',entity:'light.zone_a',name:'A',slot:1}]})}''')
-                page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("[data-honeycomb-slot]")?._model.name==="A"')
-                cube=page.locator('honeycomb-menu-ng [data-honeycomb-slot="0"]');self.assertEqual(cube.evaluate('e=>e._model.secondary'),'OFF')
+                page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("[data-jts-n-slot]")?._model.name==="A"')
+                cube=page.locator('jts-n-menu [data-jts-n-slot="0"]');self.assertEqual(cube.evaluate('e=>e._model.secondary'),'OFF')
                 page.wait_for_timeout(150);self.assertEqual(len(self.server.manifest_queries),i+1,'No polling or per-cube request')
                 page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-issue138-build-{i+1}.png'))
             self.assertNotEqual(json.loads((self.packages[0]/'manifest.json').read_text())['version'],json.loads((self.packages[1]/'manifest.json').read_text())['version'])
             nonces=[q['_ng_dev'][0] for q in self.server.manifest_queries];self.assertEqual(len(set(nonces)),2)
-            imports=[urlsplit(url).path for url in self.server.requests if '/honeycomb-build-' in url]
+            imports=[urlsplit(url).path for url in self.server.requests if '/jts-n-build-' in url]
             self.assertEqual(len(imports),2,'One distinct immutable runtime fetch per build')
             self.assertEqual(page.locator('hui-error-card').count(),0);self.assertEqual(page.evaluate('calls.length'),0);self.assertEqual(errors,[])
         finally:page.close();installation.cleanup()
     def test_existing_runtime_fails_before_network_or_duplicate_registration(self):
         self.server.active=self.packages[1];self.server.bad_manifest=False;self.server.manifest_queries=[];self.server.requests=[]
-        page=self.page();page.add_init_script("window.honeycombNG={apiVersion:1,version:'existing-test-runtime'}")
+        page=self.page();page.add_init_script("window.jefferiesNavigation={apiVersion:1,version:'existing-test-runtime'}")
         try:
-            page.goto(self.url);page.wait_for_function('window[Symbol.for("honeycombNG.developmentLoader")] !== undefined')
-            failure=page.evaluate('window[Symbol.for("honeycombNG.developmentLoader")].then(()=>null,e=>e.message)')
+            page.goto(self.url);page.wait_for_function('window[Symbol.for("jefferiesNavigation.developmentLoader")] !== undefined')
+            failure=page.evaluate('window[Symbol.for("jefferiesNavigation.developmentLoader")].then(()=>null,e=>e.message)')
             self.assertIn('already loaded',failure);self.assertEqual(self.server.manifest_queries,[])
-            self.assertEqual(page.evaluate('window.honeycombNG.version'),'existing-test-runtime')
-            self.assertFalse(page.evaluate('!!customElements.get("honeycomb-menu-ng")'))
+            self.assertEqual(page.evaluate('window.jefferiesNavigation.version'),'existing-test-runtime')
+            self.assertFalse(page.evaluate('!!customElements.get("jts-n-menu")'))
         finally:page.close()
     def test_invalid_manifest_fails_closed_without_importing_a_runtime(self):
         self.server.active=self.packages[1];self.server.bad_manifest=True;self.server.manifest_queries=[];self.server.requests=[]
         page=self.page()
         try:
-            page.goto(self.url);page.wait_for_function('window[Symbol.for("honeycombNG.developmentLoader")] !== undefined')
-            failure=page.evaluate('window[Symbol.for("honeycombNG.developmentLoader")].then(()=>null,e=>e.message)')
-            self.assertIn('Invalid Honeycomb development manifest',failure)
-            self.assertFalse(page.evaluate('!!window.honeycombNG'));self.assertEqual(len(self.server.manifest_queries),1)
-            self.assertEqual([url for url in self.server.requests if '/honeycomb-build-' in url],[])
+            page.goto(self.url);page.wait_for_function('window[Symbol.for("jefferiesNavigation.developmentLoader")] !== undefined')
+            failure=page.evaluate('window[Symbol.for("jefferiesNavigation.developmentLoader")].then(()=>null,e=>e.message)')
+            self.assertIn('Invalid Jefferies Navigation development manifest',failure)
+            self.assertFalse(page.evaluate('!!window.jefferiesNavigation'));self.assertEqual(len(self.server.manifest_queries),1)
+            self.assertEqual([url for url in self.server.requests if '/jts-n-build-' in url],[])
         finally:self.server.bad_manifest=False;page.close()
 
 def main():

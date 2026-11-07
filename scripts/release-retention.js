@@ -138,7 +138,7 @@ class GitHubAPI {
             try {
                 response = await this.fetch(`https://api.github.com${this.root}${suffix}`, {
                     method, redirect: 'error', headers: {Authorization: `Bearer ${this.token}`, Accept: 'application/vnd.github+json',
-                        'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'honeycomb-release-retention'}, signal: AbortSignal.timeout(30000)
+                        'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'jts-n-release-retention'}, signal: AbortSignal.timeout(30000)
                 });
             } catch (_) {
                 if (method === 'GET' && attempt < 2) { await this.wait(250 * (attempt + 1)); continue; }

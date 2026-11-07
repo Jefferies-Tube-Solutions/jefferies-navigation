@@ -1,6 +1,6 @@
-# Classic Honeycomb popup reference
+# Classic Jefferies Navigation popup reference
 
-This document preserves the detailed configuration reference for the original popup-style Honeycomb engine. It remains supported in Honeycomb Menu NG v1.7.
+This document preserves the detailed configuration reference for the original popup-style Jefferies Navigation engine. It remains supported in Jefferies Navigation v1.7.
 
 For current standalone Control YAML use the [versioned guide](AI_SETUP.md).
 Classic ring slots start at 1; `center_button` is separate. Legacy `position: 0`
@@ -8,14 +8,14 @@ means the first ring cell, not Hub center. Classic `size: 225` describes scene
 extent, unlike Hub/Control `size: 82` cell width.
 Dynamic Hub `visibility` and priority allocation do not apply to classic buttons.
 
-For new room/device dashboards, start with the persistent Hub in the main [README](../README.md). Use this document when you need `fire-dom-event` popups, explicit slot control, XY Pad, templates, or legacy YAML compatibility.
+For new room/device dashboards, start with the persistent Hub in the main [README](../README.md). Use this document when you need `fire-dom-event` popups, explicit slot control, XY Pad, templates.
 
 ## Entity inheritance
 
-From v1.0.10, the root Honeycomb `entity` is inherited throughout the menu tree.
+From v1.0.10, the root Jefferies Navigation `entity` is inherited throughout the menu tree.
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.zone_a
 size: 82
@@ -31,7 +31,7 @@ menu:
           brightness_pct: 100
 ```
 
-The button above automatically uses `light.zone_a` as both its entity and action target. Nested Honeycomb menus inherit the same entity unless they explicitly set another one.
+The button above automatically uses `light.zone_a` as both its entity and action target. Nested Jefferies Navigation menus inherit the same entity unless they explicitly set another one.
 
 ## Standalone Control
 
@@ -42,7 +42,7 @@ and [migration guide](AI_SETUP.md#migration-and-limits).
 
 ## Layout envelope for nested expansion
 
-When a menu contains a reachable nested menu with `nested_expand: true`, Honeycomb Menu NG can reserve the geometry needed by that submenu before it is opened. This keeps the center and inner ring in the same position when an outer ring is expanded later.
+When a menu contains a reachable nested menu with `nested_expand: true`, Jefferies Navigation can reserve the geometry needed by that submenu before it is opened. This keeps the center and inner ring in the same position when an outer ring is expanded later.
 
 The default is:
 
@@ -80,7 +80,7 @@ The center button is enabled automatically unless explicitly disabled.
 
 By default it:
 
-- uses the Honeycomb menu `entity`
+- uses the Jefferies Navigation menu `entity`
 - inherits `active`
 - uses `autoclose: true`
 - opens `more-info` when tapped
@@ -88,7 +88,7 @@ By default it:
 ### Override the center button
 
 ```yaml
-honeycomb_menu:
+jts_n_menu:
   entity: light.zone_a
   center_button:
     icon: mdi:lightbulb-group
@@ -104,7 +104,7 @@ center_button: false
 
 ### Center brightness
 
-When the center button inherits its background from `button_defaults`, Honeycomb Menu NG makes it slightly lighter so the center is visually distinct.
+When the center button inherits its background from `button_defaults`, Jefferies Navigation makes it slightly lighter so the center is visually distinct.
 
 The default is:
 
@@ -133,7 +133,7 @@ If `center_button` defines its own background color, that explicit background wi
 Use `button_defaults` to apply common configuration to all ring buttons without repeating it on every button.
 
 ```yaml
-honeycomb_menu:
+jts_n_menu:
   entity: light.zone_a
   button_defaults:
     styles:
@@ -186,7 +186,7 @@ buttons:
 
 If the requested physical slot belongs to an active ring, the button stays there.
 
-If that ring is not active, the requested slot is mapped to the corresponding position in the active ring. If the preferred position is already occupied, Honeycomb Menu NG moves clockwise to the first free position.
+If that ring is not active, the requested slot is mapped to the corresponding position in the active ring. If the preferred position is already occupied, Jefferies Navigation moves clockwise to the first free position.
 
 Examples:
 
@@ -223,16 +223,16 @@ The original `position` option remains supported for backwards compatibility and
 
 For new configurations, prefer `slot` and `slot_mode`.
 
-## Nested Honeycomb menus
+## Nested Jefferies Navigation menus
 
-A Honeycomb button can open another Honeycomb menu by using `fire-dom-event` in its own action.
+A Jefferies Navigation button can open another Jefferies Navigation menu by using `fire-dom-event` in its own action.
 
 ```yaml
 buttons:
   - icon: mdi:menu-right
     tap_action:
       action: fire-dom-event
-      honeycomb_menu:
+      jts_n_menu:
         entity: light.zone_a
         buttons:
           - icon: mdi:lightbulb-on-outline
@@ -250,7 +250,7 @@ buttons:
                 entity_id: light.zone_a
 ```
 
-The currently open Honeycomb menu is closed when the nested menu opens.
+The currently open Jefferies Navigation menu is closed when the nested menu opens.
 
 ## Example: picture-elements
 
@@ -270,7 +270,7 @@ elements:
       action: toggle
     hold_action:
       action: fire-dom-event
-      honeycomb_menu:
+      jts_n_menu:
         entity: light.zone_a
         autoclose: true
         active: true
@@ -309,7 +309,7 @@ elements:
               action: more-info
 ```
 
-## Honeycomb menu options
+## Jefferies Navigation menu options
 
 | Option | Values | Default | Description |
 |---|---|---|---|
@@ -319,9 +319,9 @@ elements:
 | `autoclose` | boolean | `true` | Default close behaviour after a button action |
 | `audio` | URL/path | `false` | Default audio played when a button is tapped |
 | `xy_pad` | object | `null` | Optional XY control pad |
-| `size` | integer | `225` | Overall Honeycomb size |
-| `spacing` | integer | `2` | Padding between Honeycomb items |
-| `variables` | object | `{}` | Variables available to Honeycomb templates |
+| `size` | integer | `225` | Overall Jefferies Navigation size |
+| `spacing` | integer | `2` | Padding between Jefferies Navigation items |
+| `variables` | object | `{}` | Variables available to Jefferies Navigation templates |
 | `animation_speed` | integer (ms) | `100` | Delay increment between button animations |
 | `button_defaults` | object | `{}` | Shared configuration merged into ring buttons |
 | `empty_slots` | `visible` / `hidden` | `visible` | Controls empty positions in active rings |
@@ -362,7 +362,7 @@ Typical uses include:
 - relative volume or other service values
 
 ```yaml
-honeycomb_menu:
+jts_n_menu:
   entity: light.zone_a
   xy_pad:
     repeat: 500
@@ -371,7 +371,7 @@ honeycomb_menu:
       service: light.turn_on
       data:
         entity_id: entity
-        brightness_step_pct: 'HCJS: return variables.y_percentage / 10;'
+        brightness_step_pct: 'JTSJS: return variables.y_percentage / 10;'
 ```
 
 In v1.10.0-beta.10, closing or removing the menu, opening Info, changing the
@@ -396,7 +396,7 @@ is needed.
 |---|---|---|---|
 | `invert` | boolean | `false` | Reverse positive and negative direction |
 | `service` | service | — | Service to call |
-| `data` / `service_data` | object | — | Service payload; supports Honeycomb templating |
+| `data` / `service_data` | object | — | Service payload; supports Jefferies Navigation templating |
 
 The XY pad exposes:
 
@@ -409,12 +409,12 @@ variables.y_percentage
 
 ## Templating
 
-Honeycomb Menu keeps the original templating system.
+Jefferies Navigation Menu keeps the original templating system.
 
-### HCJS
+### JTSJS
 
 ```yaml
-active: 'HCJS: return entity.state === "on";'
+active: 'JTSJS: return entity.state === "on";'
 ```
 
 ### Triple-bracket JavaScript
@@ -434,11 +434,11 @@ name: >
 brightness_step_pct: '${variables.y_percentage}'
 ```
 
-The literal word `entity` in Honeycomb service data is replaced with the Honeycomb menu entity.
+The literal word `entity` in Jefferies Navigation service data is replaced with the Jefferies Navigation menu entity.
 
-## Honeycomb templates and variables
+## Jefferies Navigation templates and variables
 
-Existing Honeycomb templates remain supported and can inherit/override configuration through the original merge hierarchy.
+Existing Jefferies Navigation templates remain supported and can inherit/override configuration through the original merge hierarchy.
 
 Example:
 
@@ -452,8 +452,8 @@ light:
         action: more-info
 
     - icon: mdi:motion-sensor
-      show: 'HCJS: return variables.motion;'
-      entity: 'HCJS: return variables.motion;'
+      show: 'JTSJS: return variables.motion;'
+      entity: 'JTSJS: return variables.motion;'
       active: true
       tap_action:
         action: toggle
@@ -464,7 +464,7 @@ Use it with:
 ```yaml
 hold_action:
   action: fire-dom-event
-  honeycomb_menu:
+  jts_n_menu:
     template: light
     entity: light.zone_a
     variables:
@@ -473,14 +473,14 @@ hold_action:
 
 ## Theme variables
 
-Honeycomb Menu NG retains the original theme variables:
+Jefferies Navigation retains the original theme variables:
 
 ```css
---honeycomb-menu-icon-color: var(--paper-item-icon-color);
---honeycomb-menu-icon-active-color: var(--paper-item-icon-active-color);
---honeycomb-menu-background-color: var(--paper-card-background-color);
---honeycomb-menu-active-background-color: var(--paper-card-active-background-color, var(--paper-card-background-color));
---honeycomb-menu-disabled: #9a9a9a6e;
+--navigation-menu-icon-color: var(--paper-item-icon-color);
+--navigation-menu-icon-active-color: var(--paper-item-icon-active-color);
+--navigation-menu-background-color: var(--paper-card-background-color);
+--navigation-menu-active-background-color: var(--paper-card-active-background-color, var(--paper-card-background-color));
+--navigation-menu-disabled: #9a9a9a6e;
 ```
 
 `button_defaults` is usually the easiest way to apply menu-specific styling directly from YAML.
@@ -489,25 +489,13 @@ Honeycomb Menu NG retains the original theme variables:
 
 When updating through HACS:
 
-1. Install the new Honeycomb Menu NG version.
+1. Install the new Jefferies Navigation version.
 2. Reload the Home Assistant frontend.
 3. If the old JavaScript is still visible, perform a hard browser refresh / clear the frontend cache.
 
-## Backwards compatibility
+## Popup features
 
-Honeycomb Menu NG aims to remain compatible with existing Honeycomb Menu configurations.
-
-Notable compatibility behaviour:
-
-- legacy `position` remains supported
-- original Honeycomb templates remain supported
-- XY pad behaviour remains available
-- normal button actions remain compatible
-
-New configurations should generally use `slot` instead of `position`.
-
-## Compatibility
-
-The classic popup engine remains available for backwards compatibility. New modular Light/Sonos behavior is primarily exposed through `custom:honeycomb-persistent-hub` and `custom:honeycomb-persistent-control`.
-
-For current architecture details, see [ARCHITECTURE.md](../ARCHITECTURE.md).
+The popup engine supports automatic and explicit slot positioning, XY Pad,
+templates and ordinary Home Assistant button actions. Prefer `slot` when
+writing new configurations. See the [v2 migration guide](V2_MIGRATION.md) for
+renamed YAML keys.

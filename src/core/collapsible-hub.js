@@ -11,15 +11,15 @@ function settings(value,hubSize) {
     const result={expanded_center:'primary',idle_timeout:30000,expanded_size:ceiling,...config,small_screen:config.small_screen!==undefined?config.small_screen:config.mobile!==undefined?config.mobile:true};
     delete result.mobile;
     result.beam_of_origin=require('./beam-of-origin').settings(config.beam_of_origin);
-    if(!['primary','bee'].includes(result.expanded_center))throw Error('collapsible.expanded_center must be primary or bee.');
-    if(result.expanded_center==='bee' && (!Number.isSafeInteger(result.primary_slot)||result.primary_slot<1||result.primary_slot>MAX_HUB_SLOT))throw Error('collapsible.primary_slot must be an available slot 1–216 for bee center.');
+    if(!['primary','compass'].includes(result.expanded_center))throw Error('collapsible.expanded_center must be primary or compass.');
+    if(result.expanded_center==='compass' && (!Number.isSafeInteger(result.primary_slot)||result.primary_slot<1||result.primary_slot>MAX_HUB_SLOT))throw Error('collapsible.primary_slot must be an available slot 1–216 for compass center.');
     if(!Number.isFinite(result.idle_timeout)||result.idle_timeout<1000)throw Error('collapsible.idle_timeout must be at least 1000 milliseconds.');
     if(typeof result.small_screen!=='boolean' || config.mobile!==undefined && typeof config.mobile!=='boolean'||config.expanded_size!==undefined && (!Number.isFinite(config.expanded_size)||config.expanded_size<44||config.expanded_size>200))throw Error('Invalid collapsible small_screen/mobile/expanded_size option.');
     result.expanded_size=Math.min(result.expanded_size,ceiling);
     return result;
 }
 function expandedAllocation(entries,primary,options,previous=new Map()) {
-    const moved=options.expanded_center==='bee';
+    const moved=options.expanded_center==='compass';
     const expanded=entries.map(entry=>entry.id===primary.id && moved?{...entry,slot:options.primary_slot,mode:'hard'}:entry);
     const result=allocateHubSlots(expanded,{previous,centerReserved:moved});
     if(result.diagnostics.some(d=>['hard-collision','invalid-slot','overflow'].includes(d.code)))throw Error('collapsible expanded slot conflict: '+JSON.stringify(result.diagnostics));

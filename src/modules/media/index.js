@@ -46,7 +46,7 @@ function buildMenu({ item })
                 show_name: true,
                 autoclose: false,
                 tap_action: {
-                    action: 'honeycomb-media-volume',
+                    action: 'jts-n-media-volume',
                     direction: 'down',
                     entity: item.entity
                 }
@@ -74,7 +74,7 @@ function buildMenu({ item })
                 show_name: true,
                 autoclose: false,
                 tap_action: {
-                    action: 'honeycomb-media-volume',
+                    action: 'jts-n-media-volume',
                     direction: 'up',
                     entity: item.entity
                 }

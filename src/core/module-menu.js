@@ -12,6 +12,6 @@ function expandModuleMenu(config,hass) {
     // Give the controller a real native center so it applies the same promotion
     // and one-level Back policy as an existing persistent parent.
     const center=menu.promoted_center && {...menu.promoted_center,...face};
-    return {...menu,nested_expand:true,...(center ? {promoted_center:center,persistent_center:{...center,interactive:true,tap_action:{action:'honeycomb-back'}}} : {})};
+    return {...menu,nested_expand:true,...(center ? {promoted_center:center,persistent_center:{...center,interactive:true,tap_action:{action:'jts-n-back'}}} : {})};
 }
 module.exports={expandModuleMenu};

@@ -13,7 +13,7 @@ No historical commit ancestry or branch prefix controls beta eligibility.
   are not. Optional SemVer build metadata is accepted. The tag is exactly `v`
   followed by that version. Stable, alpha, rc and malformed versions are rejected.
 - `release.json` must contain `prerelease: true` and a title containing the exact
-  version prefixed by `v`. HACS must point to the root `honeycomb-menu-ng.js`.
+  version prefixed by `v`. HACS must point to the root `jefferies-navigation.js`.
 - A repository collaborator with workflow-dispatch permission selects the branch
   and supplies `expected_commit` (full lowercase 40-character branch-head SHA),
   `expected_tag`, approved `release_notes`, and explicitly sets `publish=true`.
@@ -49,7 +49,7 @@ Branch movement or a new CI attempt requires a fresh verification run.
    `contents: write`, and only with explicit manual `publish=true`.
 4. Recheck source, branch, CI, staged bytes and tag/release absence. Create a new
    lightweight beta tag at the exact tested commit. Never force or update a tag.
-5. Create a **draft prerelease**, upload `honeycomb-menu-ng.js`, `SHA256SUMS.txt`
+5. Create a **draft prerelease**, upload `jefferies-navigation.js`, `SHA256SUMS.txt`
    and `release-provenance.json`, then download and compare every byte. Validate
    asset names, sizes, available GitHub digests, tag SHA and metadata. Locate the
    new draft by exact tag in the full paginated release inventory; retry only a
@@ -72,7 +72,7 @@ The workflow never modifies retention variables or invokes release cleanup.
 For CLI dispatch, write the exact inputs as JSON to a file and use:
 
 ```sh
-gh workflow run release.yml --repo NicolaiTandrup/honeycomb-menu-ng \
+gh workflow run release.yml --repo Jefferies-Tube-Solutions/jefferies-navigation \
   --ref YOUR_BRANCH --json < approved-beta-inputs.json
 ```
 

@@ -9,17 +9,17 @@ const { toCenterDescriptor } = require('./core/hub-launcher.js');
 const { VisibilityIndex } = require('./core/visibility.js');
 const collapsibleHub=require('./core/collapsible-hub');
 const expandedLayout=require('./core/expanded-layout');
-const bee=require('./core/bee');
+const compass=require('./core/compass');
 const originBeam=require('./core/beam-of-origin');
 let nextOriginId=0;
 const navigationCore=require('./core/navigation-context');
 const { allocateHubSlots } = require('./core/hub-allocation.js');
 
-class HoneycombPersistentHub extends CubeElement
+class NavigationHub extends CubeElement
 {
     static get is()
     {
-        return 'honeycomb-persistent-hub';
+        return 'navigation-hub';
     }
 
     constructor()
@@ -41,9 +41,9 @@ class HoneycombPersistentHub extends CubeElement
 
     _ensureMenuContext()
     {
-        if( ! this._menuContext && typeof window.honeycombNG.createContext === 'function' )
+        if( ! this._menuContext && typeof window.jefferiesNavigation.createContext === 'function' )
         {
-            this._menuContext = window.honeycombNG.createContext();
+            this._menuContext = window.jefferiesNavigation.createContext();
             this._menuContext.owner = this;
             this._menuContext.onIdle = () => this._scheduleStructure();
         }
@@ -51,7 +51,7 @@ class HoneycombPersistentHub extends CubeElement
         return this._menuContext;
     }
 
-    _openHoneycombMenu(menu)
+    _openNavigationMenu(menu)
     {
         if(this._collapseOptions && !this._hubExpanded && this.config.size==='auto' && menu._persistent_hub_root){
             const size=this._floorplanSize();
@@ -60,10 +60,10 @@ class HoneycombPersistentHub extends CubeElement
         }
         const context = this._ensureMenuContext();
 
-        if( context && typeof window.honeycombNG.openInContext === 'function' )
-            return window.honeycombNG.openInContext(context, menu);
+        if( context && typeof window.jefferiesNavigation.openInContext === 'function' )
+            return window.jefferiesNavigation.openInContext(context, menu);
 
-        return super._openHoneycombMenu(menu);
+        return super._openNavigationMenu(menu);
     }
 
     connectedCallback()
@@ -72,7 +72,7 @@ class HoneycombPersistentHub extends CubeElement
 
         // The host element is only a bootstrap/anchor when auto-open is
         // enabled. Keep it hidden so reconnect/edit transitions cannot flash
-        // the default bee before the real persistent Hub is mounted.
+        // the default compass before the real persistent Hub is mounted.
         if( this.config && this.config.auto_open !== false )
             this.style.visibility = 'hidden';
 
@@ -114,8 +114,8 @@ class HoneycombPersistentHub extends CubeElement
         // Lovelace edit mode can replace/preview cards faster than close
         // animations complete. Dispose the local overlay synchronously so a
         // removed Hub can never leave a ghost base on the dashboard.
-        if( this._menuContext && typeof window.honeycombNG.disposeContext === 'function' )
-            window.honeycombNG.disposeContext(this._menuContext);
+        if( this._menuContext && typeof window.jefferiesNavigation.disposeContext === 'function' )
+            window.jefferiesNavigation.disposeContext(this._menuContext);
         else if( this._hubMenu && this._hubMenu.isConnected )
             this._hubMenu.remove();
 
@@ -151,10 +151,10 @@ class HoneycombPersistentHub extends CubeElement
         let frame = null;
         const measure = () => {
             frame = null;
-            if (!this.isConnected || !(this._menuContext || {}).honeycomb) return;
+            if (!this.isConnected || !(this._menuContext || {}).scene) return;
             const rect = this.getBoundingClientRect();
             if (!rect.width || !rect.height) return;
-            const menu=this._menuContext.honeycomb;
+            const menu=this._menuContext.scene;
             if(this._hubExpanded && this._collapseOptions){this._fitExpansion();return;}
             const itemSize=this._collapseOptions && this.config.size==='auto'?this._floorplanSize(rect):menu.offsetParent?rect.width:this.size;
             if (this.config.match_anchor_size !== false && Math.abs(menu.sizes.item-itemSize)>.01)
@@ -162,7 +162,7 @@ class HoneycombPersistentHub extends CubeElement
             const x=rect.left+rect.width/2, y=rect.top+rect.height/2;
             this._lastAnchorX=x; this._lastAnchorY=y;
             // Only the base follows the dashboard anchor; module centers remain locked.
-            if (this._menuContext.navigation.phase === 'base') this._menuContext.honeycomb.reanchor(x,y);
+            if (this._menuContext.navigation.phase === 'base') this._menuContext.scene.reanchor(x,y);
             else if (this._menuContext.stack[0]) {
                 const base=this._menuContext.stack[0].config || this._menuContext.stack[0];
                 base.anchor_x=x; base.anchor_y=y;
@@ -222,9 +222,9 @@ class HoneycombPersistentHub extends CubeElement
 
     _trackHubMenu(opened)
     {
-        opened.addEventListener('honeycomb-ng-closed',()=>queueMicrotask(()=>{
+        opened.addEventListener('jts-n-closed',()=>queueMicrotask(()=>{
             if (!this.isConnected) return;
-            const current=this._menuContext && this._menuContext.honeycomb;
+            const current=this._menuContext && this._menuContext.scene;
             if (current && current !== opened) {
                 this._hubMenu=current;
                 this._trackHubMenu(current);
@@ -296,7 +296,7 @@ class HoneycombPersistentHub extends CubeElement
 
         // The persistent Hub is the stable dashboard base, not a popup level.
         // It should be present immediately on first render and when returning
-        // from a detail level. Detail/nested Honeycomb menus keep normal classic
+        // from a detail level. Detail/nested Jefferies Navigation menus keep normal classic
         // animation because they do not inherit this flag.
         menu.animate = false;
 
@@ -304,9 +304,9 @@ class HoneycombPersistentHub extends CubeElement
 
         if( showLogo )
         {
-            menu.persistent_center=bee.descriptor(merge({},menu.persistent_center || {},{
+            menu.persistent_center=compass.descriptor(merge({},menu.persistent_center || {},{
                 colors:this.config.colors,border:this.config.border,styles:this.config.styles,interactive:true,
-                tap_action:{action:'honeycomb-bee-flap'},hold_action:{action:'honeycomb-bee-flap'},
+                tap_action:{action:'jts-n-compass-inspect'},hold_action:{action:'jts-n-compass-inspect'},
                 face_mode:this.config.base_face_mode || 'cell'
             }),{explicitCenter:this._logoExplicitCenter});
             menu.center_button = null;
@@ -346,7 +346,7 @@ class HoneycombPersistentHub extends CubeElement
                 menu.size=size*3.586;
                 menu.buttons=[];
                 const descriptor=toCenterDescriptor(primary.module,primary.launcher);
-                const center=merge({},descriptor.config,{size,hold_action:{action:'honeycomb-hub-expand'},autoclose:false});
+                const center=merge({},descriptor.config,{size,hold_action:{action:'jts-n-hub-expand'},autoclose:false});
                 if(!this._placements.has(primary.id)){menu.persistent_center=null;menu.center_button=false;}
                 else if(descriptor.kind==='persistent'){menu.persistent_center=center;menu.center_button=null;}
                 else {menu.center_button=center;menu.persistent_center=null;}
@@ -356,13 +356,13 @@ class HoneycombPersistentHub extends CubeElement
                 this._expandedPlacements=allocation.placements;
                 menu.buttons=entries.filter(entry=>allocation.placements.has(entry.id)&&allocation.placements.get(entry.id)!==0)
                     .map(entry=>({...entry.launcher,slot:allocation.placements.get(entry.id),slot_mode:'hard',autoclose:false}));
-                if(this._collapseOptions.expanded_center==='bee') {
-                    menu.persistent_center=bee.descriptor({colors:this.config.colors,border:this.config.border,styles:this.config.styles,background:this.config.background,foreground:this.config.foreground},
+                if(this._collapseOptions.expanded_center==='compass') {
+                    menu.persistent_center=compass.descriptor({colors:this.config.colors,border:this.config.border,styles:this.config.styles,background:this.config.background,foreground:this.config.foreground},
                         {collapse:true,explicitCenter:this._logoExplicitCenter});
                     menu.center_button=null;
                 } else {
                     const center=menu.persistent_center || menu.center_button;
-                    if(center){center.autoclose=false;center.tap_action={action:'honeycomb-hub-collapse'};center.hold_action={action:'none'};delete center.double_tap_action;}
+                    if(center){center.autoclose=false;center.tap_action={action:'jts-n-hub-collapse'};center.hold_action={action:'none'};delete center.double_tap_action;}
                 }
                 menu.idle_timeout=this._collapseOptions.idle_timeout;
             }
@@ -395,12 +395,12 @@ class HoneycombPersistentHub extends CubeElement
             if(Date.now()<this._expansionReadyAt){this._expansionReadyAt=0;e.preventDefault();e.stopImmediatePropagation();}
         };
         this._hubMenu.addEventListener('click',this._expansionCapture,true);
-        window.honeycombNG.updateBase(this._menuContext,this._persistentMenuConfig());
+        window.jefferiesNavigation.updateBase(this._menuContext,this._persistentMenuConfig());
         this._hubMenu._resetIdleTimeout();
         this._expansionResize=()=>this._fitExpansion();
         window.addEventListener('resize',this._expansionResize);
         if(window.visualViewport){visualViewport.addEventListener('resize',this._expansionResize);visualViewport.addEventListener('scroll',this._expansionResize);}
-        this._expansionEscape=e=>{if(e.key==='Escape' && !e.defaultPrevented && !this._menuContext.info){e.preventDefault();window.honeycombNG.backInContext(this._menuContext);}};
+        this._expansionEscape=e=>{if(e.key==='Escape' && !e.defaultPrevented && !this._menuContext.info){e.preventDefault();window.jefferiesNavigation.backInContext(this._menuContext);}};
         document.addEventListener('keydown',this._expansionEscape);
         this._expansionChromeResize=new ResizeObserver(this._expansionResize);
         this._expansionChromeMutation=new MutationObserver(this._expansionResize);
@@ -414,7 +414,7 @@ class HoneycombPersistentHub extends CubeElement
 
     _fitExpansion(options={})
     {
-        const context=this._menuContext,menu=context && context.honeycomb;
+        const context=this._menuContext,menu=context && context.scene;
         if(!this._hubExpanded || !menu || menu.closing)return;
         if(context.info){this._scheduleOriginGeometry();return;}
         // Only an explicit legacy opt-out retains the old compact phone mode.
@@ -488,7 +488,7 @@ class HoneycombPersistentHub extends CubeElement
                 try{const m=new DOMMatrixReadOnly(css.transform);if(!m.is2D || Math.abs(m.b)>.0001 || Math.abs(m.c)>.0001 || m.a<=0 || m.d<=0)visible=false;}catch(_){visible=false;}
             }
         }
-        const targets=[...menu.shadowRoot.querySelectorAll('#honeycombs > honeycomb-menu-ng-item,#honeycombs > honeycomb-persistent-control')]
+        const targets=[...menu.shadowRoot.querySelectorAll('#navigation-cells > jts-n-menu-item,#navigation-cells > navigation-control')]
             .map(cell=>cell.shadowRoot.querySelector('.hex-svg'))
             .filter(Boolean).map(hex=>hex.getBoundingClientRect()).filter(r=>r.width && r.height).map(originBeam.hex);
         const geometry=visible && originBeam.connection(source,targets);
@@ -498,7 +498,7 @@ class HoneycombPersistentHub extends CubeElement
         const sceneBox=scene.getBoundingClientRect(),scaleX=sceneBox.width/scene.offsetWidth || 1,scaleY=sceneBox.height/scene.offsetHeight || 1;
         const local=p=>({x:(p.x-sceneBox.left)/scaleX,y:(p.y-sceneBox.top)/scaleY});
         const localSource=local({x:source.left,y:source.top}),localWidth=width/scaleX;
-        origin.size=localWidth;origin.style.cssText=`position:fixed;left:${localSource.x}px;top:${localSource.y}px;width:${localWidth}px;--honeycomb-persistent-size:${localWidth}px;pointer-events:none;`;
+        origin.size=localWidth;origin.style.cssText=`position:fixed;left:${localSource.x}px;top:${localSource.y}px;width:${localWidth}px;--jts-n-persistent-size:${localWidth}px;pointer-events:none;`;
         const svg=scene.querySelector('svg.origin-beam'),polygon=svg.querySelector('polygon'),gradient=svg.querySelector('linearGradient');
         // Fixed-position children and SVG user units share the viewport coordinate
         // system, including visualViewport offsets and document scrolling.
@@ -527,7 +527,7 @@ class HoneycombPersistentHub extends CubeElement
 
     _handleExpansionOutside(event)
     {
-        const menu=this._menuContext && this._menuContext.honeycomb,target=event.composedPath()[0];
+        const menu=this._menuContext && this._menuContext.scene,target=event.composedPath()[0];
         const outside=target===menu || !!(target.classList && target.classList.contains('hub-shield'));
         if(outside && this._expansionOutsideDown){this._expansionOutsideDown=false;this._collapseHub();}
     }
@@ -549,7 +549,7 @@ class HoneycombPersistentHub extends CubeElement
         window.removeEventListener('resize',this._expansionResize);
         if(window.visualViewport){visualViewport.removeEventListener('resize',this._expansionResize);visualViewport.removeEventListener('scroll',this._expansionResize);}
         document.removeEventListener('keydown',this._expansionEscape);
-        this._hideExpansionPopover(this._menuContext && this._menuContext.honeycomb);
+        this._hideExpansionPopover(this._menuContext && this._menuContext.scene);
         if(this._hubMenu)this._hubMenu.removeEventListener('click',this._expansionCapture,true);
         this._hubExpanded=false;this._expandedRoot=null;
     }
@@ -559,15 +559,15 @@ class HoneycombPersistentHub extends CubeElement
         if(!this._hubExpanded)return false;
         const context=this._menuContext;
         if(context.info)return false;
-        const menu=context.honeycomb;
-        for(const item of menu.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control'))item._cancelGesture();
+        const menu=context.scene;
+        for(const item of menu.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control'))item._cancelGesture();
         context.stack=[];
         context.currentConfig._persistent_hub_root=true;
         this._clearExpansion();
         const rect=this.getBoundingClientRect(),config=this._persistentMenuConfig();
         config.anchor_x=rect.left+rect.width/2;config.anchor_y=rect.top+rect.height/2;
         require('./core/navigation-context').resetNavigation(context);
-        window.honeycombNG.updateBase(context,config);
+        window.jefferiesNavigation.updateBase(context,config);
         menu.resizeCubes(this._floorplanSize(rect));
         menu.reanchor(config.anchor_x,config.anchor_y);
         this._flushStructure();
@@ -644,11 +644,11 @@ class HoneycombPersistentHub extends CubeElement
         if (!changed && !this._needsBaseRefresh) return;
         this._needsBaseRefresh = false;
         const context = this._menuContext;
-        if (context && context.honeycomb) {
+        if (context && context.scene) {
             const menu = this._persistentMenuConfig();
-            menu.anchor_x = context.honeycomb._anchorX;
-            menu.anchor_y = context.honeycomb._anchorY;
-            window.honeycombNG.updateBase(context, menu);
+            menu.anchor_x = context.scene._anchorX;
+            menu.anchor_y = context.scene._anchorY;
+            window.jefferiesNavigation.updateBase(context, menu);
         }
     }
 
@@ -659,7 +659,7 @@ class HoneycombPersistentHub extends CubeElement
             .map(entry => ({code:'visibility-indeterminate', id:entry.id})),
             [...(this._showErrors || [])].map(id => ({code:'show-error', id})));
         const keys = new Set(this.diagnostics.map(diagnostic => JSON.stringify(diagnostic)));
-        for (const key of keys) if (!this._diagnosticKeys.has(key)) console.warn(`[Honeycomb Menu NG] ${key}`);
+        for (const key of keys) if (!this._diagnosticKeys.has(key)) console.warn(`[Jefferies Navigation] ${key}`);
         this._diagnosticKeys = keys;
     }
 
@@ -696,7 +696,7 @@ class HoneycombPersistentHub extends CubeElement
     setConfig(config)
     {
         if( ! config || typeof config !== 'object' )
-            throw new Error('Honeycomb Persistent Hub requires a configuration.');
+            throw new Error('Jefferies Navigation Persistent Hub requires a configuration.');
 
         validateCubeConfig(config, {hubItems:true});
         const collapseOptions=collapsibleHub.settings(config.collapsible,config.size);
@@ -707,27 +707,27 @@ class HoneycombPersistentHub extends CubeElement
         if (!this._hasHassProvider) { this._hasHassProvider=true; provideHass(this); }
         const next = merge({}, config);
         this._logoExplicitCenter=!!(config.colors && config.colors.center && config.colors.center!=='auto');
-        next._bee_explicit_center=this._logoExplicitCenter;
+        next._compass_explicit_center=this._logoExplicitCenter;
 
         _defaults(next, {
             mode: 'hub',
             size_debug: false,
             size: collapseOptions ? 'auto' : 82,
-            icon: 'honeycomb:bee',
-            name: 'Honeycomb',
+            icon: 'jts-n:compass',
+            name: 'Jefferies Navigation',
             items: [],
             auto_open: true,
             logo: collapseOptions ? false : 'auto',
             base_face_mode: 'cell',
-            tap_action: { action: 'honeycomb-bee-flap' },
+            tap_action: { action: 'jts-n-compass-inspect' },
             show_brightness: 'never',
-            colors: bee.COLORS
+            colors: compass.COLORS
         });
 
         this._hubBaseFaceMode = next.base_face_mode || 'cell';
 
         // The underlying custom element is only an anchor/bootstrap while the
-        // persistent base is auto-open. Never let its default bee become a
+        // persistent base is auto-open. Never let its default compass become a
         // transitional frame between local menu states.
         next.restore_on_close = next.auto_open === false;
         this.style.visibility = next.auto_open === false ? '' : 'hidden';
@@ -752,7 +752,7 @@ class HoneycombPersistentHub extends CubeElement
             delete launcher.show;
             const show = item.show !== undefined ? item.show : (item.persistent || {}).show;
             return {id, index, item, module, launcher, slot, mode, visibility:item.visibility, show,
-                liveShow:typeof show === 'string' && /\[\[\[|HCJS:|\$\{/.test(show)};
+                liveShow:typeof show === 'string' && /\[\[\[|JTSJS:|\$\{/.test(show)};
         });
         if(collapseOptions) {
             const primary=entries.filter(entry=>entry.slot===0);
@@ -784,18 +784,18 @@ class HoneycombPersistentHub extends CubeElement
     }
 }
 
-if( ! customElements.get(HoneycombPersistentHub.is) )
-    customElements.define(HoneycombPersistentHub.is, HoneycombPersistentHub);
+if( ! customElements.get(NavigationHub.is) )
+    customElements.define(NavigationHub.is, NavigationHub);
 
 window.customCards = window.customCards || [];
 
-if( ! window.customCards.some(card => card.type === HoneycombPersistentHub.is) )
+if( ! window.customCards.some(card => card.type === NavigationHub.is) )
 {
     window.customCards.push({
-        type: HoneycombPersistentHub.is,
-        name: 'Honeycomb Persistent Hub',
-        description: 'Direct persistent Honeycomb hub launcher for lights, media and future control types.'
+        type: NavigationHub.is,
+        name: 'Jefferies Navigation Persistent Hub',
+        description: 'Direct persistent Jefferies Navigation hub launcher for lights, media and future control types.'
     });
 }
 
-export default HoneycombPersistentHub;
+export default NavigationHub;

@@ -12,17 +12,17 @@ from beta5 import FLOORPLAN
 
 class Info(Navigation):
     def root(self,extra=None):
-        self.hub({'logo':'auto','items':[{'name':'Info','icon':'mdi:information','slot':1,'tap_action':{'action':'honeycomb-info','info':{'title':'Information','text':'Æblegrød, Ørsted and safe read-only information.'}}},*(extra or [])]});self.settle()
+        self.hub({'logo':'auto','items':[{'name':'Info','icon':'mdi:information','slot':1,'tap_action':{'action':'jts-n-info','info':{'title':'Information','text':'Æblegrød, Ørsted and safe read-only information.'}}},*(extra or [])]});self.settle()
     def open(self,config=None):
         if config is None:self.activate(self.cell(1).locator('.interaction-surface'))
         else:self.page.evaluate('config=>ng.openInfoInContext(hub._menuContext,config)',config)
-        self.page.wait_for_function('!!hub._menuContext.info?._layout');self.page.locator('honeycomb-ng-info .surface').last.wait_for()
-    def dialog(self):return self.page.locator('honeycomb-ng-info .surface')
+        self.page.wait_for_function('!!hub._menuContext.info?._layout');self.page.locator('jts-n-info-cube .surface').last.wait_for()
+    def dialog(self):return self.page.locator('jts-n-info-cube .surface')
     def snapshot(self):
         self.page.mouse.move(0,0);self.settle()
-        return self.page.evaluate('''()=>{const c=hub._menuContext,m=hub._hubMenu;return {config:JSON.stringify(c.currentConfig),stack:JSON.stringify(c.stack),navigation:c.navigation,anchor:[m._anchorX,m._anchorY],cells:[...m.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control')].map(e=>{const r=e.getBoundingClientRect();return [e.config._hub_item_id,r.x,r.y,r.width]})}}''')
+        return self.page.evaluate('''()=>{const c=hub._menuContext,m=hub._hubMenu;return {config:JSON.stringify(c.currentConfig),stack:JSON.stringify(c.stack),navigation:c.navigation,anchor:[m._anchorX,m._anchorY],cells:[...m.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control')].map(e=>{const r=e.getBoundingClientRect();return [e.config._hub_item_id,r.x,r.y,r.width]})}}''')
     def assert_safe(self):
-        lines=self.page.locator('honeycomb-ng-info').evaluate('''e=>{const g=e._geometry,l=e._layout;return [...e.shadowRoot.querySelectorAll('.info-line,.footer')].filter(t=>t.textContent).map(t=>{const b=t.getBBox();return {r:{x:b.x,y:b.y,width:b.width,height:b.height},g}});}''')
+        lines=self.page.locator('jts-n-info-cube').evaluate('''e=>{const g=e._geometry,l=e._layout;return [...e.shadowRoot.querySelectorAll('.info-line,.footer')].filter(t=>t.textContent).map(t=>{const b=t.getBBox();return {r:{x:b.x,y:b.y,width:b.width,height:b.height},g}});}''')
         for line in lines:
             r,g=line['r'],line['g'];self.assertGreaterEqual(r['y'],0)
             def bound(y):return max(0,(abs(y-g['height']/2)-g['height']/4)*g['width']/(g['height']/2))+10
@@ -30,17 +30,17 @@ class Info(Navigation):
             self.assertGreaterEqual(r['x']+.3,left);self.assertLessEqual(r['x']+r['width'],g['width']-left+.3)
     def test_declarative_root_safe_hex_and_tap_exact_return(self):
         self.root();before=self.snapshot();self.open();self.assertEqual(self.dialog().get_attribute('aria-label'),'Information')
-        shell=self.page.locator('honeycomb-ng-info honeycomb-menu-ng-item');self.assertAlmostEqual(shell.bounding_box()['width'],163.14428,delta=.1)
+        shell=self.page.locator('jts-n-info-cube jts-n-menu-item');self.assertAlmostEqual(shell.bounding_box()['width'],163.14428,delta=.1)
         self.assertAlmostEqual(shell.locator('.hex-outer').bounding_box()['width'],163.14428,delta=.1)
         self.assertEqual(len(self.page.evaluate('hub._menuContext.info._geometry.footprint.notches')),6)
-        self.assertTrue(self.page.evaluate('hub._hubMenu.shadowRoot.querySelector("#honeycombs").inert'));self.assert_safe()
+        self.assertTrue(self.page.evaluate('hub._hubMenu.shadowRoot.querySelector("#navigation-cells").inert'));self.assert_safe()
         self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-info-text.png'))
-        self.activate(self.dialog());self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assertEqual(self.snapshot(),before);self.assert_no_commands()
+        self.activate(self.dialog());self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assertEqual(self.snapshot(),before);self.assert_no_commands()
     def test_fixed_30_seconds_despite_updates_and_scroll_closes_all(self):
         self.root();self.page.clock.install();self.open({'text':'Read-only '*150})
-        self.page.clock.run_for(29000);self.assertEqual(self.page.locator('honeycomb-ng-info').count(),1)
+        self.page.clock.run_for(29000);self.assertEqual(self.page.locator('jts-n-info-cube').count(),1)
         self.page.evaluate('pushState("sensor.unrelated","42");hub._menuContext.info._turn(1)');self.page.clock.run_for(1001)
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
         self.assert_no_commands()
     def test_light_recursive_palette_exact_state_and_back(self):
         self.light_main();self.activate(self.cell(3).locator('.interaction-surface'));self.settle()
@@ -52,11 +52,11 @@ class Info(Navigation):
         for slot in [2,3]:
             self.hold_input(self.cell(slot).locator('.interaction-surface'));self.settle();before=self.snapshot()
             self.open({'mode':'stack','title':'Details','blocks':['Read only','No commands']});self.dialog().press('Enter');self.assertEqual(self.snapshot(),before);self.back();self.settle()
-        self.page.evaluate('ng.openInContext(hub._menuContext,{nested_expand:true,buttons:[{name:"Generic child",tap_action:{action:"honeycomb-info",info:{text:"Child info"}}}]})');self.settle()
+        self.page.evaluate('ng.openInContext(hub._menuContext,{nested_expand:true,buttons:[{name:"Generic child",tap_action:{action:"jts-n-info",info:{text:"Child info"}}}]})');self.settle()
         before=self.snapshot();self.activate(self.cell(1).locator('.interaction-surface'));self.dialog().press('Enter');self.assertEqual(self.snapshot(),before);self.assert_no_commands()
     def test_wrapping_pagination_positioned_danish_and_injection(self):
         self.root();self.open({'title':'Safe text','text':'ÆØÅ æøå '+('<img src=x onerror=alert(1)> ${neverRun()} '+'LangtOrdUdenMellemrum'*4+' ')*50})
-        self.assert_safe();self.assertEqual(self.page.locator('honeycomb-ng-info img').count(),0)
+        self.assert_safe();self.assertEqual(self.page.locator('jts-n-info-cube img').count(),0)
         self.assertGreater(self.page.evaluate('hub._menuContext.info._layout.pages.length'),1)
         self.dialog().press('PageDown');self.assertEqual(self.page.evaluate('hub._menuContext.info._page'),1);self.assert_safe()
         self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-info-long-page2.png'))
@@ -69,18 +69,18 @@ class Info(Navigation):
         self.assertIn('Waiting',self.dialog().text_content());self.page.evaluate('window.layoutBefore=hub._menuContext.info._layout;pushState("sensor.unrelated","1")')
         self.assertTrue(self.page.evaluate('hub._menuContext.info._layout===layoutBefore'))
         self.page.evaluate('pushState("sensor.energy","12.4")');self.page.clock.run_for(100);self.assertIn('12.4',self.dialog().text_content());self.assert_safe()
-        self.page.clock.run_for(30100);self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assert_no_commands()
+        self.page.clock.run_for(30100);self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assert_no_commands()
     def test_no_clickthrough_underlying_command_or_late_navigation(self):
         self.root();self.open();before=self.snapshot()
-        self.page.evaluate('''()=>{hub._hubMenu.shadowRoot.querySelector('[data-honeycomb-slot="0"]')._executeAction({action:'call-service',service:'light.turn_on'});ng.openInContext(hub._menuContext,{nested_expand:true,buttons:[]});}''')
+        self.page.evaluate('''()=>{hub._hubMenu.shadowRoot.querySelector('[data-jts-n-slot="0"]')._executeAction({action:'call-service',service:'light.turn_on'});ng.openInContext(hub._menuContext,{nested_expand:true,buttons:[]});}''')
         self.assertEqual(self.snapshot(),before);self.assert_no_commands()
-        self.page.mouse.click(2,2);self.assertEqual(self.page.locator('honeycomb-ng-info').count(),1)
+        self.page.mouse.click(2,2);self.assertEqual(self.page.locator('jts-n-info-cube').count(),1)
         self.activate(self.dialog());self.assert_no_commands()
     def test_repeated_open_removal_editor_and_multiple_instances_cleanup(self):
         self.root();self.page.clock.install();self.open({'text':'First'});self.page.clock.run_for(20000);self.open({'text':'Second'})
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),1);self.page.clock.run_for(10001);self.assertEqual(self.page.locator('honeycomb-ng-info').count(),1)
-        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0)
-        self.page.clock.run_for(40000);self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0);self.assert_no_commands()
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),1);self.page.clock.run_for(10001);self.assertEqual(self.page.locator('jts-n-info-cube').count(),1)
+        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('jts-n-info-cube').count(),0)
+        self.page.clock.run_for(40000);self.assertEqual(self.page.locator('jts-n-menu').count(),0);self.assert_no_commands()
     def test_scroll_swipe_keyboard_no_service_and_responsive_resize(self):
         self.root();self.open({'text':'Long text for pagination '*150});self.dialog().hover();self.page.mouse.wheel(0,150)
         self.page.wait_for_function('hub._menuContext.info._page===1');self.dialog().press('PageUp');self.assertEqual(self.page.evaluate('hub._menuContext.info._page'),0)
@@ -92,11 +92,11 @@ class Info(Navigation):
         self.root();self.open({'text':'First hub'})
         self.page.evaluate("window.firstHub=hub;makeHub({logo:'auto',items:[{type:'light',entity:'light.zone_a'}]})")
         self.settle();self.open({'text':'Second hub'})
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),2)
-        self.page.locator('honeycomb-ng-info').last.locator('.surface').press('Escape')
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),1)
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),2)
+        self.page.locator('jts-n-info-cube').last.locator('.surface').press('Escape')
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),1)
         self.assertTrue(self.page.evaluate('!!firstHub._menuContext.info'));self.page.evaluate('firstHub.remove();hub.remove()')
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assert_no_commands()
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assert_no_commands()
     def test_real_touch_swipe_changes_page_then_tap_returns(self):
         if self.viewport['width']>=500:return
         self.root();self.open({'text':'A long safe payload '*150})
@@ -108,19 +108,19 @@ class Info(Navigation):
             session.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
         finally:session.detach()
         self.page.wait_for_function('hub._menuContext.info._page===1');self.assert_safe();self.activate(self.dialog())
-        self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assert_no_commands()
+        self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assert_no_commands()
     def test_scaled_floorplan_empty_center_and_editor_cleanup(self):
-        config={'type':'custom:honeycomb-persistent-hub','size':'auto','auto_reference_width':900,'logo':False,'items':[{'type':'generic','slot':1,'name':'Info','tap_action':{'action':'honeycomb-info','info':{'text':'Scaled Info'}}}]}
+        config={'type':'custom:navigation-hub','size':'auto','auto_reference_width':900,'logo':False,'items':[{'type':'generic','slot':1,'name':'Info','tap_action':{'action':'jts-n-info','info':{'text':'Scaled Info'}}}]}
         self.page.evaluate(FLOORPLAN,config);self.page.evaluate('floor.style.width="450px";imageHost.style.height="300px"');self.page.wait_for_function('hub._hubMenu?.sizes.item===41');self.settle()
         self.open();self.assertAlmostEqual(self.page.evaluate('hub._menuContext.info._geometry.width'),81.57214,delta=.1);self.assert_safe()
         self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-info-auto41.png'))
         self.page.evaluate('floor.style.width="900px";floor.style.marginLeft=(innerWidth/2-450)+"px";imageHost.style.height="600px"');self.page.wait_for_function('hub._hubMenu.sizes.item===82 && Math.abs(hub._menuContext.info._geometry.width-163.14428)<.01');self.assert_safe()
-        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assert_no_commands()
+        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assert_no_commands()
     def test_declarative_text_never_executes_javascript_and_invalid_config_is_clear(self):
-        self.hub({'logo':'auto','items':[{'type':'generic','slot':1,'name':'Info','tap_action':{'action':'honeycomb-info','info':{'text':'${window.shouldNotRun=42} [[[ return 9; ]]] <script>window.shouldNotRun=43</script>'}}}]});self.settle()
+        self.hub({'logo':'auto','items':[{'type':'generic','slot':1,'name':'Info','tap_action':{'action':'jts-n-info','info':{'text':'${window.shouldNotRun=42} [[[ return 9; ]]] <script>window.shouldNotRun=43</script>'}}}]});self.settle()
         self.open();self.assertFalse(self.page.evaluate('!!window.shouldNotRun'));self.assertIn('${window.shouldNotRun=42}',self.dialog().text_content());self.assert_safe()
         self.dialog().press('Escape');message=self.page.evaluate('()=>{try{ng.openInfoInContext(hub._menuContext,{text:"A",font_size:2})}catch(e){return e.message}}')
-        self.assertIn('Info Cube:',message);self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assert_no_commands()
+        self.assertIn('Info Cube:',message);self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assert_no_commands()
     def test_reopening_keeps_original_focus_and_fixed_lifetime(self):
         self.root();opener=self.cell(1).locator('.interaction-surface');opener.focus()
         self.open({'text':'First'});self.open({'text':'Second'})
@@ -134,7 +134,7 @@ class Info(Navigation):
         self.page.evaluate('if(window.hub)hub.remove()')
         payload={'title':'Zone A','text':'Light is on.\nStatic overview.','align':'center','colors':{'center':'#34383d','inner_border':'#f4a0c9','outer_border':'#23282e'},'connector':{'color':'#f08020'}}
         if compact:payload['scale']=.85
-        self.hub({'logo':'auto','items':[{'name':f'Light {slot}','icon':'mdi:lightbulb','slot':slot,'colors':{'center':'#948675','inner_border':'#e4d9c6'},'tap_action':{'action':'honeycomb-info','info':payload}} for slot in (range(1,4) if compact else range(1,7))]});self.settle()
+        self.hub({'logo':'auto','items':[{'name':f'Light {slot}','icon':'mdi:lightbulb','slot':slot,'colors':{'center':'#948675','inner_border':'#e4d9c6'},'tap_action':{'action':'jts-n-info','info':payload}} for slot in (range(1,4) if compact else range(1,7))]});self.settle()
         return payload
     def test_owner_reference_notches_layers_stationary_cluster_and_compact(self):
         for compact in [False,True]:
@@ -142,7 +142,7 @@ class Info(Navigation):
             self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-reference-{tag}-before.png'))
             self.activate(self.cell(3).locator('.interaction-surface'));self.page.wait_for_function('!!hub._menuContext.info?._layout');self.settle()
             self.assertEqual(self.snapshot(),before);self.assert_safe()
-            data=self.page.locator('honeycomb-ng-info').evaluate('''e=>{const g=e._geometry,s=e.shadowRoot.querySelector('honeycomb-menu-ng-item');return {g,anchor:e.anchor,colors:s._model.colors,backdrop:getComputedStyle(e.shadowRoot.querySelector('.backdrop')).backgroundColor,connector:g.connector,inert:hub._hubMenu.shadowRoot.querySelector('#honeycombs').inert}}''')
+            data=self.page.locator('jts-n-info-cube').evaluate('''e=>{const g=e._geometry,s=e.shadowRoot.querySelector('jts-n-menu-item');return {g,anchor:e.anchor,colors:s._model.colors,backdrop:getComputedStyle(e.shadowRoot.querySelector('.backdrop')).backgroundColor,connector:g.connector,inert:hub._hubMenu.shadowRoot.querySelector('#navigation-cells').inert}}''')
             self.assertAlmostEqual(data['g']['left']+data['g']['width']/2,data['anchor']['x'],delta=.01)
             self.assertAlmostEqual(data['g']['top']+data['g']['height']/2,data['anchor']['y'],delta=.01)
             self.assertLessEqual(data['g']['width'],data['g']['footprint']['width']);self.assertTrue(data['inert'])
@@ -152,18 +152,18 @@ class Info(Navigation):
             self.activate(self.dialog());self.assertEqual(self.snapshot(),before)
             self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-reference-{tag}-return.png'));self.assert_no_commands()
     def test_all_physical_source_slots_inheritance_override_and_disabled(self):
-        self.hub({'logo':False,'items':[{'name':f'Item {slot}','slot':slot,'colors':{'inner_border':'#13ab79'},'tap_action':{'action':'honeycomb-info','info':{'text':'Read only'}}} for slot in range(19)]});self.settle()
+        self.hub({'logo':False,'items':[{'name':f'Item {slot}','slot':slot,'colors':{'inner_border':'#13ab79'},'tap_action':{'action':'jts-n-info','info':{'text':'Read only'}}} for slot in range(19)]});self.settle()
         for slot in range(19):
             self.cell(slot).evaluate("e=>e._executeAction(e.config.tap_action)");self.page.wait_for_function('!!hub._menuContext.info?._geometry.connector')
             c=self.page.evaluate('hub._menuContext.info._geometry.connector');self.assertEqual(c['slot'],slot);self.assertEqual(c['color'],'#13ab79');self.assert_safe();self.dialog().press('Escape')
         self.open({'text':'Override','connector':{'color':'#abcdef'}});self.assertEqual(self.page.evaluate('hub._menuContext.info._geometry.connector.color'),'#abcdef');self.dialog().press('Escape')
-        self.open({'text':'Disabled','connector':False});self.assertEqual(self.page.locator('honeycomb-ng-info .connector').count(),0);self.dialog().press('Escape');self.assert_no_commands()
+        self.open({'text':'Disabled','connector':False});self.assertEqual(self.page.locator('jts-n-info-cube .connector').count(),0);self.dialog().press('Escape');self.assert_no_commands()
     def test_nested_source_tracks_promoted_module_physical_location(self):
         self.root([{'type':'light','entity':'light.zone_a','slot':2},{'type':'sonos','entity':'media_player.player_a','slot':3},charger(1)|{'slot':4}])
         for slot in [2,3,4]:
             self.hold_input(self.cell(slot).locator('.interaction-surface'));self.settle();before=self.snapshot()
             expected=self.cell(0).evaluate('e=>e._model.colors.inner')
-            self.cell(0).evaluate("e=>e._executeAction({action:'honeycomb-info',info:{text:'Nested source'}})");self.page.wait_for_function('!!hub._menuContext.info?._geometry.connector')
+            self.cell(0).evaluate("e=>e._executeAction({action:'jts-n-info',info:{text:'Nested source'}})");self.page.wait_for_function('!!hub._menuContext.info?._geometry.connector')
             c=self.page.evaluate('hub._menuContext.info._geometry.connector');self.assertEqual(c['slot'],0);self.assertEqual(c['color'],expected)
             self.dialog().press('Escape');self.assertEqual(self.snapshot(),before);self.back();self.settle()
         self.assert_no_commands()
@@ -174,22 +174,22 @@ class Info(Navigation):
         self.open({'text':'Æblegrød Ørsted lang dansk tekst '*1000,'font_size':18});self.assertEqual(self.page.evaluate('JSON.stringify(hub._menuContext.info._geometry)'),geometry);self.assert_safe();self.assert_no_commands()
     def test_connector_tracks_live_source_color_without_remeasuring_unrelated_text(self):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a','slot':0,'colors':{'inner_border':"[[[ return entity.state === 'on' ? '#35b86a' : '#718096'; ]]]"}}]});self.settle()
-        self.cell(0).evaluate("e=>e._executeAction({action:'honeycomb-info',info:{text:'Read only'}})");self.page.wait_for_function('!!hub._menuContext.info?._geometry.connector')
+        self.cell(0).evaluate("e=>e._executeAction({action:'jts-n-info',info:{text:'Read only'}})");self.page.wait_for_function('!!hub._menuContext.info?._geometry.connector')
         self.page.evaluate('window.layoutBefore=hub._menuContext.info._layout;pushState("light.zone_a","off")');self.settle()
         self.assertEqual(self.model(0)['colors']['inner'],'#718096');self.assertEqual(self.page.evaluate('hub._menuContext.info._geometry.connector.color'),'#718096')
         self.assertTrue(self.page.evaluate('layoutBefore===hub._menuContext.info._layout'));self.assert_no_commands()
     def test_source_paint_layers_radial_linear_alpha_snapshot_and_mixed(self):
         self.root();self.cell(1).evaluate("""e=>{const ns='http://www.w3.org/2000/svg',svg=e.shadowRoot.querySelector('svg');const defs=document.createElementNS(ns,'defs');defs.innerHTML='<linearGradient id="synthetic-inner" x1="10%" y1="90%" x2="80%" y2="20%"><stop offset="0%" stop-color="#ff8040" stop-opacity="0.35"/><stop offset="42%" stop-color="#33aaff"/><stop offset="100%" stop-color="#112233"/></linearGradient><radialGradient id="synthetic-center" cx="30%" cy="60%" r="70%"><stop offset="0%" stop-color="#abcdef"/><stop offset="80%" stop-color="#102030" stop-opacity="0.6"/></radialGradient>';svg.prepend(defs);e.shadowRoot.querySelector('.hex-inner').style.fill='url(#synthetic-inner)';e.shadowRoot.querySelector('.hex-fill').style.fill='url(#synthetic-center)';e.shadowRoot.querySelector('.hex-outer').style.fill='rgba(20, 40, 60, .4)';}""")
-        self.cell(1).evaluate("e=>e._executeAction({action:'honeycomb-info',info:{text:'Snapshot',colors:{center:'source',inner_border:'source',outer_border:'source'}}})")
+        self.cell(1).evaluate("e=>e._executeAction({action:'jts-n-info',info:{text:'Snapshot',colors:{center:'source',inner_border:'source',outer_border:'source'}}})")
         self.page.wait_for_function('!!hub._menuContext.info?._layout');self.settle()
         p=self.page.evaluate('structuredClone(hub._menuContext.info.paintSnapshot)');self.assertEqual(p['center']['type'],'radialGradient');self.assertEqual(p['center']['attributes']['cx'],'30%');self.assertEqual(p['inner_border']['attributes']['x2'],'80%');self.assertEqual(self.page.evaluate('hub._menuContext.info._geometry.connector.color'),'rgb(255, 128, 64)');self.assertEqual(len(p['inner_border']['stops']),3);self.assertEqual(p['inner_border']['stops'][0]['opacity'],'0.35');self.assertIn('0.4',p['outer_border']['color'])
         self.page.evaluate('pushState("sensor.unrelated","1")');self.assertEqual(self.page.evaluate('hub._menuContext.info.paintSnapshot'),p)
-        self.assertEqual(self.page.locator('honeycomb-ng-info honeycomb-menu-ng-item linearGradient stop').count(),3)
+        self.assertEqual(self.page.locator('jts-n-info-cube jts-n-menu-item linearGradient stop').count(),3)
         self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-source-paint.png'));self.dialog().press('Escape')
-        self.cell(1).evaluate("e=>e._executeAction({action:'honeycomb-info',info:{text:'Mixed',colors:{center:'source',inner_border:'#ab1234',outer_border:'linear-gradient(135deg, rgba(10,20,30,.3) 10%, #ffffff 70%, #333333 100%)'}}})")
-        self.page.wait_for_function('!!hub._menuContext.info?._layout');self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.info.paintSnapshot.center.type'),'radialGradient');self.assertEqual(self.page.locator('honeycomb-ng-info honeycomb-menu-ng-item .hex-inner').evaluate('e=>getComputedStyle(e).fill'),'rgb(171, 18, 52)');self.assertIn('135deg',self.page.locator('honeycomb-ng-info foreignObject div').evaluate('e=>getComputedStyle(e).backgroundImage'));self.assert_no_commands()
+        self.cell(1).evaluate("e=>e._executeAction({action:'jts-n-info',info:{text:'Mixed',colors:{center:'source',inner_border:'#ab1234',outer_border:'linear-gradient(135deg, rgba(10,20,30,.3) 10%, #ffffff 70%, #333333 100%)'}}})")
+        self.page.wait_for_function('!!hub._menuContext.info?._layout');self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.info.paintSnapshot.center.type'),'radialGradient');self.assertEqual(self.page.locator('jts-n-info-cube jts-n-menu-item .hex-inner').evaluate('e=>getComputedStyle(e).fill'),'rgb(171, 18, 52)');self.assertIn('135deg',self.page.locator('jts-n-info-cube foreignObject div').evaluate('e=>getComputedStyle(e).backgroundImage'));self.assert_no_commands()
     def test_source_paint_native_active_fill_and_unavailable_source_fallback(self):
-        self.light_main();self.cell(0).evaluate("e=>e._executeAction({action:'honeycomb-info',info:{text:'Active',colors:{center:'source',inner_border:'source',outer_border:'source'}}})")
+        self.light_main();self.cell(0).evaluate("e=>e._executeAction({action:'jts-n-info',info:{text:'Active',colors:{center:'source',inner_border:'source',outer_border:'source'}}})")
         self.page.wait_for_function('!!hub._menuContext.info?._layout');p=self.page.evaluate('structuredClone(hub._menuContext.info.paintSnapshot)');self.assertEqual(p['center']['type'],'radialGradient')
         self.page.evaluate('pushState("light.zone_a","off")');self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.info.paintSnapshot'),p);self.dialog().press('Escape')
         self.page.evaluate("hub._menuContext.info=null;ng.openInfoInContext(hub._menuContext,{text:'Fallback',colors:{center:'source',inner_border:'source',outer_border:'source'}},document.createElement('div'))")

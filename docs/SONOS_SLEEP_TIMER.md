@@ -1,6 +1,6 @@
 # Native Sonos Sleep Timer — v1.7.1-beta.6 and later
 
-Sonos slot 4 opens Honeycomb choices **15, 30, 45, 60, 90 minutes and Cancel/OFF**
+Sonos slot 4 opens Jefferies Navigation choices **15, 30, 45, 60, 90 minutes and Cancel/OFF**
 (outer menu slots 7–12). Center Back returns one level. No HA helper, script,
 automation, package import or additional integration is needed. The selected
 entity must belong to the **official Home Assistant Sonos integration** and its
@@ -14,7 +14,7 @@ unused tag, owner authorization and every existing publisher safety gate.
 ## Supported API and device ownership
 
 - [`sonos.set_sleep_timer`](https://www.home-assistant.io/actions/sonos.set_sleep_timer/):
-  `sleep_time` is an integer **in seconds**, with Honeycomb enforcing **0–7200**.
+  `sleep_time` is an integer **in seconds**, with Jefferies Navigation enforcing **0–7200**.
   The five choices send 900, 1800, 2700, 3600 or 5400 seconds. Cancel always uses
   [`sonos.clear_sleep_timer`](https://www.home-assistant.io/actions/sonos.clear_sleep_timer/),
   with no duration, rather than assuming zero means OFF.
@@ -26,15 +26,15 @@ unused tag, owner authorization and every existing publisher safety gate.
   `set_sleep_timer(None)`. The **speaker owns the countdown and expiration**.
 - HA's [service definitions](https://github.com/home-assistant/core/blob/7bbe85e4bc62bb76e180610f0e8821edb8b3c4c3/homeassistant/components/sonos/services.yaml)
   expose a 7200-second selector limit. Its Python registration currently permits
-  a larger range; Honeycomb deliberately keeps the documented two-hour ceiling.
+  a larger range; Jefferies Navigation deliberately keeps the documented two-hour ceiling.
 - No supported standard HA Sonos remaining-time attribute, sensor or readback
-  action was found in the audited integration. Honeycomb does not invent one or
+  action was found in the audited integration. Jefferies Navigation does not invent one or
   call an undocumented WebSocket/device endpoint.
 
 A complete minimal dashboard example (replace the synthetic entity with yours):
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 items:
   - type: sonos
@@ -46,7 +46,7 @@ There is **no `sleep_timer` configuration object** in this version. The obsolete
 beta.5 helper recipe is removed from the current source tree, remaining in Git
 history. If you installed it while testing the unpublished draft, disable that
 old automation yourself before testing native Sleep so it cannot later pause a
-speaker unexpectedly. Honeycomb does not modify or delete your HA configuration.
+speaker unexpectedly. Jefferies Navigation does not modify or delete your HA configuration.
 
 ## Groups, errors and cancellation
 
@@ -57,9 +57,9 @@ metadata disables commands instead of guessing. Setting requires active playback
 Cancel remains available for a consistent paused/stopped group. Missing native
 services disable the corresponding choice; no helper installation is suggested.
 
-A timer belongs to the coordinator **device**, not a saved Honeycomb membership
+A timer belongs to the coordinator **device**, not a saved Jefferies Navigation membership
 snapshot. Sonos controls what happens if rooms join, leave or elect a new leader.
-Honeycomb does not promise automatic group-change cancellation or exact membership
+Jefferies Navigation does not promise automatic group-change cancellation or exact membership
 at future expiry. A group change invalidates its estimate and never sends an
 extra set/clear/pause command. Cancel targets the selected speaker's **current**
 coordinator; if that speaker moved, it does not cancel the former group's timer.
@@ -70,7 +70,7 @@ jobs. Distinct coordinators have separate targets.
 Pending choices show **Sending…**, suppress duplicate requests to the same leader
 in this client, and keep Back usable. Failed/timed-out commands show a notification
 and **Check device**: a timed-out action might already have reached the speaker.
-Honeycomb neither retries playback nor claims the device timer is OFF. Resolve
+Jefferies Navigation neither retries playback nor claims the device timer is OFF. Resolve
 connectivity, inspect Sonos, and deliberately retry or Cancel if needed.
 
 ## Display estimate versus device timer status
@@ -85,7 +85,7 @@ connectivity, inspect Sonos, and deliberately retry or Cancel if needed.
 
 The estimate exists only in memory, scoped to this connection/coordinator/group.
 It clears on reload, HA disconnect/reconnect or an observed group change. Another
-client, the Sonos app or another automation can change the timer without Honeycomb
+client, the Sonos app or another automation can change the timer without Jefferies Navigation
 knowing; the estimate never becomes authoritative. Other dashboards show unknown
 unless they sent a command themselves. This is an explicit limitation of the
 supported API, not shared multi-client timer synchronization.
@@ -95,7 +95,7 @@ the timer OFF. Closing/reloading the dashboard never starts, cancels or expires 
 timer. **An HA restart should leave the speaker's countdown running while that
 speaker stays powered and operating**, because HA does not own it. This expectation
 needs physical HA/Sonos verification. Speaker reboot/power loss, external commands
-and native regrouping behavior are not guaranteed by Honeycomb.
+and native regrouping behavior are not guaranteed by Jefferies Navigation.
 
 ## Verification boundaries and owner HA checklist
 
@@ -113,7 +113,7 @@ After an approved beta.6 is published:
    an unrelated group continues playing. Reload during a second run: UI must show
    Status unknown without canceling/restarting the actual device timer.
 3. Restart HA during an active timer while keeping Sonos powered. Verify the
-   countdown still expires on the device; after reconnect Honeycomb shows unknown.
+   countdown still expires on the device; after reconnect Jefferies Navigation shows unknown.
 4. Move the selected follower to another group. Check native behavior in Sonos;
    Cancel must target the new current leader, leaving the old leader's timer alone.
 5. Check two dashboards and an external Sonos-app timer change: estimates are

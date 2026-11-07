@@ -8,7 +8,7 @@ class ModuleRegistry
     register(module)
     {
         if( ! module || typeof module !== 'object' || ! module.id )
-            throw new Error('Honeycomb module requires a unique id.');
+            throw new Error('Jefferies Navigation module requires a unique id.');
 
         this._modules = this._modules.filter(existing => existing.id !== module.id);
         this._modules.push(module);

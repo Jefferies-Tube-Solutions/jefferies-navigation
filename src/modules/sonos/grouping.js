@@ -85,7 +85,7 @@ function buildJoinMenu(item, discovery = null, source = null)
             autoclose: false,
 
             tap_action: {
-                action: 'honeycomb-sonos-toggle-member',
+                action: 'jts-n-sonos-toggle-member',
                 coordinator: item.entity,
                 member: member.entity,
                 native_allowed: nativeAllowed,
@@ -141,8 +141,8 @@ async function toggleMember({ hass, actionConfig, notify = notifyUser })
 
 function registerActions(registry)
 {
-    registry.register('honeycomb-sonos-open-join', context => { void openJoin(context); return true; });
-    registry.register('honeycomb-sonos-toggle-member', context => {
+    registry.register('jts-n-sonos-open-join', context => { void openJoin(context); return true; });
+    registry.register('jts-n-sonos-toggle-member', context => {
         void toggleMember(context);
         return true;
     });

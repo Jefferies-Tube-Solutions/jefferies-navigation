@@ -1,6 +1,6 @@
-# Honeycomb Menu NG architecture (v1.5+)
+# Jefferies Navigation architecture (v1.5+)
 
-Honeycomb NG is a **modular monolith**. Domain modules describe capabilities and menus; the core owns geometry, navigation and rendering.
+Jefferies Navigation is a **modular monolith**. Domain modules describe capabilities and menus; the core owns geometry, navigation and rendering.
 
 ## Non-negotiable navigation invariant
 
@@ -90,7 +90,7 @@ When changing a public module schema, update both the human module document and 
 ## v1.7.0 Phase 1 extraction from restart/v1.5.1
 
 `cube-element.js` extracts the v1.5.1 native renderer into the shared Lit engine.
-Both public adapters and `honeycomb-menu-item` consume it. Modules still return
+Both public adapters and `navigation-menu-item` consume it. Modules still return
 data through the existing registry; `core/cube-config.js` compiles the same item
 for standalone Control and Hub. One action handler owns native and generic input.
 The existing navigation core keeps local context/anchor ownership.

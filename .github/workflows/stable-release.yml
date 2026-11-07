@@ -54,7 +54,7 @@ jobs:
           node scripts/stable-release.js
       - uses: actions/download-artifact@v4
         with:
-          name: honeycomb-menu-ng
+          name: jefferies-navigation
           path: ${{ runner.temp }}/validated-master
           run-id: ${{ steps.gates.outputs.run_id }}
           github-token: ${{ github.token }}
@@ -69,11 +69,11 @@ jobs:
           npm ci
           npm test
           npm run build
-          git diff --exit-code -- honeycomb-menu-ng.js
+          git diff --exit-code -- jefferies-navigation.js
           node scripts/check-release.js --stable > "$RUNNER_TEMP/reproduced-SHA256SUMS.txt"
-          cmp honeycomb-menu-ng.js "$RUNNER_TEMP/validated-master/honeycomb-menu-ng.js"
+          cmp jefferies-navigation.js "$RUNNER_TEMP/validated-master/jefferies-navigation.js"
           cmp "$RUNNER_TEMP/reproduced-SHA256SUMS.txt" "$RUNNER_TEMP/validated-master/SHA256SUMS.txt"
-          cmp honeycomb-menu-ng.js "$RELEASE_OUTPUT/honeycomb-menu-ng.js"
+          cmp jefferies-navigation.js "$RELEASE_OUTPUT/jefferies-navigation.js"
           cmp "$RUNNER_TEMP/reproduced-SHA256SUMS.txt" "$RELEASE_OUTPUT/SHA256SUMS.txt"
       - uses: actions/upload-artifact@v4
         with:
@@ -117,7 +117,7 @@ jobs:
         run: |
           set -euo pipefail
           test "$RELEASE_RETENTION_ENABLED" = false
-          cmp honeycomb-menu-ng.js "$RUNNER_TEMP/stable-assets/honeycomb-menu-ng.js"
+          cmp jefferies-navigation.js "$RUNNER_TEMP/stable-assets/jefferies-navigation.js"
           node scripts/check-release.js --stable > "$RUNNER_TEMP/current-SHA256SUMS.txt"
           cmp "$RUNNER_TEMP/current-SHA256SUMS.txt" "$RUNNER_TEMP/stable-assets/SHA256SUMS.txt"
       - name: Create new tag, verify draft assets, publish stable and verify inventory

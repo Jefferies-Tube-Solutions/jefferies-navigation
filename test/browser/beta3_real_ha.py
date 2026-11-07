@@ -10,21 +10,21 @@ from beta5 import FLOORPLAN
 from climate import SEED
 
 class Beta3(Cubes):
- def cell(self,slot=0):return self.page.locator('honeycomb-menu-ng .center-item' if slot==0 else f'honeycomb-menu-ng [data-honeycomb-slot="{slot-1}"]')
- def setup_floor(self,policy='bee',wide_host=False):
+ def cell(self,slot=0):return self.page.locator('jts-n-menu .center-item' if slot==0 else f'jts-n-menu [data-jts-n-slot="{slot-1}"]')
+ def setup_floor(self,policy='compass',wide_host=False):
   self.page.evaluate("pushState('light.zone_b','on',{brightness:190,rgb_color:[70,150,240],supported_color_modes:['hs']})")
   config={'size':'auto','auto_reference_width':1200,'logo':False,'collapsible':{'expanded_center':policy,'primary_slot':1,'mobile':True,'expanded_size':100,'idle_timeout':30000},'items':[{'type':'light','entity':'light.zone_a','slot':0},{'type':'light','entity':'light.zone_b','slot':2}]}
   self.page.evaluate(FLOORPLAN,config);self.page.wait_for_function('hub._hubMenu?.isConnected')
-  self.page.evaluate("()=>{floor.style.width=Math.min(innerWidth-30,900)+'px';imageHost.style.height=Math.min(innerWidth-30,900)*.625+'px';window.reference=addOverlay({type:'custom:honeycomb-persistent-control',module:'light',entity:'light.zone_a',size:'auto',auto_reference_width:1200},'75%','65%');}")
+  self.page.evaluate("()=>{floor.style.width=Math.min(innerWidth-30,900)+'px';imageHost.style.height=Math.min(innerWidth-30,900)*.625+'px';window.reference=addOverlay({type:'custom:navigation-control',module:'light',entity:'light.zone_a',size:'auto',auto_reference_width:1200},'75%','65%');}")
   if wide_host:self.page.evaluate("hub.style.width='82px';floor.style.transform='translate(0px,0px)'")
   self.page.wait_for_timeout(150);self.settle()
  def measure(self):return self.page.evaluate("()=>({size:hub.size,menu:hub._hubMenu.sizes.item,anchor:hub.getBoundingClientRect().toJSON(),center:hub._hubMenu.shadowRoot.querySelector('.center-item').getBoundingClientRect().toJSON(),reference:reference.getBoundingClientRect().toJSON()})")
  def assert_collapsed(self):
   value=self.measure();self.assertAlmostEqual(value['center']['width'],value['reference']['width'],delta=.12)
   for axis,dimension in [('x','width'),('y','height')]:self.assertAlmostEqual(value['center'][axis]+value['center'][dimension]/2,value['anchor'][axis]+value['anchor'][dimension]/2,delta=.5)
-  self.assertEqual(self.page.locator('honeycomb-menu-ng :is(honeycomb-menu-ng-item,honeycomb-persistent-control)').count(),1);self.assertFalse(self.page.locator('honeycomb-menu-ng').evaluate("e=>e.matches(':popover-open')"));return value
+  self.assertEqual(self.page.locator('jts-n-menu :is(jts-n-menu-item,navigation-control)').count(),1);self.assertFalse(self.page.locator('jts-n-menu').evaluate("e=>e.matches(':popover-open')"));return value
  def test_owner_1200_reference_both_policies_before_expand_after_Back(self):
-  for policy in ['primary','bee']:
+  for policy in ['primary','compass']:
    self.setup_floor(policy,True);before=self.assert_collapsed();self.capture('collapsed-'+policy)
    self.hold_input(self.cell().locator('.interaction-surface'));self.settle();self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.assertEqual(self.page.evaluate('calls.length'),0);self.capture('expanded-'+policy)
    width=self.cell().bounding_box()['width'];self.assertLessEqual(width,82+.15)
@@ -32,7 +32,7 @@ class Beta3(Cubes):
    if self.viewport['width']<500:
     # Auto now targets 82; retain useful enlargement and the existing 15% fit bound.
     self.assertGreaterEqual(width,82*.85-.15);self.assertGreater(width,before['center']['width']*2)
-   self.page.wait_for_timeout(550);self.page.locator('honeycomb-menu-ng').first.locator('.center-item .interaction-surface').click();self.settle();after=self.assert_collapsed();self.assertAlmostEqual(after['center']['width'],before['center']['width'],delta=.12);self.capture('collapsed-again-'+policy)
+   self.page.wait_for_timeout(550);self.page.locator('jts-n-menu').first.locator('.center-item .interaction-surface').click();self.settle();after=self.assert_collapsed();self.assertAlmostEqual(after['center']['width'],before['center']['width'],delta=.12);self.capture('collapsed-again-'+policy)
    for axis in ['x','y']:self.assertAlmostEqual(after['center'][axis],before['center'][axis],delta=.15)
    self.page.evaluate('hub.remove();reference.remove();floor.remove();calls.length=0')
  def test_resize_while_expanded_then_rotation_and_timeout_restore_current_auto_size(self):
@@ -41,16 +41,16 @@ class Beta3(Cubes):
    self.page.set_viewport_size({'width':width,'height':height});self.page.evaluate("floor.style.width=Math.min(innerWidth-30,900)+'px';imageHost.style.height=Math.min(innerWidth-30,900)*.625+'px'");self.page.wait_for_timeout(150);self.settle()
    if width<=600:
     self.assertGreaterEqual(self.cell().bounding_box()['width'],44)
-    for cell in self.page.locator('honeycomb-menu-ng :is(honeycomb-menu-ng-item,honeycomb-persistent-control)').all():
+    for cell in self.page.locator('jts-n-menu :is(jts-n-menu-item,navigation-control)').all():
      box=cell.bounding_box();self.assertGreaterEqual(box['x'],-1);self.assertGreaterEqual(box['y'],-1);self.assertLessEqual(box['x']+box['width'],width+1);self.assertLessEqual(box['y']+box['height'],height+1)
   self.page.clock.run_for(30100);self.settle();self.assert_collapsed();self.capture('collapsed-after-timeout');self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_preview_multiple_hubs_and_removed_overlay_cleanup(self):
   self.setup_floor();self.page.evaluate("window.other=addOverlay({...hub.config,items:[{type:'light',entity:'light.zone_b',slot:0}]},'25%','50%')");self.settle()
-  self.page.evaluate('hub.preview=true');self.hold_input(self.page.locator('honeycomb-menu-ng').first.locator('.center-item .interaction-surface'));self.settle();self.assertFalse(self.page.evaluate('!!hub._hubExpanded'));self.assertEqual(self.page.evaluate('calls.length'),0)
-  self.page.evaluate('hub.preview=false;hub._expandHub()');self.settle();self.assertFalse(self.page.evaluate('!!other._hubExpanded'));self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('honeycomb-menu-ng[popover]').count(),0)
+  self.page.evaluate('hub.preview=true');self.hold_input(self.page.locator('jts-n-menu').first.locator('.center-item .interaction-surface'));self.settle();self.assertFalse(self.page.evaluate('!!hub._hubExpanded'));self.assertEqual(self.page.evaluate('calls.length'),0)
+  self.page.evaluate('hub.preview=false;hub._expandHub()');self.settle();self.assertFalse(self.page.evaluate('!!other._hubExpanded'));self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('jts-n-menu[popover]').count(),0)
  def test_climate_shared_neutral_pixel_reference_and_explicit_overrides(self):
   self.page.evaluate(SEED);self.hub({'logo':False,'items':[{'type':'climate','entity':'climate.room_a','slot':0}]});self.activate(self.cell().locator('.interaction-surface'));self.settle()
-  expected=self.page.evaluate("()=>{const el=document.createElement('honeycomb-menu-ng-item');el.config={mode:'generic',_submenu:true,icon:'mdi:circle',border:{inner_width:0},interactive:false};el.size=82;el.hass=hass;el.style.cssText='position:absolute;left:30px;top:600px';document.body.append(el);window.neutralReference=el;return el._model.colors.center}")
+  expected=self.page.evaluate("()=>{const el=document.createElement('jts-n-menu-item');el.config={mode:'generic',_submenu:true,icon:'mdi:circle',border:{inner_width:0},interactive:false};el.size=82;el.hass=hass;el.style.cssText='position:absolute;left:30px;top:600px';document.body.append(el);window.neutralReference=el;return el._model.colors.center}")
   self.assertEqual(expected,'rgba(52, 66, 78, 0.94)')
   for slot in range(1,7):self.assertEqual(self.cell(slot).locator('.hex-fill').get_attribute('fill'),expected);self.assertEqual(self.cell(slot).evaluate('e=>e._model.inner'),0);self.assertEqual(self.cell(slot).locator('.hex-outer').get_attribute('fill'),'#34383d')
   # Compare a paint-only interior point, away from icon/text, after alpha compositing.
@@ -59,7 +59,7 @@ class Beta3(Cubes):
   shot=Image.open(io.BytesIO(self.page.screenshot())).convert('RGB')
   def pixel(locator):
    box=locator.bounding_box();return shot.getpixel((round(box['x']+box['width']*.15),round(box['y']+box['height']*.5)))
-  self.assertEqual(pixel(self.cell(1)),pixel(self.page.locator('body > honeycomb-menu-ng-item')))
+  self.assertEqual(pixel(self.cell(1)),pixel(self.page.locator('body > jts-n-menu-item')))
   self.assertEqual(self.cell().locator('.hex-inner').get_attribute('fill'),'#ef8c2f');self.capture('climate-shared-neutral')
   self.page.evaluate("()=>{const menu=hub._hubMenu;const config=JSON.parse(JSON.stringify(menu.config));config.buttons[0][0].colors={center:'#123456'};config.buttons[0][0].border={inner_width:4};menu.replaceConfig(config)}");self.settle();self.assertEqual(self.cell(1).locator('.hex-fill').get_attribute('fill'),'#123456');self.assertEqual(self.cell(1).evaluate('e=>e._model.inner'),4)
  def test_room_P4_four_percent_joined_and_unjoined_no_source_metadata_substitution(self):
@@ -79,14 +79,14 @@ class Beta3(Cubes):
    const root=el.shadowRoot.querySelector('#root'),host=root.firstElementChild;host.attachShadow({mode:'open'}).innerHTML='<style>:host{display:block}.container{height:100%}img{display:block;height:100%;width:100%;object-fit:cover}</style><div class="container"><img id="image"></div>';
    view.append(el);const image=host.shadowRoot.querySelector('img');image.src=card.image;await image.decode();
    for(const [i,config]of [card.elements[0],{...card.elements[0],collapsible:false,style:{left:'75%',top:'65%'}}].entries()){
-    const cube=document.createElement('honeycomb-persistent-hub');cube.classList.add('element');Object.assign(cube.style,config.style);cube.setConfig(config);root.append(cube);if(i===0)window.hub=cube;else window.normal=cube;
+    const cube=document.createElement('navigation-hub');cube.classList.add('element');Object.assign(cube.style,config.style);cube.setConfig(config);root.append(cube);if(i===0)window.hub=cube;else window.normal=cube;
    }
   }''',card)
   self.page.wait_for_function('hub._hubMenu?.isConnected && normal._hubMenu?.isConnected');self.page.wait_for_timeout(150);self.settle()
   read="()=>({primary:hub._hubMenu.shadowRoot.querySelector('.center-item').getBoundingClientRect().toJSON(),normal:normal._hubMenu.shadowRoot.querySelector('.center-item').getBoundingClientRect().toJSON(),numeric:hub.size})"
   before=self.page.evaluate(read);self.assertAlmostEqual(before['primary']['width'],before['normal']['width'],delta=.12);self.assertAlmostEqual(before['primary']['width'],before['numeric'],delta=.12);self.capture('supplied-card-collapsed')
-  self.hold_input(self.page.locator('honeycomb-menu-ng').first.locator('.center-item .interaction-surface'));self.settle();self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.capture('supplied-card-expanded')
-  self.page.wait_for_timeout(550);self.page.locator('honeycomb-menu-ng').first.locator('.center-item .interaction-surface').click();self.settle();after=self.page.evaluate(read)
+  self.hold_input(self.page.locator('jts-n-menu').first.locator('.center-item .interaction-surface'));self.settle();self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.capture('supplied-card-expanded')
+  self.page.wait_for_timeout(550);self.page.locator('jts-n-menu').first.locator('.center-item .interaction-surface').click();self.settle();after=self.page.evaluate(read)
   for key in ['x','y','width','height']:self.assertAlmostEqual(after['primary'][key],before['primary'][key],delta=.15)
   self.assertAlmostEqual(after['primary']['width'],after['normal']['width'],delta=.12);self.assertEqual(self.page.evaluate('calls.length'),0);self.capture('supplied-card-collapsed-again')
 

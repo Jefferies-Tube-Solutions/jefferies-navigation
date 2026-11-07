@@ -2,11 +2,12 @@
 Browser plugin not available; repository Chromium Playwright harness.
 Flow: root Hub -> Light palette / Charger detail / nested generic -> Back.
 """
-import argparse, os, shutil, threading, unittest
+import argparse, hashlib, os, shutil, subprocess, sys, threading, unittest
 from pathlib import Path
 from http.server import ThreadingHTTPServer
 from playwright.sync_api import sync_playwright
 from run import Handler, CheckResult
+from legacy_fixture import V1_SOURCE, legacy_fixture
 from beta4_navigation import Navigation
 from charger import charger
 
@@ -69,7 +70,7 @@ class UI(Navigation):
             buttons=[{'slot':2,'slot_mode':'hard','name':'Plain','tap_action':{'action':'none'}},
                      {'slot':3,'slot_mode':'hard','name':'Explicit','colors':{'center':'#345678','inner_border':'#c0ffee'},'tap_action':{'action':'none'}},
                      {'slot':4,'slot_mode':'hard','name':'Styled','styles':{'card':[{'background':'#112233'}]},'colors':{'inner_border':'#333333'},'tap_action':{'action':'none'}}]
-            if n<3:buttons.append({'slot':1,'slot_mode':'hard','name':'Next','tap_action':{'action':'honeycomb-open-nested','honeycomb_nested_menu':level(n+1)}})
+            if n<3:buttons.append({'slot':1,'slot_mode':'hard','name':'Next','tap_action':{'action':'jts-n-open-nested','jts_n_nested_menu':level(n+1)}})
             return {'nested_expand':True,'buttons':buttons}
         self.hub({'logo':False,'items':[{'type':'generic','slot':0,'name':'Root','background':'#202224','colors':{'inner_border':'#123456'},'menu':level(1)}]})
         root=self.fills(0);self.hold_input(self.cell(0).locator('.interaction-surface'));self.settle()
@@ -100,7 +101,7 @@ class UI(Navigation):
         self.assertEqual(self.fills(1)['hex-fill'],GRAY,'Transparent content preserves the shared gray cube')
         self.assertEqual(self.cell(2).locator('button-card ha-card').evaluate('e=>getComputedStyle(e).backgroundColor'),'rgb(17, 34, 51)')
         self.assert_no_commands()
-    def test_protected_light_sonos_and_hub_pixels_equal_published_beta4(self):
+    def test_protected_light_sonos_and_hub_pixels_equal_v1_10(self):
         if self.baseline:return
         # Render both immutable baseline and candidate with identical synthetic
         # data. Compare actual pixels, not minified-source/model equality.
@@ -110,15 +111,32 @@ class UI(Navigation):
             for url in [self.before_url,self.url]:
                 page=self.browser.new_page(viewport=self.viewport,has_touch=self.viewport['width']<500);page.set_default_timeout(7000)
                 try:
-                    self.page=page;page.goto(url);page.wait_for_function('window.ready');page.evaluate('window.ng=window.honeycombNG')
+                    self.page=page;page.goto(url);page.wait_for_function('window.ready')
+                    page.locator('h1').evaluate("heading => heading.style.visibility = 'hidden'")
+                    before=url==self.before_url
+                    tag='honeycomb-menu-ng' if before else 'jts-n-menu'
+                    slot_attribute='data-honeycomb-slot' if before else 'data-jts-n-slot'
+                    menu=page.locator(tag)
+                    item={'type':module,'entity':entity,'slot':1,'name':'Module A'}
+                    if module=='generic':
+                        item['icon']='mdi:home'
+                    page.evaluate('config=>makeHub(config)',{'logo':False,'items':[item]})
+                    menu.wait_for()
+                    def settle():
+                        menu.evaluate('''async menu => {
+                            await menu.updateComplete;
+                            await Promise.all(menu.shadowRoot.getAnimations({subtree:true}).map(animation=>animation.finished.catch(()=>{})));
+                        }''')
+                    settle()
                     print('reference',module,'before' if url==self.before_url else 'after','root',flush=True)
-                    self.hub({'logo':'auto','items':[{'type':module,'entity':entity,'slot':1,'name':'Module A'}]});self.settle()
-                    root=page.locator('honeycomb-menu-ng').screenshot(animations='disabled')
+                    root=menu.screenshot(animations='disabled')
                     if module!='generic':
                         print('reference',module,'open',flush=True)
-                        self.hold_input(self.cell(1).locator('.interaction-surface'));print('reference',module,'settle',flush=True);self.settle()
+                        self.hold_input(menu.locator(f'[{slot_attribute}="0"] .interaction-surface'))
+                        page.wait_for_function('hub._menuContext.stack.length === 1')
+                        settle()
                         print('reference',module,'capture',flush=True)
-                        scene=page.locator('honeycomb-menu-ng').screenshot(animations='disabled',mask=[self.cell(3)] if module=='light' else [])
+                        scene=menu.screenshot(animations='disabled')
                     else:scene=root
                     images.append((root,scene))
                     if self.evidence:page.screenshot(path=str(self.evidence/(f'{self.viewport["width"]}-protected-{module}-'+('before' if url==self.before_url else 'after')+'.png')))
@@ -134,15 +152,35 @@ class UI(Navigation):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--bundle',type=Path,required=True);p.add_argument('--before-bundle',type=Path);p.add_argument('--button-card',type=Path,required=True);p.add_argument('--evidence-dir',type=Path,required=True);p.add_argument('--baseline',action='store_true');p.add_argument('--test-filter');args=p.parse_args();args.evidence_dir.mkdir(parents=True,exist_ok=True)
+    with legacy_fixture() as legacy:
+        if args.baseline:
+            return subprocess.call([sys.executable,'-B',str(legacy/'beta5_ui.py'),*sys.argv[1:]])
+        return verify(args,legacy/'fixture.html')
+
+
+def verify(args, legacy_html):
     before=args.before_bundle
     if before is None:
-        import subprocess,hashlib
-        before=args.evidence_dir/'published-beta4.js';data=subprocess.check_output(['git','show','v1.9.0-beta.4:honeycomb-menu-ng.js'])
-        assert hashlib.sha256(data).hexdigest()=='3ac96d191f56c3d86a6dbf81e8189a875defd8be6d26b92654e28f7a1a82e84f';before.write_bytes(data)
+        before=args.evidence_dir/'v1.10.0.js'
+        data=subprocess.check_output(['git','show',f'{V1_SOURCE}:honeycomb-menu-ng.js'])
+        assert hashlib.sha256(data).hexdigest()=='0b1b9736ef9b5b22d1d4896c5709c4524c408ead5d56258b39fff6587e27b17c'
+        before.write_bytes(data)
+
+    class LegacyHandler(Handler):
+        def do_GET(self):
+            if self.path!='/':
+                super().do_GET()
+                return
+            payload=legacy_html.read_bytes().replace(b'window.nativeFavoritesOnly=false;',b'window.nativeFavoritesOnly=true;')
+            self.send_response(200)
+            self.send_header('Content-Type','text/html')
+            self.end_headers()
+            self.wfile.write(payload)
+
     servers=[];success=True
     try:
-        for bundle in [args.bundle,before]:
-            server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.bundle=bundle.resolve();server.button=args.button_card.resolve();threading.Thread(target=server.serve_forever,daemon=True).start();servers.append(server)
+        for bundle,handler in [(args.bundle,Handler),(before,LegacyHandler)]:
+            server=ThreadingHTTPServer(('127.0.0.1',0),handler);server.bundle=bundle.resolve();server.button=args.button_card.resolve();threading.Thread(target=server.serve_forever,daemon=True).start();servers.append(server)
         with sync_playwright() as p:
             UI.browser=p.chromium.launch(executable_path=os.getenv('CHROMIUM_PATH') or shutil.which('chromium'),args=['--no-sandbox']);UI.url=f'http://127.0.0.1:{servers[0].server_port}';UI.before_url=f'http://127.0.0.1:{servers[1].server_port}';UI.evidence=args.evidence_dir;UI.baseline=args.baseline
             for width,height in [(1100,900),(390,844)]:

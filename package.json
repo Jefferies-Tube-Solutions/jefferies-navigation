@@ -1,15 +1,16 @@
 {
-  "name": "honeycomb-menu-ng",
+  "name": "jefferies-navigation",
   "private": true,
-  "version": "1.10.0",
-  "description": "Modular Honeycomb controls for Home Assistant with persistent hubs, Light, Sonos and media modules.",
+  "version": "2.0.0",
+  "description": "Hexagonal dashboard and floorplan controls for Home Assistant.",
   "scripts": {
     "build": "webpack",
     "build:dev": "node scripts/build-dev.js",
     "install:dev": "node scripts/install-dev.js",
     "watch": "webpack --watch --mode=development",
     "test": "node test/run-tests.js && node --test test/shared-engine.test.js test/hub-state.test.js test/release-retention.test.js test/stable-release.test.js test/beta-release.test.js test/sonos.test.js test/color-zoom.test.js test/kelvin-zoom.test.js test/sleep-timer.test.js test/stable-approval.test.js test/cube-presentation.test.js test/native-favorites.test.js test/image-sizing.test.js test/energy-wave.test.js test/charger.test.js test/light-palette.test.js test/light-off.test.js test/dev-build.test.js test/install-dev.test.js test/info-cube.test.js test/climate.test.js test/collapsible-hub.test.js test/sonos-join-room.test.js test/expanded-layout.test.js",
-    "prepare:brand": "node scripts/generate-bee-asset.js",
+    "check:brand": "node scripts/check-brand.js",
+    "prepare:brand": "node scripts/generate-compass-asset.js",
     "pretest": "npm run prepare:brand",
     "prebuild": "npm run prepare:brand",
     "prewatch": "npm run prepare:brand",
@@ -17,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NicolaiTandrup/honeycomb-menu-ng.git"
+    "url": "git+https://github.com/Jefferies-Tube-Solutions/jefferies-navigation.git"
   },
   "author": "Nicolai Tandrup",
   "license": "GPL-3.0-or-later",

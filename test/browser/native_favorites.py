@@ -36,7 +36,7 @@ class NativeFavorites(Cubes):
  def item(self,**extra):
   return {'type':'sonos','entity':'media_player.player_a','favorites_sensor':'sensor.favorites',**extra}
  def start(self,**extra):self.hub({'logo':False,'items':[self.item(**extra)]})
- def center(self):return self.page.locator('honeycomb-menu-ng .center-item')
+ def center(self):return self.page.locator('jts-n-menu .center-item')
  def image(self):return self.center().locator('.station-artwork')
  def wait_image(self,url='/station-a.svg'):
   self.page.wait_for_function('(url)=>hub._hubMenu.shadowRoot.querySelector(".center-item")._model.artwork?.url===url',arg=url)
@@ -54,7 +54,7 @@ class NativeFavorites(Cubes):
   blocks=re.findall(r'```yaml\s*\n(.*?)```',(root/'docs/SONOS_NATIVE_FAVORITES.md').read_text(),re.S)
   self.page.evaluate('config=>makeControl(config)',yaml.safe_load(blocks[1]))
   self.page.wait_for_function("control._model.artwork?.url==='/station-a.svg'")
-  self.assertTrue(self.page.locator('honeycomb-persistent-control .station-artwork').is_visible());self.capture('native-favorites-documented-control')
+  self.assertTrue(self.page.locator('navigation-control .station-artwork').is_visible());self.capture('native-favorites-documented-control')
  def test_native_no_templates_both_surfaces_radio_actions_and_live_pause(self):
   self.page.evaluate("browseMode='hold'");self.start();self.page.wait_for_function('browseCalls.length===1');self.assertEqual(self.image().count(),0);self.capture('native-favorites-before')
   self.page.evaluate("browseMode='ok';browsePending.shift()({children:[{media_content_type:'favorites_folder',media_content_id:'object.item.audioItem.audioBroadcast'}]})")
@@ -77,7 +77,7 @@ class NativeFavorites(Cubes):
   self.page.evaluate("hass.states['sensor.sonos_favorites_cache'].attributes.items[0].thumbnail='/station-full-bleed.svg';pushState('sensor.unrelated','1')")
   self.assertEqual(self.sonos_slot(7).locator('.station-artwork').get_attribute('src'),'/station-a.svg');self.assertEqual(self.page.evaluate('browseCalls.length'),2)
   errors=self.page.evaluate("""()=>[ {favorites_cache_sensor:'sensor.sonos_favorites_cache'}, {favorites_browse:false} ].map(option=>{
-   const control=document.createElement('honeycomb-persistent-control');try{control.setConfig({module:'sonos',entity:'media_player.player_a',...option});return 'accepted'}catch(error){return error.message}
+   const control=document.createElement('navigation-control');try{control.setConfig({module:'sonos',entity:'media_player.player_a',...option});return 'accepted'}catch(error){return error.message}
   })""")
   self.assertTrue(all('Remove' in error or 'removed' in error for error in errors))
  def test_browse_failure_never_falls_back_to_cache_and_missing_map_never_browses(self):
@@ -93,10 +93,10 @@ class NativeFavorites(Cubes):
   self.page.evaluate("browseMode='ok';browsePending[0]({children:[]});browsePending[1]({children:[{media_content_type:'favorites_folder',media_content_id:'object.item.audioItem.audioBroadcast'}]})")
   self.wait_image('/station-c.svg');self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
   self.back();self.wait_image('/station-c.svg');self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
-  self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()');self.page.wait_for_timeout(200);self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0)
+  self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()');self.page.wait_for_timeout(200);self.assertEqual(self.page.locator('jts-n-menu').count(),0)
  def test_reconnect_reload_ttl_and_shared_multi_card_dedup(self):
   self.page.clock.install();self.start();self.page.clock.run_for(150);self.wait_image();self.assertEqual(self.page.evaluate('browseCalls.length'),2)
-  self.page.evaluate("window.second=document.createElement('honeycomb-persistent-control');second.setConfig({module:'sonos',entity:'media_player.player_a',favorites_sensor:'sensor.favorites'});document.body.append(second)")
+  self.page.evaluate("window.second=document.createElement('navigation-control');second.setConfig({module:'sonos',entity:'media_player.player_a',favorites_sensor:'sensor.favorites'});document.body.append(second)")
   self.page.clock.run_for(150);self.assertEqual(self.page.evaluate('browseCalls.length'),2)
   self.page.evaluate("hass.connection.connected=false;hass.connection.dispatchEvent(new Event('disconnected'))");self.page.clock.run_for(150);self.assertEqual(self.image().count(),0)
   self.page.evaluate("hass.connection.connected=true;hass.connection.dispatchEvent(new Event('ready'))");self.page.clock.run_for(200);self.wait_image();self.assertEqual(self.page.evaluate('browseCalls.length'),4)
@@ -116,12 +116,12 @@ class NativeFavorites(Cubes):
   self.open_main();self.activate(self.sonos_slot(1).locator('.interaction-surface'));self.page.clock.run_for(9000)
   self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0);self.assertEqual(self.image().count(),0)
   self.page.evaluate("browsePending[0]({children:[{media_content_type:'favorites_folder',media_content_id:'object.item.audioItem.audioBroadcast'}]})")
-  self.page.clock.run_for(500);self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0);self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),1);self.assertEqual(self.page.evaluate('browseCalls.length'),1)
+  self.page.clock.run_for(500);self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0);self.assertEqual(self.page.locator('jts-n-menu').count(),1);self.assertEqual(self.page.evaluate('browseCalls.length'),1)
  def test_max_library_unrelated_state_updates_do_no_render_or_browse_work(self):
   self.page.evaluate("hass.states['sensor.favorites'].attributes.items={...hass.states['sensor.favorites'].attributes.items,...Object.fromEntries(Array.from({length:510},(_,i)=>['FV:2/'+(100+i),'Station '+i]))}")
   self.start();self.wait_image()
   metrics=self.page.evaluate('''async()=>{
-   const proto=Object.getPrototypeOf(customElements.get('honeycomb-menu-ng-item').prototype),render=proto.render;
+   const proto=Object.getPrototypeOf(customElements.get('jts-n-menu-item').prototype),render=proto.render;
    let renders=0;proto.render=function(){renders++;return render.call(this)};
    try{const start=performance.now();for(let i=0;i<1000;i++)pushState('sensor.unrelated',String(i));await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);
     return {renders,requests:browseCalls.length,elapsedMs:performance.now()-start};

@@ -1,0 +1,33 @@
+{
+  "synthetic": true,
+  "capture_source_commit": "63a41d5c255a7ab59116bc6ff1c47017d664d6a6",
+  "capture_bundle_sha256": "c6da680e0d7cd68f8513c081f106996950c116359d0d78561a59d1e643f76a59",
+  "viewport": {
+    "width": 1100,
+    "height": 900
+  },
+  "capture_method": "Chromium clipped to the bounds of the visible controls plus 16 CSS pixels of margin",
+  "images": {
+    "navigation-light-menu.png": {
+      "sha256": "b22df5f9d7ce3f45536c81dfbe62787b04343bd2528e95d2c96cc5631462b01b",
+      "width": 278,
+      "height": 269,
+      "test_capture": "docs-control-light.png"
+    },
+    "navigation-kelvin-palette.png": {
+      "sha256": "f3bbedb62716db3451550abadbc71ea08848b4412ebc5946cfbe05dd2c6199bb",
+      "width": 442,
+      "height": 411,
+      "test_capture": "docs-kelvin-control.png"
+    }
+  },
+  "readme_illustration": {
+    "path": "navigation-light-controls.png",
+    "sha256": "7199d29374f386175396af371618c2b7306041843e857413a84dc88760c1ad8d",
+    "sources": [
+      "navigation-light-menu.png",
+      "navigation-kelvin-palette.png"
+    ],
+    "layout": "Two unchanged screenshot panels with Deep Space #071521 framing and captions"
+  }
+}

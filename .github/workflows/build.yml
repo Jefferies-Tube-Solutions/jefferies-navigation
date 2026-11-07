@@ -1,4 +1,4 @@
-name: Build Honeycomb Menu NG
+name: Build Jefferies Navigation
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/build-artifact"
           node scripts/check-release.js | tee "$RUNNER_TEMP/build-artifact/SHA256SUMS.txt"
-          cp honeycomb-menu-ng.js "$RUNNER_TEMP/build-artifact/honeycomb-menu-ng.js"
+          cp jefferies-navigation.js "$RUNNER_TEMP/build-artifact/jefferies-navigation.js"
           echo "::notice title=Bundle checksum::$(node scripts/check-release.js)"
 
       - name: Validate local HACS package and licensing
@@ -61,7 +61,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: honeycomb-menu-ng
+          name: jefferies-navigation
           path: ${{ runner.temp }}/build-artifact
 
       - name: Set up browser validation
@@ -84,80 +84,80 @@ jobs:
         run: node test/performance/hub-benchmark.js --output "$RUNNER_TEMP/cube-evidence/core-performance.json"
 
       - name: Verify shared cubes and module interactions
-        run: python test/browser/run.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence"
+        run: python test/browser/run.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence"
 
-      - name: Verify both full Honeycomb bundles in both load orders
+      - name: Verify both full Jefferies Navigation bundles in both load orders
         run: |
           curl --fail --location --retry 2 https://raw.githubusercontent.com/Sian-Lee-SA/honeycomb-menu/16a2ac09a98c6837cb092603696e97e3a6102b45/honeycomb-menu.js --output "$RUNNER_TEMP/original-honeycomb.js"
-          python test/browser/coexistence.py --bundle honeycomb-menu-ng.js --original "$RUNNER_TEMP/original-honeycomb.js" --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/coexistence"
+          python test/browser/coexistence.py --bundle jefferies-navigation.js --original "$RUNNER_TEMP/original-honeycomb.js" --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/coexistence"
 
       - name: Verify shared active/inactive cube presentation
-        run: python test/browser/presentation.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/presentation"
+        run: python test/browser/presentation.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/presentation"
 
       - name: Verify native-only Sonos Favorites isolation and lifecycle
-        run: python test/browser/native_favorites.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/native-favorites"
+        run: python test/browser/native_favorites.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/native-favorites"
 
       - name: Verify auto floorplan sizing and true hexagonal pulse
-        run: python test/browser/beta5.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5"
+        run: python test/browser/beta5.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5"
 
       - name: Verify stable auto reference and phase-preserving power speed
-        run: python test/browser/beta6.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6"
+        run: python test/browser/beta6.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6"
 
       - name: Verify resolved wave colors, safe overrides and live color transitions
-        run: python test/browser/wave_color.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/wave-color"
+        run: python test/browser/wave_color.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/wave-color"
 
       - name: Verify Charger states, safe controls, navigation and complete HA dashboards
-        run: python test/browser/charger.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/charger"
+        run: python test/browser/charger.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/charger"
 
       - name: Verify two-row labels, padded artwork and real-card editor ownership
-        run: python test/browser/track3.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/track3"
+        run: python test/browser/track3.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/track3"
 
       - name: Verify radio artwork pixel bounds across ratios and hex slopes
-        run: python test/browser/radio_artwork.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/radio-artwork"
+        run: python test/browser/radio_artwork.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/radio-artwork"
 
       - name: Verify capability-aware palettes and anchored child navigation
-        run: python test/browser/beta4_navigation.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta4-navigation"
+        run: python test/browser/beta4_navigation.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta4-navigation"
 
       - name: Verify cube-3 mode indication and neutral defaults against immutable beta.4
-        run: python test/browser/beta5_ui.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5-ui"
+        run: python test/browser/beta5_ui.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5-ui"
 
       - name: Verify OFF lamp identity and preserved Light navigation
-        run: python test/browser/light_off.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/light-off"
+        run: python test/browser/light_off.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/light-off"
 
-      - name: Verify in-cell bee version, motion safety and detached frame cleanup
-        run: python test/browser/dev_build.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/bee-version"
+      - name: Verify in-cell compass version, motion safety and detached frame cleanup
+        run: python test/browser/dev_build.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/compass-version"
 
       - name: Measure throttled state updates and anchored palette capacity
-        run: python test/browser/beta6_hardening.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-hardening"
+        run: python test/browser/beta6_hardening.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-hardening"
 
       - name: Verify generic Info Cube containment, caller suspension and fixed lifetime
-        run: python test/browser/info_cube.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/info-cube"
+        run: python test/browser/info_cube.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/info-cube"
 
       - name: Verify generic Climate capabilities, exact-target controls and nested Back
-        run: python test/browser/climate.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/climate"
+        run: python test/browser/climate.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/climate"
 
       - name: Verify collapsible Hub touch, mobile viewport, Climate styling and Sonos Join
-        run: python test/browser/beta2_features.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta2-features"
+        run: python test/browser/beta2_features.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta2-features"
 
       - name: Verify beta.3 real-HA regression classes and mobile auto-size lifecycle
-        run: python test/browser/beta3_real_ha.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta3-real-ha"
+        run: python test/browser/beta3_real_ha.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta3-real-ha"
 
       - name: Verify beta.4 minimal defaults, center Back, P4 volume and accessible hex focus
-        run: python test/browser/beta4_defaults.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta4-defaults"
-      - name: Verify beta.5 universal expansion, free-image regions, promotion and shared Bee
-        run: python test/browser/beta5_geometry.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5-geometry"
+        run: python test/browser/beta4_defaults.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta4-defaults"
+      - name: Verify beta.5 universal expansion, free-image regions, promotion and shared Compass
+        run: python test/browser/beta5_geometry.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta5-geometry"
       - name: Verify beta.6 planning envelope, original-anchor fallback and scale hysteresis
-        run: python test/browser/beta6_placement.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-placement"
+        run: python test/browser/beta6_placement.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-placement"
       - name: Verify constrained-screen free canvas and preserved desktop placement
-        run: python test/browser/beta6_mobile.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-mobile"
-      - name: Verify configured size ceilings across modules and opt-in measured Bee diagnostics
-        run: python test/browser/beta8_size.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta8-size"
+        run: python test/browser/beta6_mobile.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --floorplan "$RUNNER_TEMP/floorplan.png" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta6-mobile"
+      - name: Verify configured size ceilings across modules and opt-in measured Compass diagnostics
+        run: python test/browser/beta8_size.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta8-size"
       - name: Verify optional Beam of Origin live source, geometry, navigation and cleanup
-        run: python test/browser/beta9_beam.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta9-beam"
+        run: python test/browser/beta9_beam.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta9-beam"
       - name: Verify XY Pad cancellation, normal actions and listener cleanup
-        run: python test/browser/beta10_xy.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta10-xy"
+        run: python test/browser/beta10_xy.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/beta10-xy"
       - name: Validate documentation and complete YAML examples
-        run: python test/docs/run.py --bundle honeycomb-menu-ng.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/docs"
+        run: python test/docs/run.py --bundle jefferies-navigation.js --button-card "$RUNNER_TEMP/button-card.js" --evidence-dir "$RUNNER_TEMP/cube-evidence/docs"
 
       - name: Upload visual evidence
         if: always()

@@ -29,7 +29,7 @@ class Beta6(Cubes):
    floorImage.src=`/floorplan-${natural}.png`;
    await floorImage.decode();
   }''',[display,natural]);self.page.wait_for_timeout(70)
-  self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#honeycombs")');self.settle()
+  self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#navigation-cells")');self.settle()
  def test_reference_1500_and_high_resolution_replacements(self):
   self.floor()
   for natural in [1500,3000,6000]:
@@ -43,18 +43,18 @@ class Beta6(Cubes):
   self.page.evaluate("floor.style.width='750px';imageHost.style.height='500px'");self.page.wait_for_timeout(70);self.capture('beta6-display-750-cube-41')
  def test_first_mobile_reload_default_and_independent_references(self):
   self.floor(reference=None,display=768);self.assertAlmostEqual(self.page.evaluate('hub.size'),41)
-  self.page.reload();self.page.wait_for_function('window.ready');self.page.evaluate('window.ng=window.honeycombNG')
+  self.page.reload();self.page.wait_for_function('window.ready');self.page.evaluate('window.ng=window.jefferiesNavigation')
   self.floor(reference=None,display=768);self.assertAlmostEqual(self.page.evaluate('hub.size'),41)
   self.page.evaluate("window.second=addOverlay({size:'auto',auto_reference_width:768,logo:false,items:[{type:'light',entity:'light.zone_a'}]},'65%','50%')")
   self.page.wait_for_timeout(70);self.assertEqual(self.page.evaluate('second.size'),82);self.assertEqual(self.page.evaluate('hub.size'),41)
   self.page.evaluate('second.remove()');self.capture('beta6-mobile-first-default-reference')
  def pulse(self,fixed=False):
   self.page.evaluate("pushState('sensor.power_a','1000',{active:true,available:true,fault:false,peak:19400,cycle:1400})")
-  wave={'active':'HCJS: return entity.attributes.active === true;','available':'HCJS: return entity.attributes.available === true;','fault':'HCJS: return entity.attributes.fault === true;','power_w':'HCJS: return Number(entity.state);','speed_mode':'fixed' if fixed else 'power'}
-  if fixed:wave['cycle_ms']='HCJS: return entity.attributes.cycle;'
-  else:wave['max_power_w']='HCJS: return entity.attributes.peak;'
+  wave={'active':'JTSJS: return entity.attributes.active === true;','available':'JTSJS: return entity.attributes.available === true;','fault':'JTSJS: return entity.attributes.fault === true;','power_w':'JTSJS: return Number(entity.state);','speed_mode':'fixed' if fixed else 'power'}
+  if fixed:wave['cycle_ms']='JTSJS: return entity.attributes.cycle;'
+  else:wave['max_power_w']='JTSJS: return entity.attributes.peak;'
   self.hub({'logo':False,'items':[{'type':'generic','entity':'sensor.power_a','name':'Energy demo','energy_wave':wave,'tap_action':{'action':'none'}}]})
-  self.cube=self.page.locator('honeycomb-menu-ng .center-item');self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector(".center-item").hasAttribute("energy-wave-running")')
+  self.cube=self.page.locator('jts-n-menu .center-item');self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector(".center-item").hasAttribute("energy-wave-running")')
   self.page.evaluate('window.originalContour=hub._hubMenu.shadowRoot.querySelector(".center-item").shadowRoot.querySelector(".energy-contour");window.originalAnimation=originalContour.getAnimations()[0]')
   self.page.wait_for_function('originalAnimation.playbackRate>1')
  def state(self,power,attrs=None):
@@ -91,7 +91,7 @@ class Beta6(Cubes):
   self.page.emulate_media(reduced_motion='no-preference');self.page.wait_for_timeout(80);self.assertTrue(self.metrics()['running'])
   self.page.evaluate("Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'))");self.assertFalse(self.metrics()['running'])
   self.page.evaluate("Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'))")
-  self.state(7000);self.page.evaluate('hub.remove()');self.page.wait_for_timeout(450);self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0);self.assertEqual(self.page.evaluate('calls.length'),0)
+  self.state(7000);self.page.evaluate('hub.remove()');self.page.wait_for_timeout(450);self.assertEqual(self.page.locator('jts-n-menu').count(),0);self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_burst_rate_updates_keep_one_animation_and_quiet_scheduler(self):
   self.pulse();self.page.evaluate('''()=>{window.rafCalls=0;const raf=window.requestAnimationFrame;window.requestAnimationFrame=cb=>{rafCalls++;return raf(cb)};window.renders=0;const c=hub._hubMenu.shadowRoot.querySelector('.center-item'),render=c.render;c.render=function(){renders++;return render.call(this)};for(let i=0;i<200;i++)pushState('sensor.power_a',String(1000+i*70),{active:true,available:true,fault:false,peak:19400});}''')
   self.page.wait_for_timeout(500);m=self.metrics();self.assertTrue(m['same'] and m['node']);self.assertEqual(self.page.evaluate('renders'),0)
@@ -101,7 +101,7 @@ class Beta6(Cubes):
   if self.evidence:(self.evidence/f'{self.viewport["width"]}-beta6-rate-performance.json').write_text(json.dumps(metrics,indent=2))
  def test_documented_power_demo_independent_peaks_and_budget(self):
   config=yaml.safe_load(Path('examples/energy-wave-power.yaml').read_text());self.hub(config);self.page.wait_for_timeout(80)
-  cells=self.page.locator('honeycomb-menu-ng honeycomb-menu-ng-item, honeycomb-menu-ng .center-item');rates=[]
+  cells=self.page.locator('jts-n-menu jts-n-menu-item, jts-n-menu .center-item');rates=[]
   for cube in cells.all():
    value=cube.evaluate('(el)=>{const a=el.shadowRoot.querySelector(".energy-contour")?.getAnimations()[0];return {config:el.config.energy_wave,rate:a?.playbackRate}}')
    if value['config']:

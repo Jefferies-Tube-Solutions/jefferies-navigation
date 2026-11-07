@@ -11,9 +11,9 @@ The official native favorites sensor remains the source of IDs and ordering.
    The option now produces a clear configuration error. Remove any experimental
    `favorites_browse` setting from the earlier unpublished PR candidate too.
 2. Remove the custom **favorites-cache template definition** previously installed
-   for Honeycomb, including its refresh triggers/automation if used only for that
+   for Jefferies Navigation, including its refresh triggers/automation if used only for that
    cache. Keep unrelated templates, helpers and the **official native** Sonos
-   favorites entity. Review/reload your HA configuration yourself; Honeycomb does
+   favorites entity. Review/reload your HA configuration yourself; Jefferies Navigation does
    not edit files, delete entities or change live HA configuration.
 3. Enable the official Sonos favorites entity (often disabled by default), and
    confirm its actual ID. The default is `sensor.sonos_favorites`; specify a
@@ -32,7 +32,7 @@ Previous tagged releases retain their original cache support/documentation.
 [Complete Hub example](../examples/sonos-native-favorites.yaml):
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 size: 82
 items:
@@ -45,7 +45,7 @@ items:
 Standalone Control:
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: sonos
 entity: media_player.player_a
 favorites_sensor: sensor.favorites_a

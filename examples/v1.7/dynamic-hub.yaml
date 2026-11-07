@@ -1,4 +1,4 @@
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Dynamic Hub A
 size: 82
 logo: false

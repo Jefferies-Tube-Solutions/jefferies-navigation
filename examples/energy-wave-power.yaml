@@ -1,6 +1,6 @@
 # Synthetic renderer demonstration. No hardware, helpers or HA service calls.
 # Total is 3 kW + 7 kW. Individual values are not added to total again.
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 size: 82
 logo: false
 items:

@@ -59,7 +59,7 @@ jobs:
         run: node scripts/beta-release.js
       - uses: actions/download-artifact@v4
         with:
-          name: honeycomb-menu-ng
+          name: jefferies-navigation
           path: ${{ runner.temp }}/validated-beta
           run-id: ${{ steps.gates.outputs.ci_run }}
           github-token: ${{ github.token }}
@@ -73,10 +73,10 @@ jobs:
           npm ci
           npm test
           npm run build
-          git diff --exit-code -- honeycomb-menu-ng.js
+          git diff --exit-code -- jefferies-navigation.js
           node scripts/check-beta.js > "$RUNNER_TEMP/reproduced-SHA256SUMS.txt"
-          cmp honeycomb-menu-ng.js "$RUNNER_TEMP/validated-beta/honeycomb-menu-ng.js"
-          cmp honeycomb-menu-ng.js "$RELEASE_OUTPUT/honeycomb-menu-ng.js"
+          cmp jefferies-navigation.js "$RUNNER_TEMP/validated-beta/jefferies-navigation.js"
+          cmp jefferies-navigation.js "$RELEASE_OUTPUT/jefferies-navigation.js"
           cmp "$RUNNER_TEMP/reproduced-SHA256SUMS.txt" "$RUNNER_TEMP/validated-beta/SHA256SUMS.txt"
           cmp "$RUNNER_TEMP/reproduced-SHA256SUMS.txt" "$RELEASE_OUTPUT/SHA256SUMS.txt"
       - uses: actions/upload-artifact@v4

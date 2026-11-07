@@ -6,7 +6,7 @@ const {moduleRegistry}=require('../modules/index');
 function presentationDependencies(config) {
     let wildcard = !!config.custom_fields || config.mode==='sonos-join';
     const visit = value => {
-        if (typeof value === 'string' && /\[\[\[|HCJS:|\$\{/.test(value)) wildcard = true;
+        if (typeof value === 'string' && /\[\[\[|JTSJS:|\$\{/.test(value)) wildcard = true;
         else if (value && typeof value === 'object') Object.values(value).forEach(visit);
     };
     for (const key of KEYS) visit(config[key]);

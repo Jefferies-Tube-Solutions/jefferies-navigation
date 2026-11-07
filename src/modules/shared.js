@@ -21,7 +21,7 @@ function requestedIcon(item, fallback)
         item.icon === undefined ||
         item.icon === null ||
         item.icon === '' ||
-        item.icon === 'bee'
+        item.icon === 'compass'
     )
         return fallback;
 

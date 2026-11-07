@@ -86,8 +86,8 @@ function buildMenu({ item })
                     background: 'rgba(108, 62, 78, 0.82)'
                 }),
                 tap_action: {
-                    action: 'honeycomb-open-nested',
-                    honeycomb_nested_menu: radioMenu
+                    action: 'jts-n-open-nested',
+                    jts_n_nested_menu: radioMenu
                 }
             },
             {
@@ -121,7 +121,7 @@ function buildMenu({ item })
                     background: 'rgba(126, 54, 96, 0.82)'
                 }),
                 tap_action: {
-                    action: 'honeycomb-sonos-open-join',
+                    action: 'jts-n-sonos-open-join',
                     sonos_item: {entity:item.entity,members:item.members,toggle_member_script:item.toggle_member_script}
                 }
             },
@@ -142,7 +142,7 @@ function buildMenu({ item })
                         item.entity
                     )
                     : {
-                        action: 'honeycomb-media-volume',
+                        action: 'jts-n-media-volume',
                         direction: 'down',
                         entity: item.entity
                     }
@@ -163,7 +163,7 @@ function buildMenu({ item })
                         item.entity
                     )
                     : {
-                        action: 'honeycomb-media-volume',
+                        action: 'jts-n-media-volume',
                         direction: 'up',
                         entity: item.entity
                     }

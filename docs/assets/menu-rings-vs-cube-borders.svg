@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="700" height="1120" viewBox="0 0 700 1120" role="img" aria-labelledby="title description">
-<title id="title">Honeycomb NG menu rings and cube layers</title>
+<title id="title">Jefferies Navigation menu rings and cube layers</title>
 <desc id="description">Top: dark cubes in exact physical slots, center 0, inner menu ring 1–6, outer menu ring 7–18. Bottom: the fill, green inner border and gray outer border of one cube. Menu rings group separate cubes; borders belong to one cube.</desc>
-<rect width="700" height="1120" rx="20" fill="#0c121b"/>
+<rect width="700" height="1120" rx="20" fill="#071521"/>
 <g font-family="Arial,Helvetica,sans-serif" fill="#f2f5f9">
-<text x="32" y="48" font-size="30" font-weight="700">Honeycomb NG menu geometry</text>
+<text x="32" y="48" font-size="30" font-weight="700">Jefferies Navigation menu geometry</text>
 <text x="32" y="82" font-size="21" fill="#aab9c8">Exact physical slots · separate dark cubes</text>
 <g data-slot="0" data-x="2" data-y="1.73">
 <polygon points="350.00,248.00 390.70,271.50 390.70,318.50 350.00,342.00 309.30,318.50 309.30,271.50" fill="#34383d"/>

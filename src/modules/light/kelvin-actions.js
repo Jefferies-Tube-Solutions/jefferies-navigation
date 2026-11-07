@@ -34,7 +34,7 @@ function zoomKelvin({hass,entity,actionConfig,openNested,notify=notifyUser})
 }
 function registerActions(registry)
 {
-    registry.register('honeycomb-light-kelvin-apply',applyKelvin);
-    registry.register('honeycomb-light-kelvin-zoom',zoomKelvin);
+    registry.register('jts-n-light-kelvin-apply',applyKelvin);
+    registry.register('jts-n-light-kelvin-zoom',zoomKelvin);
 }
 module.exports={applyKelvin,zoomKelvin,registerActions};

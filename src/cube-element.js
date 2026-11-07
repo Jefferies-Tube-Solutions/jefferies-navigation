@@ -18,14 +18,14 @@ let nextFillId=0;
 const supportsColorMix=typeof CSS!=='undefined' && CSS.supports('color','color-mix(in srgb, red 80%, black)');
 const { presentationDependencies, presentationSnapshot } = require('./core/presentation-dependencies.js');
 const presentationUpdates = require('./core/presentation-updates.js');
-const bee=require('./core/bee');
-const beeVersion=bee.version;
+const compass=require('./core/compass');
+const compassVersion=compass.version;
 
 class CubeElement extends LitElement
 {
     static get is()
     {
-        return 'honeycomb-persistent-control';
+        return 'navigation-control';
     }
 
     static get properties()
@@ -41,7 +41,7 @@ class CubeElement extends LitElement
     constructor()
     {
         super();
-        this._fillId=`honeycomb-ng-fill-${++nextFillId}`;
+        this._fillId=`jts-n-fill-${++nextFillId}`;
         this._hass = null;
         this.config = null;
         this.size = 82;
@@ -51,11 +51,11 @@ class CubeElement extends LitElement
         this._pointerId = null;
         this._pointerStartX = 0;
         this._pointerStartY = 0;
-        this._beeFlapping = false;
-        this._beeFlapTimer = null;
-        this._beeAnimationFrame = null;
-        this._beeSizeText='N/A';
-        this._beeSizeFrame=null;
+        this._compassRevealed = false;
+        this._compassRevealTimer = null;
+        this._compassAnimationFrame = null;
+        this._compassSizeText='N/A';
+        this._compassSizeFrame=null;
     }
 
     static get styles()
@@ -63,7 +63,7 @@ class CubeElement extends LitElement
         return css`
             :host {
                 display: block;
-                width: var(--honeycomb-persistent-size, 82px);
+                width: var(--jts-n-persistent-size, 82px);
                 line-height: normal;
                 position: relative;
                 user-select: none;
@@ -71,10 +71,10 @@ class CubeElement extends LitElement
             }
 
             .persistent-center {
-                filter: drop-shadow(calc(var(--honeycomb-persistent-size,82px) / 82 * 2) calc(var(--honeycomb-persistent-size,82px) / 82 * 4) calc(var(--honeycomb-persistent-size,82px) / 82 * 3) rgba(0,0,0,.76));
+                filter: drop-shadow(calc(var(--jts-n-persistent-size,82px) / 82 * 2) calc(var(--jts-n-persistent-size,82px) / 82 * 4) calc(var(--jts-n-persistent-size,82px) / 82 * 3) rgba(0,0,0,.76));
                 position: relative;
                 width: 100%;
-                height: calc(var(--honeycomb-persistent-size, 82px) * 1.1547);
+                height: calc(var(--jts-n-persistent-size, 82px) * 1.1547);
                 overflow: visible;
             }
 
@@ -88,8 +88,8 @@ class CubeElement extends LitElement
                 z-index: 0;
             }
             .energy-contour { transform-box:view-box;transform-origin:50% 50%;opacity:0; }
-            :host([energy-wave-running]) .energy-contour { animation:honeycomb-ng-energy 3s ease-out infinite; }
-            @keyframes honeycomb-ng-energy { 0% {transform:scale(.12);opacity:0} 25% {opacity:.32} 100% {transform:scale(1.4);opacity:0} }
+            :host([energy-wave-running]) .energy-contour { animation:jts-n-energy 3s ease-out infinite; }
+            @keyframes jts-n-energy { 0% {transform:scale(.12);opacity:0} 25% {opacity:.32} 100% {transform:scale(1.4);opacity:0} }
             @media(prefers-reduced-motion:reduce) { .energy-contour {animation:none!important;opacity:0!important} }
 
             .hex-polygon {
@@ -103,17 +103,17 @@ class CubeElement extends LitElement
             .station-artwork { position:absolute;left:22%;top:22%;width:56%;height:56%;object-fit:contain;pointer-events:none;z-index:1; }
             .external-content { position:absolute;inset:8%;overflow:hidden; }
             .external-content > * { height:100%; }
-            .primary { font-size:calc(var(--honeycomb-persistent-size,82px)*.16);font-weight:650;line-height:1.1; }
+            .primary { font-size:calc(var(--jts-n-persistent-size,82px)*.16);font-weight:650;line-height:1.1; }
             .primary,.secondary { max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
             .tertiary { max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-                font-size:calc(var(--honeycomb-persistent-size,82px)*.11);line-height:1.1;margin-top:calc(var(--honeycomb-persistent-size,82px)/82*2); }
-            .content.has-primary.has-secondary .secondary { font-size:calc(var(--honeycomb-persistent-size,82px)*.12); }
+                font-size:calc(var(--jts-n-persistent-size,82px)*.11);line-height:1.1;margin-top:calc(var(--jts-n-persistent-size,82px)/82*2); }
+            .content.has-primary.has-secondary .secondary { font-size:calc(var(--jts-n-persistent-size,82px)*.12); }
             .content.has-primary ha-icon { width:30%;height:30%; }
-            .content.two-row .primary { font-size:calc(var(--honeycomb-persistent-size,82px)*.12);max-width:94%; }
-            .content.two-row .secondary { font-size:calc(var(--honeycomb-persistent-size,82px)*.15);max-width:84%; }
-            .icon-with-badge { display:flex;align-items:center;justify-content:center;gap:calc(var(--honeycomb-persistent-size,82px)*.035);max-width:84%;height:25%; }
-            .content .icon-with-badge ha-icon { width:calc(var(--honeycomb-persistent-size,82px)*.22);height:calc(var(--honeycomb-persistent-size,82px)*.22);transform:none;flex-shrink:0;--mdc-icon-size:calc(var(--honeycomb-persistent-size,82px)*.22); }
-            .power-badge { font-size:calc(var(--honeycomb-persistent-size,82px)*.12);font-weight:650;white-space:nowrap; }
+            .content.two-row .primary { font-size:calc(var(--jts-n-persistent-size,82px)*.12);max-width:94%; }
+            .content.two-row .secondary { font-size:calc(var(--jts-n-persistent-size,82px)*.15);max-width:84%; }
+            .icon-with-badge { display:flex;align-items:center;justify-content:center;gap:calc(var(--jts-n-persistent-size,82px)*.035);max-width:84%;height:25%; }
+            .content .icon-with-badge ha-icon { width:calc(var(--jts-n-persistent-size,82px)*.22);height:calc(var(--jts-n-persistent-size,82px)*.22);transform:none;flex-shrink:0;--mdc-icon-size:calc(var(--jts-n-persistent-size,82px)*.22); }
+            .power-badge { font-size:calc(var(--jts-n-persistent-size,82px)*.12);font-weight:650;white-space:nowrap; }
             .media-background-artwork { position:absolute;left:26%;top:22%;width:48%;height:38%;background-position:center!important;background-repeat:no-repeat!important;background-size:contain!important; }
             .keyboard-focus { display:none;fill:none;stroke:var(--primary-color,#2196f3);stroke-width:3;stroke-linejoin:round; }
             .keyboard-focus-halo { stroke:#fff;stroke-width:6; }
@@ -148,54 +148,54 @@ class CubeElement extends LitElement
                 justify-items: center;
                 text-align: center;
                 pointer-events: none;
-                color: var(--honeycomb-persistent-foreground, #f6f7f9);
+                color: var(--jts-n-persistent-foreground, #f6f7f9);
             }
 
-            .bee-icon {
-                width: ${bee.ICON_PERCENT}%;
-                height: ${bee.ICON_PERCENT}%;
+            .compass-icon {
+                width: ${compass.ICON_PERCENT}%;
+                height: ${compass.ICON_PERCENT}%;
                 display: block;
                 object-fit: contain;
                 overflow: visible;
                 transform-origin: center;
-                filter: drop-shadow(0 calc(var(--honeycomb-persistent-size,82px) / 82) calc(var(--honeycomb-persistent-size,82px) / 82) rgba(0, 0, 0, 0.18));
+                filter: drop-shadow(0 calc(var(--jts-n-persistent-size,82px) / 82) calc(var(--jts-n-persistent-size,82px) / 82) rgba(0, 0, 0, 0.18));
             }
 
-            .content.with-bee-version {
+            .content.with-compass-version {
                 padding-bottom:8%;box-sizing:border-box;
                 clip-path:polygon(50% 8%,92% 29%,92% 71%,50% 92%,8% 71%,8% 29%);
             }
-            .content.with-bee-version .bee-icon { width:${bee.VERSION_ICON_PERCENT}%;height:${bee.VERSION_ICON_PERCENT}%;flex-shrink:0; }
-            .bee-version {
+            .content.with-compass-version .compass-icon { width:${compass.VERSION_ICON_PERCENT}%;height:${compass.VERSION_ICON_PERCENT}%;flex-shrink:0; }
+            .compass-version {
                 display:flex;flex-direction:column;align-items:center;max-width:65%;
                 color:inherit;line-height:1.08;text-align:center;white-space:nowrap;
-                margin-top:calc(var(--honeycomb-persistent-size,82px)*.015);
+                margin-top:calc(var(--jts-n-persistent-size,82px)*.015);
             }
-            .bee-version span { display:block; }
-            .content.with-bee-size .bee-icon { width:25%;height:25%; }
-            .content.with-bee-size .bee-version { line-height:1.02; }
+            .compass-version span { display:block; }
+            .content.with-compass-size .compass-icon { width:25%;height:25%; }
+            .content.with-compass-size .compass-version { line-height:1.02; }
 
-            .bee-icon.flap {
-                animation: honeycomb-bee-flight ${bee.FLIGHT_MS}ms ease-in-out;
+            .compass-icon.calibrating {
+                animation: jts-n-compass-calibrate ${compass.CALIBRATION_MS}ms ease-in-out;
             }
-            @media(prefers-reduced-motion:reduce) { .bee-icon.flap { animation:none; } }
+            @media(prefers-reduced-motion:reduce) { .compass-icon.calibrating { animation:none; } }
 
-            @keyframes honeycomb-bee-flight {
+            @keyframes jts-n-compass-calibrate {
                 0%, 100% {
-                    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+                    transform: rotate(0deg) scale(1);
                 }
                 25% {
-                    transform: translate3d(1px, -2px, 0) rotate(-5deg) scale(1.04);
+                    transform: rotate(-8deg) scale(1.04);
                 }
                 55% {
-                    transform: translate3d(-1px, -1px, 0) rotate(4deg) scale(1.06);
+                    transform: rotate(5deg) scale(1.06);
                 }
                 78% {
-                    transform: translate3d(1px, -2px, 0) rotate(-3deg) scale(1.03);
+                    transform: rotate(-2deg) scale(1.03);
                 }
             }
             ha-icon {
-                --mdc-icon-size: calc(var(--honeycomb-persistent-size,82px) / 82 * 24);
+                --mdc-icon-size: calc(var(--jts-n-persistent-size,82px) / 82 * 24);
                 width: 34%;
                 height: 34%;
                 color: inherit;
@@ -204,12 +204,12 @@ class CubeElement extends LitElement
             .content.has-secondary ha-icon {
                 width: 30%;
                 height: 30%;
-                transform: translateY(calc(var(--honeycomb-persistent-size,82px) / 82 * -2));
+                transform: translateY(calc(var(--jts-n-persistent-size,82px) / 82 * -2));
             }
 
             .secondary {
-                margin-top: calc(var(--honeycomb-persistent-size,82px) / 82 * 2);
-                font-size: calc(var(--honeycomb-persistent-size, 82px) * 0.16);
+                margin-top: calc(var(--jts-n-persistent-size,82px) / 82 * 2);
+                font-size: calc(var(--jts-n-persistent-size, 82px) * 0.16);
                 font-weight: 650;
                 line-height: 1;
                 letter-spacing: -0.01em;
@@ -240,7 +240,7 @@ class CubeElement extends LitElement
         this._configInputSignature = signature;
         this._presentationDependencies = null;
         this._entitySnapshot = undefined;
-        this._config = value ? merge({mode:'generic',variables:{},face_mode:'cell'}, bee.isBrand(value)?bee.descriptor(value,{explicitCenter:value._bee_explicit_center}):value,
+        this._config = value ? merge({mode:'generic',variables:{},face_mode:'cell'}, compass.isBrand(value)?compass.descriptor(value,{explicitCenter:value._compass_explicit_center}):value,
             Object.keys(value).length === 0 || value.type === 'break' ? {disabled:true} : {}) : null;
         this._contentConfigDirty=true;
         this._presentationSignature = null;
@@ -305,7 +305,7 @@ class CubeElement extends LitElement
             outer:color('outer_border','#34383d')
         };
         const explicitSubmenuCenter=this.config._submenu && configured.center && this._value(configured.center)!=='auto';
-        if ((this.config.mode === 'generic' || bee.isBrand(this.config)) && !explicitSubmenuCenter) {
+        if ((this.config.mode === 'generic' || compass.isBrand(this.config)) && !explicitSubmenuCenter) {
             colors.center = card.background || card['background-color'] || this._value(this.config.background, colors.center);
         }
         if (presentation.forceColors) Object.assign(colors, presentation.forceColors);
@@ -366,7 +366,7 @@ class CubeElement extends LitElement
     setConfig(config)
     {
         if( ! config || typeof config !== 'object' )
-            throw new Error('Honeycomb Persistent Control requires a configuration.');
+            throw new Error('Jefferies Navigation Persistent Control requires a configuration.');
 
         validateCubeConfig(config, {hubItems:config.mode === 'hub'});
         if (!this._hasHassProvider) { this._hasHassProvider = true; provideHass(this); }
@@ -423,7 +423,7 @@ class CubeElement extends LitElement
 
         this.config = next;
         this.size = imageSizing.numericSize(next.size);
-        this.style.setProperty('--honeycomb-persistent-size', `${this.size}px`);
+        this.style.setProperty('--jts-n-persistent-size', `${this.size}px`);
         this._syncImageSizing();
 
         this._updatePresentation();
@@ -455,19 +455,19 @@ class CubeElement extends LitElement
         clearTimeout(this._presentationTimer);this._presentationTimer=null;this._presentationRefreshAt=null;
         this._cancelGesture();
         if (this._ownedMenuContext && this._ownedMenuContext.owner === this)
-            window.honeycombNG.disposeContext(this._ownedMenuContext);
+            window.jefferiesNavigation.disposeContext(this._ownedMenuContext);
         this._ownedMenuContext=null;
 
-        if( this._beeFlapTimer )
+        if( this._compassRevealTimer )
         {
-            clearTimeout(this._beeFlapTimer);
-            this._beeFlapTimer = null;
+            clearTimeout(this._compassRevealTimer);
+            this._compassRevealTimer = null;
         }
-        if( this._beeAnimationFrame !== null )
-            cancelAnimationFrame(this._beeAnimationFrame);
-        this._beeAnimationFrame = null;
-        this._beeFlapping = false;
-        this._stopBeeSizeDebug();
+        if( this._compassAnimationFrame !== null )
+            cancelAnimationFrame(this._compassAnimationFrame);
+        this._compassAnimationFrame = null;
+        this._compassRevealed = false;
+        this._stopCompassSizeDebug();
     }
 
     getCardSize()
@@ -488,11 +488,11 @@ class CubeElement extends LitElement
                 if(!this._imageOriginalTranslate){const translate=dx||dy?`${dx}px ${dy}px`:'';if(this.style.translate!==translate)this.style.translate=translate;}
                 this._imageFrameVisible=visible;
                 this._imageAutoResolved=resolved;
-                const menu=this._menuContext && this._menuContext.honeycomb || this._autoSizedMenu;
+                const menu=this._menuContext && this._menuContext.scene || this._autoSizedMenu;
                 if(menu && menu.isConnected)menu.style.visibility=visible?'':'hidden';
                 if(Math.abs(this.size-size)<.001)return;
                 this.size=size;this._anchorRenderedSize=null;
-                this.style.setProperty('--honeycomb-persistent-size',`${size}px`);
+                this.style.setProperty('--jts-n-persistent-size',`${size}px`);
                 if(menu && menu.isConnected && !menu.closing && this.config.match_anchor_size!==false)this._resizeAutoMenu(menu,size);
                 this.requestUpdate();
             });
@@ -666,8 +666,8 @@ class CubeElement extends LitElement
 
                 const action = button.tap_action;
                 const nested = action && (
-                    action.honeycomb_nested_menu ||
-                    action.honeycomb_menu
+                    action.jts_n_nested_menu ||
+                    action.jts_n_menu
                 );
 
                 if( nested && nested.nested_expand === true )
@@ -704,7 +704,7 @@ class CubeElement extends LitElement
         delete center.menu;
         center.interactive = !!moduleMenu;
         // The standalone parent is a dashboard cube, not a Back-stack entry.
-        if (moduleMenu) center.tap_action = {action:'honeycomb-close'};
+        if (moduleMenu) center.tap_action = {action:'jts-n-close'};
         center.size = this.size;
 
         if( ! center.off )
@@ -837,7 +837,7 @@ class CubeElement extends LitElement
         this._releasePendingAction();
     }
 
-    _openHoneycombMenu(menu)
+    _openNavigationMenu(menu)
     {
         const root = this.getRootNode ? this.getRootNode() : null;
         const host = root && root.host ? root.host : null;
@@ -863,13 +863,13 @@ class CubeElement extends LitElement
             }
         }
 
-        if( context && typeof window.honeycombNG.openInContext === 'function' )
-            return window.honeycombNG.openInContext(context, menu);
+        if( context && typeof window.jefferiesNavigation.openInContext === 'function' )
+            return window.jefferiesNavigation.openInContext(context, menu);
 
-        if( typeof window.honeycombNG.open !== 'function' )
+        if( typeof window.jefferiesNavigation.open !== 'function' )
             return null;
 
-        const opened=window.honeycombNG.open(menu,this);
+        const opened=window.jefferiesNavigation.open(menu,this);
         this._ownedMenuContext=opened && opened._menuContext;
         return opened;
     }
@@ -878,7 +878,7 @@ class CubeElement extends LitElement
     {
         const menu = this._persistentMenuConfig(moduleMenu);
 
-        if( ! menu || typeof window.honeycombNG.open !== 'function' )
+        if( ! menu || typeof window.jefferiesNavigation.open !== 'function' )
             return;
 
         const rect = this.getBoundingClientRect();
@@ -900,11 +900,11 @@ class CubeElement extends LitElement
         const root = this.getRootNode();
         const owner = root && root.host;
         const isMenuItem = owner && owner._menuContext;
-        const openedMenu = this._openHoneycombMenu(menu);
+        const openedMenu = this._openNavigationMenu(menu);
         if(openedMenu && this.config.size==='auto'){
             this._autoSizedMenu=openedMenu;
             if(this._imageFrameVisible===false)openedMenu.style.visibility='hidden';
-            openedMenu.addEventListener('honeycomb-ng-closed',()=>{if(this._autoSizedMenu===openedMenu)this._autoSizedMenu=null;},{once:true});
+            openedMenu.addEventListener('jts-n-closed',()=>{if(this._autoSizedMenu===openedMenu)this._autoSizedMenu=null;},{once:true});
         }
 
         // Only dashboard launchers need to hide behind an overlay. Menu-owned
@@ -921,71 +921,71 @@ class CubeElement extends LitElement
                     this.style.visibility = '';
                 };
 
-                openedMenu.addEventListener('honeycomb-ng-closed', restore, { once: true });
+                openedMenu.addEventListener('jts-n-closed', restore, { once: true });
             }
         }
 
         return openedMenu || null;
     }
 
-    _flapBee()
+    _inspectCompass()
     {
-        if( this._beeAnimationFrame !== null )
-            cancelAnimationFrame(this._beeAnimationFrame);
-        clearTimeout(this._beeFlapTimer);
-        this._beeFlapTimer = null;
-        this._beeFlapping = false;
+        if( this._compassAnimationFrame !== null )
+            cancelAnimationFrame(this._compassAnimationFrame);
+        clearTimeout(this._compassRevealTimer);
+        this._compassRevealTimer = null;
+        this._compassRevealed = false;
         if( !this.isConnected ) return;
         this.requestUpdate();
 
-        this._beeAnimationFrame = requestAnimationFrame(() => {
-            this._beeAnimationFrame = null;
+        this._compassAnimationFrame = requestAnimationFrame(() => {
+            this._compassAnimationFrame = null;
             if( !this.isConnected ) return;
-            this._beeFlapping = true;
-            if(this._beeDebugEnabled())this._measureBeeSize();
+            this._compassRevealed = true;
+            if(this._compassDebugEnabled())this._measureCompassSize();
             this.requestUpdate();
 
-            if( this._beeFlapTimer )
-                clearTimeout(this._beeFlapTimer);
+            if( this._compassRevealTimer )
+                clearTimeout(this._compassRevealTimer);
 
-            this._beeFlapTimer = setTimeout(() => {
-                this._beeFlapping = false;
-                this._beeFlapTimer = null;
-                this._stopBeeSizeDebug();
+            this._compassRevealTimer = setTimeout(() => {
+                this._compassRevealed = false;
+                this._compassRevealTimer = null;
+                this._stopCompassSizeDebug();
                 this.requestUpdate();
-            }, bee.REVEAL_MS);
+            }, compass.REVEAL_MS);
         });
     }
 
-    _beeDebugEnabled()
+    _compassDebugEnabled()
     {
         const context=(this.getRootNode().host || {})._menuContext || this._menuContext;
         return (context && context.owner ? context.owner._sizeDebug : this.config && this.config.size_debug)===true;
     }
 
-    _measureBeeSize()
+    _measureCompassSize()
     {
         const hex=this.isConnected && this.shadowRoot && this.shadowRoot.querySelector('.hex-svg');
-        const text=bee.pixelLabel(hex ? hex.getBoundingClientRect().width : null);
-        if(text!==this._beeSizeText){this._beeSizeText=text;this.requestUpdate();}
+        const text=compass.pixelLabel(hex ? hex.getBoundingClientRect().width : null);
+        if(text!==this._compassSizeText){this._compassSizeText=text;this.requestUpdate();}
     }
 
-    _stopBeeSizeDebug()
+    _stopCompassSizeDebug()
     {
-        if(this._beeSizeFrame!==null)cancelAnimationFrame(this._beeSizeFrame);
-        this._beeSizeFrame=null;
-        if(this._beeSizeCleanup)this._beeSizeCleanup();
-        this._beeSizeCleanup=null;
+        if(this._compassSizeFrame!==null)cancelAnimationFrame(this._compassSizeFrame);
+        this._compassSizeFrame=null;
+        if(this._compassSizeCleanup)this._compassSizeCleanup();
+        this._compassSizeCleanup=null;
     }
 
-    _syncBeeSizeDebug()
+    _syncCompassSizeDebug()
     {
         const icon=this._model && this._model.icon;
-        if(!this.isConnected || !this._beeFlapping || !(icon==='' || icon==='honeycomb:bee') || !this._beeDebugEnabled()) {this._stopBeeSizeDebug();return;}
-        if(this._beeSizeCleanup)return;
+        if(!this.isConnected || !this._compassRevealed || !(icon==='' || icon==='jts-n:compass') || !this._compassDebugEnabled()) {this._stopCompassSizeDebug();return;}
+        if(this._compassSizeCleanup)return;
         const schedule=()=>{
-            if(this._beeSizeFrame!==null)return;
-            this._beeSizeFrame=requestAnimationFrame(()=>{this._beeSizeFrame=null;if(this._beeFlapping && this._beeDebugEnabled())this._measureBeeSize();});
+            if(this._compassSizeFrame!==null)return;
+            this._compassSizeFrame=requestAnimationFrame(()=>{this._compassSizeFrame=null;if(this._compassRevealed && this._compassDebugEnabled())this._measureCompassSize();});
         };
         const hex=this.shadowRoot.querySelector('.hex-svg');
         const resize=new ResizeObserver(schedule);if(hex)resize.observe(hex);
@@ -995,7 +995,7 @@ class CubeElement extends LitElement
             mutation.observe(node,{attributes:true,attributeFilter:['style','class']});
         window.addEventListener('resize',schedule);
         const viewport=window.visualViewport;if(viewport)viewport.addEventListener('resize',schedule);
-        this._beeSizeCleanup=()=>{resize.disconnect();mutation.disconnect();window.removeEventListener('resize',schedule);if(viewport)viewport.removeEventListener('resize',schedule);};
+        this._compassSizeCleanup=()=>{resize.disconnect();mutation.disconnect();window.removeEventListener('resize',schedule);if(viewport)viewport.removeEventListener('resize',schedule);};
         schedule();
     }
 
@@ -1013,9 +1013,9 @@ class CubeElement extends LitElement
         this._dispatchAction(action);
         const owner=this.getRootNode().host;
         if (owner && owner._menuContext) {
-            if (this.config.autoclose && !name.startsWith('honeycomb-') && name !== 'none' &&
-                !(action.honeycomb_menu || action.honeycomb_nested_menu))
-                window.honeycombNG.closeInContext(owner._menuContext);
+            if (this.config.autoclose && !name.startsWith('jts-n-') && name !== 'none' &&
+                !(action.jts_n_menu || action.jts_n_nested_menu))
+                window.jefferiesNavigation.closeInContext(owner._menuContext);
             else if (owner._resetIdleTimeout) owner._resetIdleTimeout();
         }
     }
@@ -1028,27 +1028,27 @@ class CubeElement extends LitElement
 
         if (typeof action === 'string') action = {action};
         const original = action;
-        if (!action.honeycomb_menu && !action.honeycomb_nested_menu && action.action !== 'honeycomb-info')
+        if (!action.jts_n_menu && !action.jts_n_nested_menu && action.action !== 'jts-n-info')
             action = this._value(action, original);
         const actionName = action.action || 'toggle';
         const context = (this.getRootNode().host || {})._menuContext || this._menuContext;
         if (context && context.info) return;
-        if(actionName==='honeycomb-hub-expand'){if(context && context.owner)context.owner._expandHub({pointerId:this._pointerId});return;}
-        if(actionName==='honeycomb-hub-collapse'){if(context && context.owner)context.owner._collapseHub();return;}
-        if (actionName === 'honeycomb-info') { window.honeycombNG.openInfoInContext(context,action.info,this); return; }
-        if ((actionName === 'honeycomb-open-nested' || actionName === 'fire-dom-event') &&
-            (action.honeycomb_nested_menu || action.honeycomb_menu)) {
-            const nested=merge({nested_expand:true,entity:this.config.entity}, action.honeycomb_nested_menu || action.honeycomb_menu);
+        if(actionName==='jts-n-hub-expand'){if(context && context.owner)context.owner._expandHub({pointerId:this._pointerId});return;}
+        if(actionName==='jts-n-hub-collapse'){if(context && context.owner)context.owner._collapseHub();return;}
+        if (actionName === 'jts-n-info') { window.jefferiesNavigation.openInfoInContext(context,action.info,this); return; }
+        if ((actionName === 'jts-n-open-nested' || actionName === 'fire-dom-event') &&
+            (action.jts_n_nested_menu || action.jts_n_menu)) {
+            const nested=merge({nested_expand:true,entity:this.config.entity}, action.jts_n_nested_menu || action.jts_n_menu);
             nested.variables=merge({},this.config.variables || {},nested.variables || {});
             // A dashboard Control has no menu scene to supply numeric size or
             // anchor. Use its existing persistent-menu pipeline for a module
             // child, preserving the child's own center/entity and real Back.
             if (!context && nested.module && nested.buttons === undefined)
                 this._openMenu(require('./core/module-menu').expandModuleMenu(nested,this.hass));
-            else this._openHoneycombMenu(nested);
+            else this._openNavigationMenu(nested);
             return;
         }
-        if (actionName === 'honeycomb-close') { window.honeycombNG.closeInContext(context); return; }
+        if (actionName === 'jts-n-close') { window.jefferiesNavigation.closeInContext(context); return; }
         if (customActionRegistry.has(actionName)) {
             const sourceConfig=this.config, sourceMenu=context && context.currentConfig;
             const sourceHost=this.getRootNode().host;
@@ -1056,11 +1056,11 @@ class CubeElement extends LitElement
             // Guard the completion as well as discovery's own checks so a late
             // async action cannot resurrect an abandoned submenu.
             const isCurrent=()=>context ? context.currentConfig===sourceMenu &&
-                context.honeycomb===sourceHost && sourceHost.isConnected && !sourceHost.closing :
+                context.scene===sourceHost && sourceHost.isConnected && !sourceHost.closing :
                 this.isConnected && this.config===sourceConfig;
             customActionRegistry.handle(actionName,{hass:this.hass,actionConfig:action,
-                openNested:config=>isCurrent() ? this._openHoneycombMenu(config) : null,
-                getHass:()=>context && context.honeycomb ? context.honeycomb.hass : this.hass,
+                openNested:config=>isCurrent() ? this._openNavigationMenu(config) : null,
+                getHass:()=>context && context.scene ? context.scene.hass : this.hass,
                 isCurrent,
                 requestScope:context || this,
                 entity:this.config.entity,itemConfig:this.config,menuConfig:(this.getRootNode().host || {}).config});
@@ -1071,28 +1071,28 @@ class CubeElement extends LitElement
         if( actionName === 'none' )
             return;
 
-        if( actionName === 'honeycomb-open-menu' )
+        if( actionName === 'jts-n-open-menu' )
         {
             this._openMenu();
             return;
         }
 
-        if( actionName === 'honeycomb-bee-flap' )
+        if( actionName === 'jts-n-compass-inspect' )
         {
-            this._flapBee();
+            this._inspectCompass();
             return;
         }
 
-        if( actionName === 'honeycomb-back' )
+        if( actionName === 'jts-n-back' )
         {
             const root = this.getRootNode ? this.getRootNode() : null;
             const host = root && root.host ? root.host : null;
             const context = host && host._menuContext ? host._menuContext : null;
 
-            if( context && typeof window.honeycombNG.backInContext === 'function' )
-                window.honeycombNG.backInContext(context);
-            else if( typeof window.honeycombNG.back === 'function' )
-                window.honeycombNG.back();
+            if( context && typeof window.jefferiesNavigation.backInContext === 'function' )
+                window.jefferiesNavigation.backInContext(context);
+            else if( typeof window.jefferiesNavigation.back === 'function' )
+                window.jefferiesNavigation.back();
             return;
         }
 
@@ -1100,7 +1100,7 @@ class CubeElement extends LitElement
             history.pushState(null,'',action.navigation_path); fireEvent(window,'location-changed',{replace:false}); return;
         }
         if (actionName === 'url') { window.open(action.url_path,'_blank','noopener'); return; }
-        if (actionName === 'fire-dom-event') { fireEvent(this,'ll-custom', action.honeycomb_menu ? {...action,honeycomb_ng_menu:action.honeycomb_menu,honeycomb_menu:undefined} : action); return; }
+        if (actionName === 'fire-dom-event') { fireEvent(this,'ll-custom', action); return; }
         if( actionName === 'toggle' )
         {
             if (!this.config.entity) return;
@@ -1182,13 +1182,13 @@ class CubeElement extends LitElement
         const artwork = Object.fromEntries(Object.entries(m.card).filter(([key])=>
             key.startsWith('background-') && key !== 'background-color'));
         const mediaBackground=['sonos','media','sonos-join'].includes(this.config.mode) && !!artwork['background-image'];
-        const showBeeVersion=(m.icon === '' || m.icon === 'honeycomb:bee') && this._beeFlapping;
-        const showBeeSize=showBeeVersion && this._beeDebugEnabled();
-        const versionFont=bee.versionFont();
+        const showCompassVersion=(m.icon === '' || m.icon === 'jts-n:compass') && this._compassRevealed;
+        const showCompassSize=showCompassVersion && this._compassDebugEnabled();
+        const versionFont=compass.versionFont();
         const external = this.config.custom_fields || (this.config.type &&
-            !['custom:button-card','custom:honeycomb-persistent-control','custom:honeycomb-persistent-hub'].includes(this.config.type));
+            !['custom:button-card','custom:navigation-control','custom:navigation-hub'].includes(this.config.type));
         this._externalContent = !!external;
-        return html`<div class="persistent-center" style="--honeycomb-persistent-size:${this.size}px;--honeycomb-persistent-foreground:${m.foreground}">
+        return html`<div class="persistent-center" style="--jts-n-persistent-size:${this.size}px;--jts-n-persistent-foreground:${m.foreground}">
             <svg class="hex-svg" viewBox="0 0 100 115.47" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
                 ${m.fill.type==='radial' ? svg`<defs><radialGradient id=${this._fillId} cx="50%" cy="50%" r="50%">
                     <stop offset="0%" stop-color=${m.fill.center}></stop><stop offset="100%" stop-color=${m.fill.edge}></stop>
@@ -1211,32 +1211,32 @@ class CubeElement extends LitElement
                     @error=${()=>{if(this._model.artwork && this._model.artwork.key===m.artwork.key){this._failedArtworkKey=m.artwork.key;this._updatePresentation();}}}>` : ''}
             </div>
             ${external ? html`<div class="external-content"></div>` : html`
-            <div class="content ${showBeeVersion ? 'with-bee-version' : ''} ${showBeeSize ? 'with-bee-size' : ''} ${m.artwork || mediaBackground ? 'has-artwork' : ''} ${m.secondary ? 'has-secondary' : ''} ${m.name ? 'has-primary' : ''} ${m.labelLayout === 'two-row' ? 'two-row' : ''}"
+            <div class="content ${showCompassVersion ? 'with-compass-version' : ''} ${showCompassSize ? 'with-compass-size' : ''} ${m.artwork || mediaBackground ? 'has-artwork' : ''} ${m.secondary ? 'has-secondary' : ''} ${m.name ? 'has-primary' : ''} ${m.labelLayout === 'two-row' ? 'two-row' : ''}"
                 style=${styleMap(Object.keys(m.grid).length ? {display:'grid',...m.grid} : {})}>
-                ${m.icon === '' || m.icon === 'honeycomb:bee' ? html`<img class="bee-icon ${this._beeFlapping?'flap':''}" src=${bee.asset} alt="" aria-hidden="true">`
+                ${m.icon === '' || m.icon === 'jts-n:compass' ? html`<img class="compass-icon ${this._compassRevealed?'calibrating':''}" src=${compass.asset} alt="" aria-hidden="true">`
                     : m.iconBadge ? html`<div class="icon-with-badge"><ha-icon .icon=${m.icon}></ha-icon><span class="power-badge">${m.iconBadge}</span></div>`
                     : m.icon ? html`<ha-icon style=${styleMap({'grid-area':Object.keys(m.grid).length?'i':undefined,...m.iconStyle})} .icon=${m.icon}></ha-icon>` : ''}
-                ${showBeeVersion ? html`<span class="bee-version" role="status" aria-live="polite" aria-label=${showBeeSize ? `${beeVersion.text} ${this._beeSizeText}` : beeVersion.text}
-                    style=${styleMap({fontSize:`calc(var(--honeycomb-persistent-size,82px)*${versionFont})`})}><span>${beeVersion.base}</span>${beeVersion.stage ? html` <span>${beeVersion.stage}</span>` : ''}${showBeeSize ? html`<span class="bee-size">${this._beeSizeText}</span>` : ''}</span>` : ''}
+                ${showCompassVersion ? html`<span class="compass-version" role="status" aria-live="polite" aria-label=${showCompassSize ? `${compassVersion.text} ${this._compassSizeText}` : compassVersion.text}
+                    style=${styleMap({fontSize:`calc(var(--jts-n-persistent-size,82px)*${versionFont})`})}><span>${compassVersion.base}</span>${compassVersion.stage ? html` <span>${compassVersion.stage}</span>` : ''}${showCompassSize ? html`<span class="compass-size">${this._compassSizeText}</span>` : ''}</span>` : ''}
                 ${m.name ? html`<div class="primary" style=${styleMap({'grid-area':Object.keys(m.grid).length?'n':undefined,...m.nameStyle})}>${m.name}</div>` : ''}
                 ${m.secondary ? html`<div class="secondary" style=${styleMap({'grid-area':Object.keys(m.grid).length?'l':undefined,...m.labelStyle})}>${m.secondary}</div>` : ''}
                 ${m.tertiary ? html`<div class="tertiary">${m.tertiary}</div>` : ''}
             </div>`}
             ${this.config.interactive !== false && !this.config.disabled ? html`
-            <div class="interaction-surface" role="button" tabindex=${m.disabled ? -1 : 0} aria-disabled=${m.disabled ? "true" : "false"} title=${m.ariaLabel || ''} aria-label=${bee.isBee(this.config) ? bee.accessible(this.config,m.ariaLabel || m.name) : this.config.tap_action && this.config.tap_action.action==='honeycomb-hub-collapse' ? 'Back / Collapse Hub' : this.config.tap_action && this.config.tap_action.action==='honeycomb-back' ? 'Back' : m.ariaLabel || m.name || this._value(this.config.name,'') || String(m.secondary || this.config.entity || 'Honeycomb')}
+            <div class="interaction-surface" role="button" tabindex=${m.disabled ? -1 : 0} aria-disabled=${m.disabled ? "true" : "false"} title=${m.ariaLabel || ''} aria-label=${compass.isCompass(this.config) ? compass.accessible(this.config,m.ariaLabel || m.name) : this.config.tap_action && this.config.tap_action.action==='jts-n-hub-collapse' ? 'Back / Collapse Hub' : this.config.tap_action && this.config.tap_action.action==='jts-n-back' ? 'Back' : m.ariaLabel || m.name || this._value(this.config.name,'') || String(m.secondary || this.config.entity || 'Jefferies Navigation')}
                 @focus=${e=>this.toggleAttribute('keyboard-focus',!this._pointerFocus && e.currentTarget.matches(':focus-visible'))}
                 @blur=${()=>{this._pointerFocus=false;this.removeAttribute('keyboard-focus');}}
                 @keydown=${e=>{
                     this._pointerFocus=false;this.setAttribute('keyboard-focus','');
-                    if(bee.isBee(this.config) && e.altKey && e.key.toLowerCase()==='v'){e.preventDefault();this._executeAction({action:'honeycomb-bee-flap'});return;}
-                    const beeVersionHold=bee.isBee(this.config) && this.config.hold_action && this.config.hold_action.action==='honeycomb-bee-flap';
-                    const hubExpand=this.config.hold_action && this.config.hold_action.action==='honeycomb-hub-expand';
-                    const zoom=(this.config.hold_action && (['honeycomb-light-color-zoom','honeycomb-light-kelvin-zoom'].includes(this.config.hold_action.action) ||
-                            (this.config.hold_action.honeycomb_nested_menu || {})._light_palette_request === 'opposite')) ||
-                        (this.config.tap_action && this.config.tap_action.action==='honeycomb-light-kelvin-apply');
-                    if (zoom && e.key==='Escape') {e.preventDefault();this._dispatchAction({action:'honeycomb-close'});return;}
+                    if(compass.isCompass(this.config) && e.altKey && e.key.toLowerCase()==='v'){e.preventDefault();this._executeAction({action:'jts-n-compass-inspect'});return;}
+                    const compassVersionHold=compass.isCompass(this.config) && this.config.hold_action && this.config.hold_action.action==='jts-n-compass-inspect';
+                    const hubExpand=this.config.hold_action && this.config.hold_action.action==='jts-n-hub-expand';
+                    const zoom=(this.config.hold_action && (['jts-n-light-color-zoom','jts-n-light-kelvin-zoom'].includes(this.config.hold_action.action) ||
+                            (this.config.hold_action.jts_n_nested_menu || {})._light_palette_request === 'opposite')) ||
+                        (this.config.tap_action && this.config.tap_action.action==='jts-n-light-kelvin-apply');
+                    if (zoom && e.key==='Escape') {e.preventDefault();this._dispatchAction({action:'jts-n-close'});return;}
                     if(!m.disabled && !e.repeat && ['Enter',' '].includes(e.key)) {
-                        e.preventDefault();this._executeAction((zoom || hubExpand || beeVersionHold) && e.shiftKey ? this.config.hold_action : this.config.tap_action || {action:'toggle'});
+                        e.preventDefault();this._executeAction((zoom || hubExpand || compassVersionHold) && e.shiftKey ? this.config.hold_action : this.config.tap_action || {action:'toggle'});
                     }
                 }}
                 @pointerdown=${e=>{this._pointerFocus=true;this.removeAttribute('keyboard-focus');this._handlePointerDown(e);}} @pointermove=${this._handlePointerMove}
@@ -1247,11 +1247,11 @@ class CubeElement extends LitElement
 
     updated()
     {
-        this._syncBeeSizeDebug();
+        this._syncCompassSizeDebug();
         if(this._waveCleanup)energyWave.sync(this);
         const target = this.shadowRoot.querySelector('.external-content');
         if (target && !this._contentCard) {
-            const type=this.config.type && !['custom:honeycomb-persistent-control','custom:honeycomb-persistent-hub'].includes(this.config.type) ? this.config.type : 'custom:button-card';
+            const type=this.config.type && !['custom:navigation-control','custom:navigation-hub'].includes(this.config.type) ? this.config.type : 'custom:button-card';
             this._contentCard = createCard({...this.config,type,
                 tap_action:{action:'none'},hold_action:{action:'none'},double_tap_action:{action:'none'}});
             target.append(this._contentCard);

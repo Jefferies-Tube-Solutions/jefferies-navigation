@@ -11,15 +11,15 @@ function build(outDir) {
         throw new Error('Commit source changes before build:dev so the embedded source commit is exact.');
     const metadata=localMetadata(pkg.version,{development:true}),destination=path.resolve(outDir);
     if(destination===root || destination.startsWith(root+path.sep))throw new Error('Use an output directory outside the Git worktree.');
-    const temp=fs.mkdtempSync(path.join(os.tmpdir(),'honeycomb-dev-build-'));
+    const temp=fs.mkdtempSync(path.join(os.tmpdir(),'jts-n-dev-build-'));
     try {
-        execFileSync(process.execPath,[path.join(__dirname,'generate-bee-asset.js')],{stdio:'inherit'});
-        execFileSync(process.execPath,['--openssl-legacy-provider',require.resolve('webpack/bin/webpack.js'),'--output-path',temp],{stdio:'inherit',env:{...process.env,HONEYCOMB_DEVELOPMENT_BUILD:'1'}});
+        execFileSync(process.execPath,[path.join(__dirname,'generate-compass-asset.js')],{stdio:'inherit'});
+        execFileSync(process.execPath,['--openssl-legacy-provider',require.resolve('webpack/bin/webpack.js'),'--output-path',temp],{stdio:'inherit',env:{...process.env,JTS_N_DEVELOPMENT_BUILD:'1'}});
         if(JSON.stringify(localMetadata(pkg.version,{development:true}))!==JSON.stringify(metadata))
             throw new Error('Source changed during development build; commit and rebuild.');
-        const bytes=fs.readFileSync(path.join(temp,'honeycomb-menu-ng.js'));
+        const bytes=fs.readFileSync(path.join(temp,'jefferies-navigation.js'));
         const sha256=crypto.createHash('sha256').update(bytes).digest('hex');
-        const file=`honeycomb-build-${sha256}.js`;
+        const file=`jts-n-build-${sha256}.js`;
         const loader=fs.readFileSync(path.join(__dirname,'dev-loader.js'));
         const manifest={schema:1,version:metadata.version,commit:metadata.commit,file,sha256,bytes:bytes.length,loader_sha256:crypto.createHash('sha256').update(loader).digest('hex')};
         fs.mkdirSync(destination,{recursive:true});
@@ -27,7 +27,7 @@ function build(outDir) {
         if(fs.existsSync(bundlePath)) {
             if(!fs.readFileSync(bundlePath).equals(bytes))throw new Error('Refusing to overwrite a different immutable development bundle.');
         } else fs.writeFileSync(bundlePath,bytes,{flag:'wx'});
-        fs.copyFileSync(path.join(__dirname,'dev-loader.js'),path.join(destination,'honeycomb-menu-ng.js'));
+        fs.copyFileSync(path.join(__dirname,'dev-loader.js'),path.join(destination,'jefferies-navigation.js'));
         fs.writeFileSync(path.join(destination,'SHA256SUMS.txt'),`${sha256}  ${file}\n`);
         fs.copyFileSync(path.join(root,'docs/DEVELOPMENT_BUILDS.md'),path.join(destination,'INSTALL.md'));
         fs.copyFileSync(path.join(__dirname,'install-dev.js'),path.join(destination,'install-dev.cjs'));
@@ -44,6 +44,6 @@ function build(outDir) {
 module.exports={build};
 if(require.main===module) {
     const args=process.argv.slice(2);
-    if(args.length!==2 || args[0]!=='--out-dir')throw new Error('Usage: npm run build:dev -- --out-dir /tmp/honeycomb-dev');
+    if(args.length!==2 || args[0]!=='--out-dir')throw new Error('Usage: npm run build:dev -- --out-dir /tmp/jts-n-dev');
     build(args[1]);
 }

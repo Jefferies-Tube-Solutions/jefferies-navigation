@@ -1,5 +1,5 @@
 # Synthetic demonstration only. No physical charging commands.
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 size: 82
 logo: auto
 items:
@@ -8,7 +8,7 @@ items:
   name: Info
   icon: mdi:information-outline
   tap_action:
-    action: honeycomb-info
+    action: jts-n-info
     info:
       mode: stack
       title: Vehicle A · charging plan

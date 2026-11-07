@@ -4,7 +4,7 @@
  * The Hub must decide how a base item is rendered from the module contract,
  * not from incidental/private properties on a generated launcher object.
  * This is especially important for physical slot 0 because classic
- * center_button and native honeycomb-persistent-control have different
+ * center_button and native navigation-control have different
  * behavior and presentation.
  */
 

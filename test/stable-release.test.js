@@ -8,22 +8,22 @@ const {validateArtifact,isStableVersion}=require('../scripts/check-release');
 const stable=require('../scripts/stable-release');
 const {assertPublication,assertAssets,assertRetained,context,verify,inventory,newDraft,filesFor,publish,digest}=stable;
 const {banner,withBanner}=require('../scripts/stable-approval');
-const SHA='a'.repeat(40),BETA='b'.repeat(40),TREE='c'.repeat(40),REPO='example/honeycomb';
-const RAW=Buffer.from(' '.repeat(11000)+'\n"honeycomb-persistent-hub";'),BUNDLE=Buffer.concat([Buffer.from(banner('1.7.1')),RAW]);
-const ART={version:'1.7.1',tag:'v1.7.1',sha256:digest(BUNDLE),bytes:BUNDLE.length,filename:'honeycomb-menu-ng.js'};
+const SHA='a'.repeat(40),BETA='b'.repeat(40),TREE='c'.repeat(40),REPO='example/scene';
+const RAW=Buffer.from(' '.repeat(11000)+'\n"navigation-hub";'),BUNDLE=Buffer.concat([Buffer.from(banner('1.7.1')),RAW]);
+const ART={version:'1.7.1',tag:'v1.7.1',sha256:digest(BUNDLE),bytes:BUNDLE.length,filename:'jefferies-navigation.js'};
 const HACS={filename:ART.filename,content_in_root:true},PKG={version:ART.version,scripts:{test:'node test.js'}};
 const APPROVAL={version:ART.version,issue:`https://github.com/${REPO}/issues/102`,approved_beta:{tag:'v1.7.1-beta.8',commit:BETA,src_tree:TREE,sha256:digest(RAW),bytes:RAW.length},allowed_bundle_change:'version-banner-v1'};
 const ENV={GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF:'refs/heads/master',GITHUB_SHA:SHA,GITHUB_REPOSITORY:REPO,EXPECTED_COMMIT:SHA,RELEASE_RETENTION_ENABLED:'false',STABLE_PUBLICATION_AUTHORIZED:'true'};
 const RUN={id:11,run_attempt:1,path:'.github/workflows/build.yml',head_sha:SHA,head_branch:'master',head_repository:{full_name:REPO},event:'push',status:'completed',conclusion:'success'};
 const META={...ART,repository:REPO,branch:'master',commit:SHA,approval:APPROVAL,ci:{push:{id:11,attempt:1}}};
-const BASE_CONFIG="const path = require('path');\nmodule.exports={\n    entry: './src/honeycomb-menu.js',\n};\n";
-const baseFiles={'package.json':JSON.stringify({...PKG,version:'1.7.1-beta.8'}),'package-lock.json':JSON.stringify({version:'1.7.1-beta.8',dependencies:{}}),'webpack.config.js':BASE_CONFIG,'honeycomb-menu-ng.js':RAW};
+const BASE_CONFIG="const path = require('path');\nmodule.exports={\n    entry: './src/navigation-menu.js',\n};\n";
+const baseFiles={'package.json':JSON.stringify({...PKG,version:'1.7.1-beta.8'}),'package-lock.json':JSON.stringify({version:'1.7.1-beta.8',dependencies:{}}),'webpack.config.js':BASE_CONFIG,'jefferies-navigation.js':RAW};
 const read=fs.readFileSync.bind(fs);
 function fixture(t){
     const output=fs.mkdtempSync(path.join(os.tmpdir(),'stable-release-'));t.after(()=>fs.rmSync(output,{recursive:true,force:true}));
     const old={id:1,tag_name:'v1.7.0',draft:false,prerelease:false,published_at:'2026-01-01T00:00:00Z',assets:[]};
     const state={output,head:SHA,tag:null,release:null,old:[old],runs:[structuredClone(RUN)],jobs:[{name:'build',status:'completed',conclusion:'success'},{name:'workflow-lint',status:'completed',conclusion:'success'}],hook:()=>undefined,calls:[]};
-    const fake={...filesFor(META,BUNDLE),'release-approval.json':JSON.stringify(APPROVAL),'release.json':JSON.stringify({title:'Honeycomb NG v1.7.1 — Stable',prerelease:false}),
+    const fake={...filesFor(META,BUNDLE),'release-approval.json':JSON.stringify(APPROVAL),'release.json':JSON.stringify({title:'Jefferies Navigation v1.7.1 — Stable',prerelease:false}),
         'RELEASE_NOTES.md':'# v1.7.1 — Stable\nOwner approved synthetic notes.\n','package.json':JSON.stringify(PKG),'package-lock.json':JSON.stringify({version:'1.7.1',dependencies:{}}),'webpack.config.js':withBanner(BASE_CONFIG)};
     t.mock.method(fs,'readFileSync',(file,...args)=>typeof file==='string' && file in fake?fake[file]:read(file,...args));
     for(const [name,bytes]of Object.entries(filesFor(META,BUNDLE)))fs.writeFileSync(path.join(output,name),bytes);
@@ -59,13 +59,13 @@ function fixture(t){
     return{io,state,fake,env:{...ENV},expected:structuredClone(META)};
 }
 for(const version of ['0.0.0','1.7.0','1.7.1','1.8.0','2.0.0','23.12.456'])test(`canonical stable SemVer ${version} accepted`,()=>{
-    assert.equal(isStableVersion(version),true);assert.doesNotThrow(()=>validateArtifact({version},{title:`Honeycomb NG v${version} — Stable`,prerelease:false},HACS,BUNDLE,{stable:true}));
+    assert.equal(isStableVersion(version),true);assert.doesNotThrow(()=>validateArtifact({version},{title:`Jefferies Navigation v${version} — Stable`,prerelease:false},HACS,BUNDLE,{stable:true}));
 });
-for(const version of ['v1.7.1','1.7','1.07.1','1.7.1-beta.8','1.7.1-alpha.1','1.7.1-rc.1','9007199254740992.1.1'])test(`stable rejects ${version}`,()=>assert.throws(()=>validateArtifact({version},{title:`Honeycomb NG v${version} — Stable`,prerelease:false},HACS,BUNDLE,{stable:true})));
+for(const version of ['v1.7.1','1.7','1.07.1','1.7.1-beta.8','1.7.1-alpha.1','1.7.1-rc.1','9007199254740992.1.1'])test(`stable rejects ${version}`,()=>assert.throws(()=>validateArtifact({version},{title:`Jefferies Navigation v${version} — Stable`,prerelease:false},HACS,BUNDLE,{stable:true})));
 test('artifact rejects flags/title/HACS/syntax corruption and beta stable attempts',()=>{
-    for(const [release,hacs,bytes]of [[{prerelease:true,title:'Honeycomb NG v1.7.1 — Stable'},HACS,BUNDLE],[{prerelease:false,title:'wrong'},HACS,BUNDLE],[{prerelease:false,title:'Honeycomb NG v1.7.1 — Stable'},{...HACS,filename:'wrong'},BUNDLE],[{prerelease:false,title:'Honeycomb NG v1.7.1 — Stable'},HACS,Buffer.from('invalid')]])
+    for(const [release,hacs,bytes]of [[{prerelease:true,title:'Jefferies Navigation v1.7.1 — Stable'},HACS,BUNDLE],[{prerelease:false,title:'wrong'},HACS,BUNDLE],[{prerelease:false,title:'Jefferies Navigation v1.7.1 — Stable'},{...HACS,filename:'wrong'},BUNDLE],[{prerelease:false,title:'Jefferies Navigation v1.7.1 — Stable'},HACS,Buffer.from('invalid')]])
         assert.throws(()=>validateArtifact(PKG,release,hacs,bytes,{stable:true}));
-    assert.throws(()=>validateArtifact({version:'1.7.1-beta.8'},{title:'Honeycomb NG v1.7.1-beta.8',prerelease:true},HACS,BUNDLE,{stable:true}));
+    assert.throws(()=>validateArtifact({version:'1.7.1-beta.8'},{title:'Jefferies Navigation v1.7.1-beta.8',prerelease:true},HACS,BUNDLE,{stable:true}));
 });
 for(const [key,value]of [['GITHUB_EVENT_NAME','push'],['GITHUB_REF','refs/heads/release/test'],['GITHUB_SHA',BETA],['EXPECTED_COMMIT','master'],['RELEASE_RETENTION_ENABLED',''],['RELEASE_RETENTION_ENABLED','true'],['RELEASE_RETENTION_ENABLED','False']])test(`manual context rejects ${key}=${value}`,()=>assert.throws(()=>context({...ENV,[key]:value})));
 test('valid source/public beta/latest master CI produces complete pinned provenance',t=>{const {io,env}=fixture(t);assert.deepEqual(verify(io,env,ART),META);});
@@ -80,11 +80,13 @@ test('pinned CI attempt and public beta flags/checksum/tag cannot change',t=>{
 test('new stable publication verifies staged/downloaded bytes, repeats CI and preserves all inventory',async t=>{
     const {io,state,env,expected}=fixture(t);const release=await publish(io,expected,state.output,env,ART);
     assert.equal(release.draft,false);assert.equal(release.prerelease,false);assert.equal(state.tag,SHA);
+    const create=state.calls.find(call=>call[0]==='gh'&&call[2]==='create');
+    assert.equal(fs.readFileSync(create[create.indexOf('--notes-file')+1],'utf8'),'Owner approved synthetic notes.\n');
     assert.ok(state.calls.findIndex(c=>c[0]==='PATCH')>state.calls.findIndex(c=>c[0]==='gh'&&c[2]==='download'));
     assert.equal(state.calls.filter(c=>c[0]==='GET'&&c[1]==='actions/runs/11').length,2);
     assert.ok(!state.calls.some(c=>c[0]==='DELETE'||c.includes('--force')));
 });
-for(const reason of ['auth','existing-tag','existing-release','newer-stable','unknown-inventory','bad-notes','runtime','staged'])test(`prepublication ${reason} blocks without creating tag/draft`,async t=>{
+for(const reason of ['auth','existing-tag','existing-release','newer-stable','unknown-inventory','bad-notes','empty-notes','runtime','staged'])test(`prepublication ${reason} blocks without creating tag/draft`,async t=>{
     const {io,state,env,expected,fake}=fixture(t);
     if(reason==='auth')env.STABLE_PUBLICATION_AUTHORIZED='false';
     if(reason==='existing-tag')state.tag=SHA;
@@ -92,6 +94,7 @@ for(const reason of ['auth','existing-tag','existing-release','newer-stable','un
     if(reason==='newer-stable')state.old.push({...state.old[0],id:9,tag_name:'v2.0.0'});
     if(reason==='unknown-inventory')state.old.push({...state.old[0],id:9,tag_name:'unknown'});
     if(reason==='bad-notes')fake['RELEASE_NOTES.md']='# v1.7.0 — Stable\nwrong';
+    if(reason==='empty-notes')fake['RELEASE_NOTES.md']='# v1.7.1 — Stable\n  \n';
     if(reason==='runtime')state.hook=(op,args)=>op==='git'&&args[0]==='diff'?'unexpected runtime diff':undefined;
     if(reason==='staged')fs.writeFileSync(path.join(state.output,'SHA256SUMS.txt'),'corrupt');
     await assert.rejects(publish(io,expected,state.output,env,ART));assert.equal(state.release,null);
@@ -131,7 +134,7 @@ test('inventory preservation checks existing metadata, drafts and asset digests'
 });
 test('workflow is master-only, exact-source verified, explicitly authorized and always read-only retention',()=>{
     const text=fs.readFileSync('.github/workflows/stable-release.yml','utf8');
-    for(const expected of ['github.ref == \'refs/heads/master\'','STABLE_PUBLICATION_AUTHORIZED: ${{ inputs.publish }}','dry_run_only: true','test "$RELEASE_RETENTION_ENABLED" = false','cmp honeycomb-menu-ng.js','node scripts/stable-release.js'])assert.ok(text.includes(expected),expected);
+    for(const expected of ['github.ref == \'refs/heads/master\'','STABLE_PUBLICATION_AUTHORIZED: ${{ inputs.publish }}','dry_run_only: true','test "$RELEASE_RETENTION_ENABLED" = false','cmp jefferies-navigation.js','node scripts/stable-release.js'])assert.ok(text.includes(expected),expected);
     for(const banned of ['7706859016872ee95bde4299b10a07c072fa38b6','--status success','/actions/variables/','--force','gh release delete'])assert.ok(!text.includes(banned));
 });
 

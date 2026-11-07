@@ -1,7 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const g=require('../src/core/expanded-layout');
 const {displayedRect}=require('../src/core/image-sizing');
-const bee=require('../src/core/bee');
+const compass=require('../src/core/compass');
 const layout=require('../src/core/layout');
 const viewport={left:16,right:374,top:16,bottom:828};
 const two={left:-1,right:.5,top:-1.44235,bottom:.57735};
@@ -79,9 +79,9 @@ test('root planning uses all 19 shared physical coordinates but never creates or
  for(let i=0;i<18;i++) { const p=layout.buttonPosition(i,{inner:true,outer:true,radius:2});assert.ok(p.x-center.x-.5>=f.left);assert.ok(p.y-center.y+g.HEIGHT/2<=f.bottom); }
  const beyond={left:-5,right:4,top:-4,bottom:4};assert.deepEqual(g.workingFootprint(beyond),beyond);
 });
-test('one Bee preset keeps asset, default paint and live build version while contextual action changes',()=>{
- const normal=bee.descriptor(),back=bee.descriptor({}, {collapse:true});assert.deepEqual(normal.colors,back.colors);assert.equal(normal.tap_action.action,'honeycomb-bee-flap');assert.equal(back.tap_action.action,'honeycomb-hub-collapse');assert.equal(back.hold_action.action,'honeycomb-bee-flap');assert.equal(bee.asset,require('../src/brand/bee.generated').HONEYCOMB_BEE_PNG);assert.equal(typeof bee.version.text,'string');assert.ok(bee.REVEAL_MS>=3000);
- const explicit=bee.descriptor({colors:{center:'#123456'},border:{inner_width:7}});assert.equal(explicit.colors.center,'#123456');assert.equal(explicit.colors.fill_gradient,false);assert.equal(explicit.border.inner_width,7);assert.equal(bee.descriptor({background:'#123456'}).colors.fill_gradient,false);assert.equal(bee.descriptor({styles:{card:[{'background-color':'#123456'}]}}).colors.fill_gradient,false);
+test('one Compass preset keeps asset, default paint and live build version while contextual action changes',()=>{
+ const normal=compass.descriptor(),back=compass.descriptor({}, {collapse:true});assert.deepEqual(normal.colors,back.colors);assert.equal(normal.tap_action.action,'jts-n-compass-inspect');assert.equal(back.tap_action.action,'jts-n-hub-collapse');assert.equal(back.hold_action.action,'jts-n-compass-inspect');assert.equal(compass.asset,require('../src/brand/compass.generated').JTS_N_COMPASS_PNG);assert.equal(typeof compass.version.text,'string');assert.ok(compass.REVEAL_MS>=3000);
+ const explicit=compass.descriptor({colors:{center:'#123456'},border:{inner_width:7}});assert.equal(explicit.colors.center,'#123456');assert.equal(explicit.colors.fill_gradient,false);assert.equal(explicit.border.inner_width,7);assert.equal(compass.descriptor({background:'#123456'}).colors.fill_gradient,false);assert.equal(compass.descriptor({styles:{card:[{'background-color':'#123456'}]}}).colors.fill_gradient,false);
 });
 test('small-screen free canvas fits actual four-cube Hub without shrinking or requiring 19 phantom cubes',()=>{
  const f={left:-1.5,right:1,top:-1.44235,bottom:.57735},image={left:0,right:390,top:0,bottom:330},origin={x:195,y:165};

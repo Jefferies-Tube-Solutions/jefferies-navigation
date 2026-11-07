@@ -9,7 +9,7 @@ const {validateApproval,verifyApprovedSource}=require('./stable-approval');
 const {parseVersion,classify,compareCore,fingerprint}=require('./release-retention');
 const beta=require('./beta-release');
 const {digest}=beta;
-const ASSETS=['honeycomb-menu-ng.js','SHA256SUMS.txt','release-provenance.json'];
+const ASSETS=['jefferies-navigation.js','SHA256SUMS.txt','release-provenance.json'];
 function validateInventory(records) {
     assert.ok(Array.isArray(records),'Incomplete release inventory');
     assert.ok(records.every(r=>r && Number.isSafeInteger(r.id) && r.id>0 && Array.isArray(r.assets)),'Invalid release inventory');
@@ -120,14 +120,16 @@ async function publish(io,expected,output,env,artifact) {
     for(const name of ASSETS)assert.deepEqual(fs.readFileSync(path.join(output,name)),prepared[name],`Verified artifact ${name} changed`);
     assert.deepEqual(verify(io,env,artifact),expected,'Tested provenance changed');
     const {before,stable}=inventory(io,expected);
-    let notes=fs.readFileSync('RELEASE_NOTES.md','utf8').split('\n---\n')[0];
-    assert.ok(notes.startsWith(`# v${artifact.version} — Stable\n`),'Stable release notes/version mismatch');
-    assert.equal(JSON.parse(fs.readFileSync('release.json')).title,`Honeycomb NG ${expected.tag} — Stable`);
-    notes=notes.replace(/\]\((docs\/[^)]+)\)/g,(_,file)=>`](https://github.com/${expected.repository}/blob/${expected.tag}/${file})`);
-    notes+=`\n\nTested master commit: \`${expected.commit}\`. Approved beta: \`${expected.approval.approved_beta.tag}\` at \`${expected.approval.approved_beta.commit}\`.\nBundle SHA-256: \`${expected.sha256}\` (${expected.bytes} bytes).\nValidated [master CI](https://github.com/${expected.repository}/actions/runs/${expected.ci.push.id}).\n`;
-    const noteFile=path.join(output,'release-notes.md');fs.writeFileSync(noteFile,notes);
+    const releaseNotes=fs.readFileSync('RELEASE_NOTES.md','utf8').split('\n---\n')[0];
+    const heading=`# v${artifact.version} — Stable\n`;
+    assert.ok(releaseNotes.startsWith(heading),'Stable release notes/version mismatch');
+    assert.equal(JSON.parse(fs.readFileSync('release.json')).title,`Jefferies Navigation ${expected.tag} — Stable`);
+    const body=releaseNotes.slice(heading.length).trim();
+    assert.ok(body,'Approved stable release notes required');
+    const notes=body.replace(/\]\((docs\/[^)]+)\)/g,(_,file)=>`](https://github.com/${expected.repository}/blob/${expected.tag}/${file})`);
+    const noteFile = path.join(output,'release-notes.md');fs.writeFileSync(noteFile,notes+'\n');
     io.api('git/refs','POST',{ref:`refs/tags/${expected.tag}`,sha:expected.commit});verifyTag(io,expected.tag,expected.commit);
-    io.gh(['release','create',expected.tag,'--verify-tag','--target',expected.commit,'--draft','--latest=false','--title',`Honeycomb NG ${expected.tag} — Stable`,
+    io.gh(['release','create',expected.tag,'--verify-tag','--target',expected.commit,'--draft','--latest=false','--title',`Jefferies Navigation ${expected.tag} — Stable`,
         '--notes-file',noteFile,...ASSETS.map(name=>path.join(output,name))]);
     let release=await newDraft(io,expected);
     const dir=path.join(output,'downloaded');fs.mkdirSync(dir,{recursive:true});

@@ -33,7 +33,7 @@ function context(hass, config)
     return {connection, coordinator, map, key};
 }
 
-// One provider per loaded NG bundle/tab. Connection identity isolates HA sites,
+// One provider per loaded navigation bundle/tab. Connection identity isolates HA sites,
 // users and sessions. No storage, service calls, synthetic HA states or polling.
 function createProvider({now = () => Date.now(), ttl = 300000, timeout = 8000, debounce = 120,
     negativeTtl = 60000, maxContexts = 32, maxRequests = 2,

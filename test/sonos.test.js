@@ -21,12 +21,12 @@ test('Hub Sonos, legacy media and standalone Sonos compile identical slots and h
     for (const menu of menus) {
         assert.deepEqual(menu.buttons.map(b=>b.slot),[1,2,3,4,5,6]);
         assert.equal(menu.buttons[0].name,'Radio');
-        assert.equal(menu.buttons[0].tap_action.action,'honeycomb-open-nested');
+        assert.equal(menu.buttons[0].tap_action.action,'jts-n-open-nested');
         assert.equal(menu.buttons[1].tap_action.perform_action,'media_player.media_play_pause');
         assert.equal(menu.buttons[2].tap_action.sonos_item.toggle_member_script,script);
         assert.equal(menu.buttons[3].name,'Sleep');
-        assert.equal(menu.buttons[3].tap_action.action,'honeycomb-open-nested');
-        assert.deepEqual(menu.buttons[3].tap_action.honeycomb_nested_menu.buttons.map(b=>b.name),['15 min','30 min','45 min','60 min','90 min','Cancel']);
+        assert.equal(menu.buttons[3].tap_action.action,'jts-n-open-nested');
+        assert.deepEqual(menu.buttons[3].tap_action.jts_n_nested_menu.buttons.map(b=>b.name),['15 min','30 min','45 min','60 min','90 min','Cancel']);
         assert.equal(menu.buttons[4].tap_action.direction,'down');
         assert.equal(menu.buttons[5].tap_action.direction,'up');
         assert.equal(menu.promoted_center.mode,'sonos');
@@ -81,7 +81,7 @@ test('Join always opens with a useful setup state, including solo/self-only/inva
         assert.equal(join.buttons[0].name,'No rooms');
         assert.equal(join.buttons[0].interactive,false);
         const menu=buildCubeConfig({type:'sonos',entity:player,members},fixture()).menu;
-        assert.equal(menu.buttons[2].tap_action.action,'honeycomb-sonos-open-join');
+        assert.equal(menu.buttons[2].tap_action.action,'jts-n-sonos-open-join');
     }
 });
 test('candidate order is stable, selected player and duplicates excluded, twelve physical choices retained',()=>{
@@ -165,7 +165,7 @@ test('successful join/unjoin preserves the configured member script contract and
         assert.equal(JSON.stringify(hass.states),snapshot,'No optimistic membership mutation');
     }
     assert.deepEqual(calls,[['script','player_a_toggle_member',{member},{}],['script','player_a_toggle_member',{member},{}]]);
-    assert.ok(customActionRegistry.has('honeycomb-sonos-toggle-member'));
+    assert.ok(customActionRegistry.has('jts-n-sonos-toggle-member'));
 });
 test('failed script requests produce feedback, preserve HA membership and permit retry',async()=>{
     const hass=fixture(), messages=[];

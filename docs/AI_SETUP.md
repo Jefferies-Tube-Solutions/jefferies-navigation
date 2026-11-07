@@ -41,7 +41,7 @@ complete [single](../examples/charger-easee.yaml) / [multi](../examples/charger-
 dashboards. No backend, optimizer or Car module is added.
 
 **INFO CUBE — v1.9.0 stable:** Includes the approved beta.9 Info behavior. Use [Info Cube](INFO_CUBE.md) and
-[module authoring](MODULE_AUTHORING.md). Action is `honeycomb-info` with `info`
+[module authoring](MODULE_AUTHORING.md). Action is `jts-n-info` with `info`
 payload, not a module type. Default text mode wraps; `stack` and `positioned`
 remain supported. Titles, body, blocks and optional `footer` accept plain strings
 or scalar HA entity/attribute bindings, including prefix/suffix/fallback; no HTML/JS.
@@ -91,8 +91,8 @@ Use the [precise Climate contract](CLIMATE_MODULE.md) and complete
    overrides an unambiguous metadata-verified same-device switch. No name/area/brand
    heuristics. Registry denial/missing semantics requires explicit confirmation and
    mapping; native Climate controls need no registry access or HA helpers.
-6. Generic child action is `action: honeycomb-open-nested` with
-   `honeycomb_nested_menu: {module: climate, entity: climate.room_b, name: Room B}`.
+6. Generic child action is `action: jts-n-open-nested` with
+   `jts_n_nested_menu: {module: climate, entity: climate.room_b, name: Room B}`.
    The explicit child ID wins; preserve parent/child identity and meaningful Back.
    No Car implementation or extra special-purpose navigation key is required.
 7. Pending service result is not hardware success. Describe Sending/Awaiting HA,
@@ -140,8 +140,8 @@ Ask for actual IDs or omit optional features. Public examples must remain synthe
 
 ## Decision procedure
 
-1. Confirm the installed Honeycomb version and both JavaScript module resources
-   (Honeycomb and custom:button-card). Ask for entity IDs from HA States, not names
+1. Confirm the installed Jefferies Navigation version and both JavaScript module resources
+   (Jefferies Navigation and custom:button-card). Ask for entity IDs from HA States, not names
    guessed from areas. Inspect relevant state attributes/capabilities.
 2. Choose **Hub** for several items, **Control** for one standalone device, or
    **classic popup** when requested by an existing dashboard's `fire-dom-event` action.
@@ -187,15 +187,15 @@ Ask for actual IDs or omit optional features. Public examples must remain synthe
   `colors.inner_border`, `colors.outer_border` or existing styles stay valid.
   Do not apply a global gray reset over semantic Light/Sonos colors. Selected
   cubes become logical 0 at the same physical anchor; Back restores saved layout.
-- Bee click displays a derived short release label inside its golden cell, no
-  new cube/config key. Technical version/source stays at `window.honeycombNG`.
+- Compass click displays a derived short release label inside its golden cell, no
+  new cube/config key. Technical version/source stays at `window.jefferiesNavigation`.
   Development cache settings apply only to the optional dev loader; never emit
   them into production/HACS resource URLs or claim a new published release.
 
 Synthetic complete example; replace IDs with actual supplied entities:
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: auto
 items:
   - type: light
@@ -216,9 +216,9 @@ the documented charging-hub descriptor, not an arbitrary root/menu.
 
 | Boundary | Keys and types |
 |---|---|
-| Hub root | `type: custom:honeycomb-persistent-hub`; `name` string; `size` number (default 82 CSS px); `logo: auto/true/false` (default auto); `items` list; `auto_open` boolean (default true). Optional `menu.button_defaults` supplies menu button defaults. |
+| Hub root | `type: custom:navigation-hub`; `name` string; `size` number (default 82 CSS px); `logo: auto/true/false` (default auto); `items` list; `auto_open` boolean (default true). Optional `menu.button_defaults` supplies menu button defaults. |
 | Hub item | `type: light/sonos/media/generic` (legacy `hue` supported); optional explicit `module: light/media/sonos/generic`; `entity` literal ID; shared keys below; domain options below; `slot` integer 0–216; `slot_mode: hard/priority/soft`; `visibility` condition object/list; legacy `show` value/template. |
-| Control root | `type: custom:honeycomb-persistent-control`; explicit `module`; `entity`; `size` (default 82); shared keys and domain options. No Hub `items`, `logo`, `visibility` or placement contract. |
+| Control root | `type: custom:navigation-control`; explicit `module`; `entity`; `size` (default 82); shared keys and domain options. No Hub `items`, `logo`, `visibility` or placement contract. |
 | Shared presentation | `name`, `label`, `icon` strings/templates; `show_name`, `show_label`, `show_icon` booleans/templates; `background`, `foreground`; `colors`; `border`; `styles`; `variables`; `custom_fields`; `interactive`; `off`; `active_color`; `show_brightness`, `show_volume`. |
 | Shared interaction | `tap_action`, `hold_action`, `double_tap_action` action objects; `hold_time` ms (default 500, minimum 250); `autoclose`; `audio`. Optional `menu` overrides the module menu; advanced Hub `persistent` overrides its compiled launcher. |
 | Light options | `presets.brightness: {entity, default?}`; `presets.kelvin: {entity, default?}`; `presets.color: {hue_entity, saturation_entity}`. See units and capability precedence below. |
@@ -236,7 +236,7 @@ is shared; rectangular CSS borders do not define its inner/outer rings.
 
 Use HA actions: `none`, `toggle`, `more-info`, `perform-action` with
 `perform_action`, `data`, `target`; `navigate` with `navigation_path`; `url` with
-`url_path`; `fire-dom-event` with `honeycomb_menu` for classic/nested configurations.
+`url_path`; `fire-dom-event` with `jts_n_menu` for classic/nested configurations.
 Legacy `call-service` with `service`, `service_data`/`data`, `target` is retained.
 An explicit action replaces the default action object. Default tap is Light toggle,
 Media/Sonos play/pause, Generic toggle (provide a suitable entity or override).
@@ -246,7 +246,7 @@ replacing a held launcher's action while navigation is active.
 
 Implementation references: [shared compilation](../src/core/cube-config.js),
 [renderer/actions](../src/cube-element.js), [module registry](../src/modules/index.js),
-[Hub](../src/honeycomb-persistent-hub.js). For advanced classic keys use the
+[Hub](../src/navigation-hub.js). For advanced classic keys use the
 [classic reference](CLASSIC_MENU.md), not guesses from other cards.
 
 ## Geometry, allocation and live updates
@@ -334,7 +334,7 @@ See [truth tables and migration](V1_7_PHASE2.md).
 
 ## External Home Assistant prerequisites
 
-These are HA entities/configuration outside Honeycomb, not extra dashboard keys.
+These are HA entities/configuration outside Jefferies Navigation, not extra dashboard keys.
 Run HA's configuration check and reload the relevant integration/template/script
 (or restart as required) after adapting the recipes. The automated docs tests parse
 and exercise synthetic data; they do not run an HA server or discover actual devices.
@@ -353,7 +353,7 @@ For `control-light.yaml` below, provide these writable values first:
 All four accept either writable `number.*` (including a separate relay/device or
 integration) **or** `input_number.*`. Helpers need not share the Light's integration.
 If creating HA numeric helpers, use these units/ranges, then collect their actual
-entity IDs. Honeycomb does not create helpers or integration-owned numbers.
+entity IDs. Jefferies Navigation does not create helpers or integration-owned numbers.
 Tap a preset to apply; hold to store the Light's current value using that helper
 domain's `set_value`. Storing brightness converts HA 0–255 into rounded percent.
 
@@ -446,7 +446,7 @@ are the same examples; external device/service behavior still requires HA valida
 <!-- example:hub.yaml -->
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Hub A
 size: 82
 logo: auto
@@ -466,7 +466,7 @@ items:
 <!-- example:dynamic-hub.yaml -->
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Dynamic Hub A
 size: 82
 logo: false
@@ -515,7 +515,7 @@ items:
 <!-- example:control-light.yaml -->
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.zone_a
 name: Light A
@@ -537,7 +537,7 @@ presets:
 <!-- example:sonos.yaml -->
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Audio Hub A
 size: 82
 logo: false
@@ -563,8 +563,8 @@ items:
 
 ```yaml
 # Prerequisite: the real HA entity explicitly reports supported_color_modes: [onoff].
-# This is an HA state attribute, not a Honeycomb configuration key.
-type: custom:honeycomb-persistent-control
+# This is an HA state attribute, not a Jefferies Navigation configuration key.
+type: custom:navigation-control
 module: light
 entity: light.switch_a
 name: Switch A
@@ -583,7 +583,7 @@ entity: light.zone_a
 name: Light A
 hold_action:
   action: fire-dom-event
-  honeycomb_menu:
+  jts_n_menu:
     entity: light.zone_a
     size: 225
     empty_slots: hidden
@@ -749,7 +749,7 @@ No `min_kelvin`, `zoom`, step or helper YAML keys are introduced. Use the standa
 
 <!-- example:kelvin-light.yaml -->
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.white_a
 ```
@@ -866,7 +866,7 @@ Introduced in v1.8.0-beta.7 on immutable beta.6; it does not exist in beta.6.
 Optional `energy_wave.color` defaults to the final resolved `colors.inner_border`
 (module auto/status/station resolution, then configured overrides), not center
 fill or the raw string `auto`. Explicit color affects only the contour. Existing
-JS templates (`HCJS:`, `[[[...]]]`, `${...}`) use the normal evaluator and update
+JS templates (`JTSJS:`, `[[[...]]]`, `${...}`) use the normal evaluator and update
 dependencies. A missing/invalid/throwing result suppresses motion until valid;
 literal invalid values fail configuration validation in the browser.
 
@@ -929,7 +929,7 @@ styles; without it, an explicit card/background style wins over the shared
 fallback. Root precedence remains unchanged. Module presentations may supply
 meaningful functional colors. No new public configuration option is required.
 
-## v1.10.0-beta.5 room controls and shared Bee
+## v1.10.0-beta.5 room controls and shared Compass
 
 Use minimal `collapsible: true` and a hard slot-0 primary. Collapsed auto sizing
 stays capped at 82px; expansion targets 100px on phones/tablets/PCs. It prefers
@@ -940,9 +940,9 @@ and safe fitting. Back restores saved parent sizes/anchors. Explicit legacy
 small_screen:false/mobile:false retains the documented compact-phone opt-out.
 [Placement and overrides](COLLAPSIBLE_HUB.md).
 
-Use the [shared Bee preset and version interaction](SHARED_BEE.md), never copy
-mascot bytes, version strings or separate module-specific Bee styles. Standard
-Bee tap/hold reveals the installed version; expanded root Bee tap is Back, while
+Use the [shared Compass preset and version interaction](NAVIGATION_COMPASS.md), never copy
+mascot bytes, version strings or separate module-specific Compass styles. Standard
+Compass tap/hold reveals the installed version; expanded root Compass tap is Back, while
 hold or Shift+Enter reveals the same version for three seconds. Alt+V supports
-functional Bee icons without replacing their actions. Explicit styles remain.
+functional Compass icons without replacing their actions. Explicit styles remain.
 Issue #154 broad repository review stays deferred until owner beta.5 acceptance.

@@ -1,4 +1,4 @@
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 entity: light.hue_kontor
 icon: mdi:lightbulb
 size: 82
@@ -53,7 +53,7 @@ menu:
       autoclose: false
       tap_action:
         action: fire-dom-event
-        honeycomb_menu:
+        jts_n_menu:
           nested_expand: true
           inherit_inner: true
           empty_slots: hidden

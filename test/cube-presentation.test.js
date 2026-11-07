@@ -43,7 +43,7 @@ test('decorative logo uses its own fill gradient while inactive physical cubes s
 
 test('built-in preset and Radio dimensions use the existing numeric size variable',()=>{
  const {designLength}=require('../src/core/cube-presentation');
- assert.equal(designLength(11),'calc(var(--honeycomb-persistent-size,82px) / 82 * 11)');
+ assert.equal(designLength(11),'calc(var(--jts-n-persistent-size,82px) / 82 * 11)');
  const controls=require('../src/modules/light/controls');
  const menu={entity:'light.zone_a',buttons:[{control:'preset-brightness'}]};
  controls.applyPresetControls(menu,{},'light.zone_a');

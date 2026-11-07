@@ -1,4 +1,4 @@
-# Honeycomb NG — layout and terminology
+# Jefferies Navigation — layout and terminology
 
 This document defines the shared **Danish ↔ English** naming convention for UI design, code review, GitHub issues, Codex prompts and user documentation. Use the [README Layout model](../README.md#layout-model) as the authoritative source for physical slot coordinates. **A menu ring consists of multiple cells; a border belongs to one cell. They are not interchangeable.**
 
@@ -68,7 +68,7 @@ The Hub's own **persistent launcher**, the **module launcher inside the Hub menu
 
 ## Shared visual design contract — Light is the canonical reference
 
-**OWNER DECISION:** The existing **Light module** defines the visual baseline for **every Honeycomb module**, including Sonos/Media, Climate, Car, Charger and future modules. This is a shared presentation contract, not an instruction to copy Light-specific behaviors or capabilities.
+**OWNER DECISION:** The existing **Light module** defines the visual baseline for **every Jefferies Navigation module**, including Sonos/Media, Climate, Car, Charger and future modules. This is a shared presentation contract, not an instruction to copy Light-specific behaviors or capabilities.
 
 - Reuse the same **82px cube geometry**, hex shape, consistent cube fill / inner border / outer border layering, visual weight and interactive feedback.
 - Follow Light's **icon/artwork size and positioning**, primary/secondary label typography, alignment, line height, vertical balance, padding, icon-to-text gaps and text-overflow behavior. When module artwork/metrics differ, adjust against Light's reference rather than inventing a competing layout model.

@@ -33,7 +33,7 @@ export function evalTemplate(hass, state, custom_variables, func, template_liter
     } catch (e) {
         const funcTrimmed = func.length <= 100 ? func.trim() : `${func.trim().substring(0, 98)}...`;
         e.message = `${e.name}: ${e.message} in '${funcTrimmed}'`;
-        e.name = 'HoneyCombJSTemplateError';
+        e.name = 'NavigationTemplateError';
         throw e;
     }
 };
@@ -62,8 +62,8 @@ export function getTemplateOrValue(hass, state, custom_variables, value, _callba
 
     if (trimmed.substring(0, 3) === '[[[' && trimmed.slice(-3) === ']]]') {
         return evalTemplate(hass, state, custom_variables, trimmed.slice(3, -3));
-    } else if(trimmed.substring(0, 5) === 'HCJS:') {
-        return evalTemplate(hass, state, custom_variables, trimmed.slice(5));
+    } else if(trimmed.startsWith('JTSJS:')) {
+        return evalTemplate(hass, state, custom_variables, trimmed.slice(6));
     } else {
         return evalTemplate(hass, state, custom_variables, trimmed, true);
     }
@@ -122,23 +122,23 @@ export function lovelace_config()
     return null;
 }
 
-export function honeycomb_menu_templates()
+export function jts_n_menu_templates()
 {
     // Store to a gloval variable to skip dom traversion
-    if( window.honeycombNG.templates )
-        return window.honeycombNG.templates;
+    if( window.jefferiesNavigation.templates )
+        return window.jefferiesNavigation.templates;
     
     let lconfig = lovelace_config();
 
     if( ! lconfig )
         return null;
 
-    window.honeycombNG.templates = lconfig.honeycomb_menu_templates || {};
+    window.jefferiesNavigation.templates = lconfig.jts_n_menu_templates || {};
     
-    if( ! lconfig.honeycomb_menu_templates )
+    if( ! lconfig.jts_n_menu_templates )
         return null;
         
-    return lconfig.honeycomb_menu_templates;
+    return lconfig.jts_n_menu_templates;
 }
 
 function _errorElement(error, origConfig) 

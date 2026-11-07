@@ -29,5 +29,5 @@ test('display reference is stable across image resolutions and independent clien
   assert.equal(effectiveSize(frame,1500),Math.min(82,82*displayedWidth/1500));
  }
  assert.equal(effectiveSize({width:1536}),82);assert.equal(effectiveSize({width:768}),41);assert.equal(effectiveSize(null,1500),82);
- for(const value of [null,'1500',0,-1,NaN,Infinity,'HCJS: return 1500'])assert.throws(()=>referenceWidth(value));
+ for(const value of [null,'1500',0,-1,NaN,Infinity,'JTSJS: return 1500'])assert.throws(()=>referenceWidth(value));
 });

@@ -97,7 +97,7 @@ function chromeElements(owner) {
         const root=node.getRootNode();if(root)roots.add(root);if(node.shadowRoot)roots.add(node.shadowRoot);
     }
     const elements=new Set();
-    for(const root of roots)if(root.querySelectorAll)for(const el of root.querySelectorAll('header,footer,#header,#footer,.header,.toolbar,app-header,app-toolbar,ha-top-app-bar-fixed,ha-tabs,ha-sidebar,[data-honeycomb-viewport-inset]'))elements.add(el);
+    for(const root of roots)if(root.querySelectorAll)for(const el of root.querySelectorAll('header,footer,#header,#footer,.header,.toolbar,app-header,app-toolbar,ha-top-app-bar-fixed,ha-tabs,ha-sidebar,[data-jts-n-viewport-inset]'))elements.add(el);
     return [...elements].slice(0,64);
 }
 function environment(menu,owner,image=null) {

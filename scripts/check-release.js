@@ -12,10 +12,10 @@ function validateArtifact(pkg, release, hacs, bytes, {stable = false} = {}) {
     if (stable) assert.equal(prerelease, false, 'Stable publication requires stable metadata');
     assert.equal(release.prerelease, prerelease, 'Release flag/version conflict');
     assert.ok(typeof release.title === 'string' && release.title.split(/\s+/).includes(`v${pkg.version}`), 'Release title/version mismatch');
-    if (!prerelease) assert.equal(release.title, `Honeycomb NG v${pkg.version} — Stable`);
-    assert.equal(hacs.filename, 'honeycomb-menu-ng.js', 'HACS bundle filename mismatch');
+    if (!prerelease) assert.equal(release.title, `Jefferies Navigation v${pkg.version} — Stable`);
+    assert.equal(hacs.filename, 'jefferies-navigation.js', 'HACS bundle filename mismatch');
     assert.equal(hacs.content_in_root, true);
-    assert.ok(bytes.length > 10000 && bytes.toString().includes('honeycomb-persistent-hub'), 'Incomplete bundle');
+    assert.ok(bytes.length > 10000 && bytes.toString().includes('navigation-hub'), 'Incomplete bundle');
     new vm.Script(bytes.toString());
     return {version: pkg.version, tag: `v${pkg.version}`, sha256: crypto.createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length, filename: hacs.filename};
 }
@@ -24,7 +24,7 @@ function localArtifact(stable = false) {
     assert.equal(lock.version,pkg.version,'Package lock version mismatch');
     if (lock.packages && lock.packages['']) assert.equal(lock.packages[''].version,pkg.version,'Package lock root version mismatch');
     return validateArtifact(pkg, JSON.parse(fs.readFileSync('release.json')),
-        JSON.parse(fs.readFileSync('hacs.json')), fs.readFileSync('honeycomb-menu-ng.js'), {stable});
+        JSON.parse(fs.readFileSync('hacs.json')), fs.readFileSync('jefferies-navigation.js'), {stable});
 }
 module.exports = {validateArtifact, localArtifact, isStableVersion};
 if (require.main === module) {

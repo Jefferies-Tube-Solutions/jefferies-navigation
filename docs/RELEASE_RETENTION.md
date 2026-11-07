@@ -204,7 +204,7 @@ node --test test/release-retention.test.js
 npm test
 node scripts/release-retention.js --dry-run \
   --inventory /tmp/releases.json --latest /tmp/latest-stable.json \
-  --repository example/honeycomb --output /tmp/retention-review
+  --repository example/navigation --output /tmp/retention-review
 ```
 
 Offline files must contain an array of full Release API records and the full

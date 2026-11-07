@@ -1,6 +1,6 @@
 // Renderer capability only. Domain adapters normalize health and measured watts.
 const BASE_CYCLE_MS=3000,MIN_CYCLE_MS=500,MAX_CYCLE_MS=10000,TRANSITION_MS=350;
-const isTemplate=v=>typeof v==='string' && /\[\[\[|HCJS:|\$\{/.test(v);
+const isTemplate=v=>typeof v==='string' && /\[\[\[|JTSJS:|\$\{/.test(v);
 const numericKeys=['power_w','max_power_w','min_cycle_ms','max_cycle_ms','cycle_ms'];
 // Validate a CSS *color*, never SVG paint/URLs or arbitrary style declarations.
 // Node contract checks validate shape; the browser's CSS parser is authoritative.

@@ -42,7 +42,7 @@ test('solid White descriptors have no visible dot/name/secondary, but preserve e
         assert.equal(b.show_icon,false);assert.equal(b.show_name,false);assert.equal(b.show_label,false);
         assert.equal(b.icon,undefined);assert.match(b.name,new RegExp(`^${b.tap_action.data.color_temp_kelvin} K;`));
         assert.match(b.styles.card[0].background,/^rgb\(/);assert.equal(b.hold_action.selected,i);
-        assert.equal(b.tap_action.action,'honeycomb-light-kelvin-apply');assert.equal(b.hold_action.action,'honeycomb-light-kelvin-zoom');
+        assert.equal(b.tap_action.action,'jts-n-light-kelvin-apply');assert.equal(b.hold_action.action,'jts-n-light-kelvin-zoom');
     }
 });
 test('Kelvin short tap sends exactly one bounded exact-temperature call; hold sends none',()=>{

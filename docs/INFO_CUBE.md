@@ -14,19 +14,19 @@ The connector remains separate/live. For gradient inner borders its documented
 representative is the first stop's color (not an exact gradient/stop-opacity copy).
 Geometry, wrapping, pagination, navigation and fixed30-second lifetime are unchanged.
 
-# Info Cube — beta.8 review contract
+# Info Cube
 
-Info Cube first shipped in published **v1.9.0-beta.7**. This guide describes its
-**unpublished v1.9.0-beta.8 candidate** refinements; stable remains v1.8.1. Do not
-generate Info configuration for older versions. No HA helper, backend or device
-service is required. All examples use synthetic entities and mock plans.
+Info is a read-only overlay. Install the dashboard resource and configure the
+action below. The overlay reads existing Home Assistant state and requires no
+helper, backend integration or device service. The examples use synthetic
+entities and mock plans.
 
 ## Open and return
 
 An ordinary Hub item or any module/menu button can use the same action:
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 size: 82
 logo: auto
 items:
@@ -35,7 +35,7 @@ items:
     icon: mdi:information-outline
     slot: 1
     tap_action:
-      action: honeycomb-info
+      action: jts-n-info
       info:
         title: Home overview
         colors:
@@ -182,8 +182,8 @@ external artwork, scripts, polling or HA commands belong to this component.
 ## Module author API
 
 See [module authoring](MODULE_AUTHORING.md). Internal modules call
-`honeycombNG.openInfoInContext(context, payload, sourceElement)` from their existing menu context.
-`honeycombNG.openInfo(payload)` targets the currently open classic/global menu.
+`jefferiesNavigation.openInfoInContext(context, payload, sourceElement)` from their existing menu context.
+`jefferiesNavigation.openInfo(payload)` targets the currently open classic/global menu.
 The third argument is optional; omit it to use the calling center as the source.
 Declarative cube actions pass their own source automatically. These return the Info view, or null if no active caller/preview. Do not create a
 separate modal, push fake Back levels or duplicate the cube renderer. All future

@@ -8,7 +8,7 @@ class ActionRegistry
     register(name, handler)
     {
         if( ! name || typeof handler !== 'function' )
-            throw new Error('Custom Honeycomb action requires a name and handler.');
+            throw new Error('Custom Jefferies Navigation action requires a name and handler.');
 
         this._handlers.set(name, handler);
         return this;

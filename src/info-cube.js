@@ -1,7 +1,7 @@
 import {LitElement,html,css,svg} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
 const info=require('./core/info-cube');
-import './honeycomb-menu-item.js';
+import './navigation-menu-item.js';
 
 // The shell is an ordinary shared CubeElement. Only the read-only text layout
 // and modal lifetime belong here; modules never implement their own overlay.
@@ -12,7 +12,7 @@ class InfoCube extends LitElement {
         .backdrop{position:absolute;inset:0;background:transparent;}
         .surface{position:absolute;outline:none;cursor:pointer;touch-action:none;}
         .surface:focus-visible{outline:2px solid var(--primary-color,#2196f3);outline-offset:-6px;}
-        honeycomb-menu-ng-item{position:absolute;inset:0;pointer-events:none;}
+        jts-n-menu-item{position:absolute;inset:0;pointer-events:none;}
         .text{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;}
         text{font-family:sans-serif;user-select:none;}
         .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;}
@@ -21,7 +21,7 @@ class InfoCube extends LitElement {
         super();this._page=0;this._geometry=null;this._layout=null;
         this._resize=()=>this._relayout();
         this._keys=e=>{
-            const open=document.querySelectorAll('honeycomb-ng-info');
+            const open=document.querySelectorAll('jts-n-info-cube');
             if(!this.isConnected || open[open.length-1]!==this)return;
             if(['Escape','Enter',' '].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();if(!e.repeat)this._return();}
             else if(['PageDown','PageUp','ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();this._turn(['PageDown','ArrowDown'].includes(e.key)?1:-1);}
@@ -89,7 +89,7 @@ class InfoCube extends LitElement {
             @pointerdown=${e=>{e.stopPropagation();this._pointer={id:e.pointerId,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}
             @pointerup=${e=>{e.stopPropagation();const p=this._pointer;this._pointer=null;if(!p||p.id!==e.pointerId)return;const dy=e.clientY-p.y;if(Math.abs(dy)>20)this._turn(dy<0?1:-1);else if(Math.abs(e.clientX-p.x)<12)this._return();}}
             @pointercancel=${()=>{this._pointer=null;}} @click=${e=>e.stopPropagation()}>
-            <honeycomb-menu-ng-item style=${`width:${g.width}px;--honeycomb-persistent-size:${g.width}px`} .paintSnapshot=${this.paintSnapshot} .config=${info.shell(this.config)} .size=${g.width} .hass=${this.hass}></honeycomb-menu-ng-item>
+            <jts-n-menu-item style=${`width:${g.width}px;--jts-n-persistent-size:${g.width}px`} .paintSnapshot=${this.paintSnapshot} .config=${info.shell(this.config)} .size=${g.width} .hass=${this.hass}></jts-n-menu-item>
             ${g.connector?html`<svg class="text connector" viewBox=${`0 0 ${g.width} ${g.height}`} aria-hidden="true"><line x1=${g.connector.x1} y1=${g.connector.y1} x2=${g.connector.x2} y2=${g.connector.y2} stroke=${g.connector.color} stroke-width="4" stroke-linecap="round"></line></svg>`:''}
             <svg class="text" viewBox=${`0 0 ${g.width} ${g.height}`} role="img" aria-label=${`Page ${this._page+1} of ${l.pages.length}`}>
                 <defs><clipPath id="info-safe"><polygon points=${`${g.width/2},17 ${g.width-17},${g.height/4+9} ${g.width-17},${g.height*.75-9} ${g.width/2},${g.height-17} 17,${g.height*.75-9} 17,${g.height/4+9}`}></polygon></clipPath></defs>
@@ -107,5 +107,5 @@ class InfoCube extends LitElement {
         </div>`;
     }
 }
-if(!customElements.get('honeycomb-ng-info'))customElements.define('honeycomb-ng-info',InfoCube);
+if(!customElements.get('jts-n-info-cube'))customElements.define('jts-n-info-cube',InfoCube);
 export default InfoCube;

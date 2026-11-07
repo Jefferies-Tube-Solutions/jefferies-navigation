@@ -56,7 +56,7 @@ Override fallback values if desired:
 
 ## Preset helper contract
 
-Honeycomb can read and write preset values from numeric Home Assistant entities.
+Jefferies Navigation can read and write preset values from numeric Home Assistant entities.
 
 Supported writable helper domains in v1.7:
 - `number.*`
@@ -67,7 +67,7 @@ The entity state must be numeric.
 ### Brightness
 
 Expected range: 0–100 **percent**. HA's Light `brightness` attribute is 0–255;
-Honeycomb converts it to percent when storing. Kelvin must fit the target Light.
+Jefferies Navigation converts it to percent when storing. Kelvin must fit the target Light.
 
 ~~~yaml
 presets:
@@ -104,7 +104,7 @@ Tap applies stored HS color. Hold stores current `hs_color`.
 
 ## Where preset values can live
 
-The values are ordinary Home Assistant entities. They do not have to be created by Honeycomb.
+The values are ordinary Home Assistant entities. They do not have to be created by Jefferies Navigation.
 
 ### Values on another device or integration
 
@@ -121,7 +121,7 @@ presets:
     saturation_entity: number.relay_a_saturation
 ~~~
 
-This is useful when a physical wall switch also uses the same normal brightness/color values. The physical switch and Honeycomb can share those values, independently of the Light integration.
+This is useful when a physical wall switch also uses the same normal brightness/color values. The physical switch and Jefferies Navigation can share those values, independently of the Light integration.
 
 ### Home Assistant helpers
 
@@ -158,7 +158,7 @@ input_number:
     initial: 80
 ~~~
 
-Then reference those `input_number.*` entities from Honeycomb. These are external
+Then reference those `input_number.*` entities from Jefferies Navigation. These are external
 HA helpers, not dashboard configuration; run HA configuration validation and reload
 helpers as appropriate. The sample Kelvin bounds must match your Light capabilities.
 
@@ -219,7 +219,7 @@ For those lights:
 - the status label is `On` or `Off`
 - long press does not open the Light detail module, because brightness, presets and palettes are not applicable
 
-Honeycomb only applies this rule when Home Assistant explicitly reports `onoff`. Missing capability data, including temporary remote/unavailable states, is not treated as proof that the light is on/off-only.
+Jefferies Navigation only applies this rule when Home Assistant explicitly reports `onoff`. Missing capability data, including temporary remote/unavailable states, is not treated as proof that the light is on/off-only.
 
 ## Live presentation
 
@@ -235,7 +235,7 @@ The persistent Light launcher:
 ## Full example
 
 ~~~yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Light A
 size: 82
 logo: auto
@@ -323,13 +323,13 @@ zoom. The existing recursive Color zoom is unchanged. No new YAML option or help
 is needed. [Complete synthetic Control example](../examples/v1.7/kelvin-light.yaml):
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.white_a
 ```
 
 The real entity must advertise `supported_color_modes` containing `color_temp`,
-and numeric native `min_color_temp_kelvin` / `max_color_temp_kelvin`. Honeycomb
+and numeric native `min_color_temp_kelvin` / `max_color_temp_kelvin`. Jefferies Navigation
 uses those bounds, rounded inward to integer Kelvin; it never substitutes
 2200–6500 K or derives bounds from mireds. Missing, nonpositive, inverted or
 otherwise invalid bounds produce an explanatory **White unavailable** action

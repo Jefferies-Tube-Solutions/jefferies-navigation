@@ -1,4 +1,4 @@
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 items:
   - type: light

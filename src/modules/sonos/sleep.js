@@ -64,12 +64,12 @@ function buildMenu(item) {
         buttons:[...MINUTES,0].map((minutes,index)=>({slot:index+7,slot_mode:'hard',entity:item.entity,
             mode:'sonos-sleep',_sleep:{...options,minutes},name:minutes ? `${minutes} min` : 'Cancel',
             icon:minutes ? 'mdi:timer-outline' : 'mdi:timer-off-outline',show_name:true,show_label:true,autoclose:false,
-            styles:sonosButtonStyles(),tap_action:{action:'honeycomb-sonos-sleep',sleep:options,minutes}}))};
+            styles:sonosButtonStyles(),tap_action:{action:'jts-n-sonos-sleep',sleep:options,minutes}}))};
 }
 function buildButton(item) {
     return {slot:4,slot_mode:'hard',entity:item.entity,mode:'sonos-sleep',_sleep:settings(item),
         icon:'mdi:timer-outline',name:'Sleep',show_name:true,show_label:true,autoclose:false,styles:sonosButtonStyles(),
-        tap_action:{action:'honeycomb-open-nested',honeycomb_nested_menu:buildMenu(item)}};
+        tap_action:{action:'jts-n-open-nested',jts_n_nested_menu:buildMenu(item)}};
 }
 function resolve({hass,config}) {
     const options=config._sleep || {},value=status(hass,options),choice=options.minutes!==undefined,cancel=options.minutes===0;
@@ -111,6 +111,6 @@ async function command({hass,actionConfig,getHass=()=>hass,notify=notifyUser}) {
     } finally {clearTimeout(timeout);state.pending.delete(key);invalidate(hass);}
 }
 function registerActions(registry) {
-    registry.register('honeycomb-sonos-sleep',context=>{void command(context);return true;});
+    registry.register('jts-n-sonos-sleep',context=>{void command(context);return true;});
 }
 module.exports={MINUTES,MAX_SECONDS,settings,groupFor,status,buildMenu,buildButton,resolve,command,registerActions};

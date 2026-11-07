@@ -91,7 +91,7 @@ class Navigation(Charger):
         self.back();self.settle();self.assertAlmostEqual(self.center(0)[0],prior[0],delta=.1);self.assertEqual(self.model(3)['colors']['inner'],'#123456');self.assert_no_commands()
     def test_auto_floorplan_promote_at_scaled_size_and_restore(self):
         if self.baseline:return
-        config={'type':'custom:honeycomb-persistent-hub','logo':False,'size':'auto','auto_reference_width':900,'items':[{'type':'charging-hub','slot':0,'chargers':[charger(1)]},charger(1)]}
+        config={'type':'custom:navigation-hub','logo':False,'size':'auto','auto_reference_width':900,'items':[{'type':'charging-hub','slot':0,'chargers':[charger(1)]},charger(1)]}
         self.page.evaluate(FLOORPLAN,config);self.page.evaluate('floor.style.width="450px";imageHost.style.height="300px"');self.page.wait_for_function('hub._hubMenu?.sizes.item===41');self.settle()
         before=self.center(1);self.hold_input(self.cell(1).locator('.interaction-surface'));self.settle()
         after=self.cell(0).bounding_box();self.assertAlmostEqual(after['width'],41,delta=.1);self.assertAlmostEqual(self.center(0)[0],before[0],delta=.1);self.assertAlmostEqual(self.center(0)[1],before[1],delta=.1)

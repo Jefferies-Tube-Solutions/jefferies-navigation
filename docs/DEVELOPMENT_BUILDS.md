@@ -1,10 +1,8 @@
 # Development builds and the permanent resource
 
-Current candidate: **unpublished v1.9.0-beta.7**, based on immutable public beta.6
-`68bf88fe07aae0892705f2680a82f38c0e78848d`. Info Cube needs owner development-HA
-acceptance and separate approval before public beta.7 publication. The private
-package embeds `1.9.0-beta.7-dev+<source-commit>`; bee feedback shows the human label
-`v1.9.0 beta 7` during its existing animation. No HACS/production resource changes.
+Current candidate: **Jefferies Navigation v2.0.0-beta.1**.
+Development bundles embed `2.0.0-beta.1-dev+<source-commit>` and the compass
+shows the human-readable label `v2.0.0 beta 1`.
 
 ## Terminal & SSH add-on installation (no PC or Node required)
 
@@ -16,10 +14,10 @@ validated loader, a SHA256-named runtime, checksums and `install-dev.sh`.
 Download the provided pinned `install-dev.sh`, verify its published SHA256, then:
 
 ```sh
-sh /tmp/honeycomb-install-dev.sh --url "$HONEYCOMB_DEV_PACKAGE_URL" --www /config/www
+sh /tmp/jts-n-install-dev.sh --url "$JTS_N_DEV_PACKAGE_URL" --www /config/www
 ```
 
-Set `HONEYCOMB_DEV_PACKAGE_URL` to the exact raw-GitHub directory URL supplied in
+Set `JTS_N_DEV_PACKAGE_URL` to the exact raw-GitHub directory URL supplied in
 the handoff, including its 40-character delivery commit; do not use a moving branch
 for a verified installation. This requires curl, jq, sha256sum and ordinary POSIX
 tools (cp, mv, cmp, mktemp, grep, wc, tr, mkdir, rmdir, rm). The script fails with
@@ -31,13 +29,13 @@ actual owner Terminal add-on acceptance remains separate.
 
 The shell installer verifies manifest schema, source/version identity, byte count,
 loader/runtime SHA256 and immutable filenames. It downloads all bytes before
-changing `www/honeycomb-dev`, locks against concurrent Node/shell installs,
+changing `www/jts-n-dev`, locks against concurrent Node/shell installs,
 preserves old runtimes, rejects symlinks/conflicts, and replaces the manifest last
 using destination-filesystem atomic renames. It only writes static DEV resources;
 no HA API, YAML editing, HACS changes or charging commands. Run on the independent
 development HA only. A leftover lock after interruption must be inspected first.
 
-Offline package: `sh honeycomb-dev/install-dev.sh --from honeycomb-dev --www /config/www`.
+Offline package: `sh jts-n-dev/install-dev.sh --from jts-n-dev --www /config/www`.
 The existing Node installer remains available on Node-equipped workstations.
 
 ## One-command update
@@ -46,48 +44,48 @@ Extract the supplied development ZIP on a machine with **Node.js 20 or later**
 and filesystem access to the development HA `www` directory. Run:
 
 ```sh
-node honeycomb-dev/install-dev.cjs --www /config/www
+node jts-n-dev/install-dev.cjs --www /config/www
 ```
 
 For a mounted directory, replace `/config/www` with its actual local mount path.
 This command verifies the runtime, exact version/source commit, size, SHA256 and
-loader checksum; copies only into `www/honeycomb-dev/`; retains older immutable
+loader checksum; copies only into `www/jts-n-dev/`; retains older immutable
 runtimes; and atomically replaces `manifest.json` last. It does not edit HA YAML,
 Lovelace resources, HACS or production assets, contact an HA API or execute services.
 Checksum failures, conflicting immutable bytes, symlink targets and concurrent
 installs fail clearly. A leftover `.install.lock` after a killed process must be
 inspected before retrying; an active install is never overridden automatically.
 
-Configure **one** NG resource, type **JavaScript Module**, once:
+Configure **one** Jefferies Navigation resource, type **JavaScript Module**, once:
 
 ```text
-/local/honeycomb-dev/honeycomb-menu-ng.js
+/local/jts-n-dev/jefferies-navigation.js
 ```
 
 That file is the **small loader**, not the full runtime. Keep the provided
-`manifest.json` and `honeycomb-build-<SHA256>.js` beside it. Do not rename the
-runtime to the loader's filename. Existing original Honeycomb can coexist in its
-separate namespace; stable NG and dev NG cannot register the same elements twice.
+`manifest.json` and `jts-n-build-<SHA256>.js` beside it. Do not rename the
+runtime to the loader's filename. Honeycomb Menu NG uses a separate namespace. Load one Jefferies Navigation
+resource per page.
 Reload the dashboard page normally (Reload / F5) after installing. Open documents
 keep their current code until reload; switching views is not a full page reload.
 No resource URL or `?v=` edit is needed between development builds.
 
 ## Verify what is actually running
 
-Tap/click the golden bee or focus it and press Enter/Space. In current beta.5,
+Tap/click the compass or focus it and press Enter/Space.
 **the actual installed version appears inside that same cell for three seconds**,
-while flight motion lasts 430ms, then the
-normal bee returns. This visual label deliberately omits `-dev`, commits and build
+while calibration motion lasts 430ms, then the
+normal compass returns. This visual label deliberately omits `-dev`, commits and build
 metadata. Future stable/beta versions are derived automatically, not hardcoded.
-Reduced-motion users see the contained version feedback without flight motion.
-The expanded Collapsible root Bee uses short tap for Back and hold/Shift+Enter
-for version inspection. See [shared Bee behavior](SHARED_BEE.md).
+Reduced-motion users see the contained version feedback without calibration motion.
+The expanded Collapsible root Compass uses short tap for Back and hold/Shift+Enter
+for version inspection. See [shared Compass behavior](NAVIGATION_COMPASS.md).
 
 For exact diagnostics use the browser console:
 
 ```js
-window.honeycombNG.version  // e.g. 1.9.0-beta.7-dev+<12-character-source-commit>
-window.honeycombNG.commit   // full source commit for a development build
+window.jefferiesNavigation.version  // e.g. 2.0.0-beta.1-dev+<12-character-source-commit>
+window.jefferiesNavigation.commit   // full source commit for a development build
 ```
 
 Compare these with the installed `manifest.json`. The normal candidate/release
@@ -100,8 +98,8 @@ visible text nor diagnostics are inferred from a resource URL parameter.
 Use a clean, committed checkout of the candidate branch and existing dependencies:
 
 ```sh
-npm run build:dev -- --out-dir /tmp/honeycomb-dev
-npm run install:dev -- --from /tmp/honeycomb-dev --www /config/www
+npm run build:dev -- --out-dir /tmp/jts-n-dev
+npm run install:dev -- --from /tmp/jts-n-dev --www /config/www
 ```
 
 The private build flag is passed only to the child compiler. Ordinary
@@ -137,7 +135,7 @@ Do not publish/tag a private `-dev` package or weaken public version/provenance 
 
 ## Acceptance boundary
 
-The owner tested available Light/OFF/bee features in beta.6 and gave positive
+The owner tested available Light/OFF/compass features in beta.6 and gave positive
 feedback. Info Cube in beta.7 still requires owner development-HA checks: all
 three authoring modes, literal 0–7 footprint, Danish/long text, page swipe, exact
 menu return, 30-second close-all, live bindings, ordinary reload and installer.

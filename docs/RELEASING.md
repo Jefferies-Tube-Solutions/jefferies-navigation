@@ -9,6 +9,12 @@ The current v1.10.0 promotion pins owner-accepted public beta.10 at
 guarded stable publication after validation. See the [v1.10.0 checklist](V1_10_STABLE_RELEASE.md).
 Historical release documents retain their original approval scope.
 
+The v2.0.0 promotion uses the [v2 owner approval record](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/171).
+Confirm the public v2.0.0-beta.3 tag and uploaded bundle against the reviewed
+manifest before proceeding. The version heading in `RELEASE_NOTES.md` is an
+input check. The approved text beneath it is the public release body, with
+verification details in the separate checksum and provenance assets.
+
 ## Reviewed candidate provenance
 
 Create one cumulative promotion PR to master from the exact approved beta ancestry.
@@ -23,7 +29,7 @@ assets, HACS config and brand generator; unchanged dependency package/lock conte
 Only package/root-lock version and the additive promotion-test command may change.
 Webpack may add only the deterministic version-banner plugin. The rebuilt stable
 bundle must equal the exact approved beta's executable bytes, with only the known
-`/*! Honeycomb Menu NG vVERSION */` comment prefix added/updated and, for
+`/*! Jefferies Navigation vVERSION */` comment prefix added/updated and, for
 `version-metadata-v2`, exactly two canonical build-info version literals changed. The beta's Git tag,
 public prerelease record and uploaded bundle size/SHA256 digest must match the
 manifest. Unknown, missing or conflicting provenance stops publication.
@@ -87,7 +93,7 @@ those assets. The beta.5 private draft and every previous release remain intact.
 
 Independently verify the public release has `draft=false`, `prerelease=false`, is
 GitHub latest stable, and resolves to the exact green master SHA. Download all
-three assets: `honeycomb-menu-ng.js`, `SHA256SUMS.txt`, `release-provenance.json`.
+three assets: `jefferies-navigation.js`, `SHA256SUMS.txt`, `release-provenance.json`.
 Compare bytes/checksum with the committed bundle and provenance, including approved
 beta identity and master CI attempt. Confirm HACS filename/content-in-root and
 all previous releases/assets/tags/branches; only the authorized master merge and

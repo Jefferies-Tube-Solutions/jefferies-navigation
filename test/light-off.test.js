@@ -39,7 +39,7 @@ test('unavailable, unknown and missing states never claim OFF',()=>{
 });
 test('standalone Light and promoted Back centers retain existing OFF presentation',()=>{
     assert.equal(face('off',{_hub_item_id:undefined}).secondary,'Off');
-    for(const tap_action of ['honeycomb-back',{action:'honeycomb-back'}]) {
+    for(const tap_action of ['jts-n-back',{action:'jts-n-back'}]) {
         const result=face('off',{name:'A',tap_action});
         assert.equal(result.name,undefined);assert.equal(result.secondary,'Off');
     }

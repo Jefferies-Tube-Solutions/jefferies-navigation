@@ -1,10 +1,10 @@
 import { LitElement, html, css } from 'lit';
-import "./honeycomb-menu-item.js";
-import "./honeycomb-persistent-control.js";
-import "./honeycomb-persistent-hub.js";
+import "./navigation-menu-item.js";
+import "./navigation-control.js";
+import "./navigation-hub.js";
 import "./xy-pad.js";
 import "./info-cube.js";
-import { objectEvalTemplate, getTemplateOrValue, stringToBool, fireEvent, lovelace_view, provideHass, honeycomb_menu_templates } from "./helpers.js";
+import { objectEvalTemplate, getTemplateOrValue, stringToBool, fireEvent, lovelace_view, provideHass, jts_n_menu_templates } from "./helpers.js";
 
 const hass = document.querySelector('home-assistant').hass;
 
@@ -27,7 +27,7 @@ const { applyPresetControls, resolvePaletteRequest, paletteIndicator } = require
 require('./modules/index.js');
 
 const manager = new function() {
-    this.honeycomb = null;
+    this.scene = null;
     this.stack = [];
     this.currentConfig = null;
     this.pointers = new Set();
@@ -55,10 +55,10 @@ const manager = new function() {
         this.pointerContext = context;
         this.pointerOwners.set(e.pointerId, context);
         context.pointers.add(e.pointerId);
-        if (context.honeycomb) {
-            context.honeycomb._dragPointerId = e.pointerId;
-            context.honeycomb._dragStartX = e.clientX;
-            context.honeycomb._dragStartY = e.clientY;
+        if (context.scene) {
+            context.scene._dragPointerId = e.pointerId;
+            context.scene._dragStartX = e.clientX;
+            context.scene._dragStartY = e.clientY;
         }
     }.bind(this);
 
@@ -86,62 +86,62 @@ function notifyContext(context)
 
 function prepareMenuConfig(config)
 {
-    const honeycombConfig = traverseConfigs(config);
-    if (!navigationCore.isHubRoot(honeycombConfig)) honeycombConfig._submenu=true;
-    if (honeycombConfig.entity_id && !honeycombConfig.entity) honeycombConfig.entity = honeycombConfig.entity_id;
-    applyPresetControls(honeycombConfig, honeycombConfig.presets || {}, honeycombConfig.entity);
-    applyEntityInheritance(honeycombConfig, honeycombConfig.entity);
-    return honeycombConfig;
+    const navigationConfig = traverseConfigs(config);
+    if (!navigationCore.isHubRoot(navigationConfig)) navigationConfig._submenu=true;
+    if (navigationConfig.entity_id && !navigationConfig.entity) navigationConfig.entity = navigationConfig.entity_id;
+    applyPresetControls(navigationConfig, navigationConfig.presets || {}, navigationConfig.entity);
+    applyEntityInheritance(navigationConfig, navigationConfig.entity);
+    return navigationConfig;
 }
 
-function openHoneycombMenu(context, config)
+function openNavigationMenu(context, config)
 {
     if (context.info) return null; // Late async navigation cannot change a suspended caller.
-    const liveHass = context.honeycomb && context.honeycomb.hass || context.owner && context.owner.hass || document.querySelector('home-assistant').hass;
+    const liveHass = context.scene && context.scene.hass || context.owner && context.owner.hass || document.querySelector('home-assistant').hass;
     const resolved = resolvePaletteRequest(config, liveHass, context.currentConfig && context.currentConfig._light_palette_view);
     if (!resolved) return null;
-    const honeycombConfig = prepareMenuConfig(require('./core/module-menu').expandModuleMenu(resolved, liveHass));
+    const navigationConfig = prepareMenuConfig(require('./core/module-menu').expandModuleMenu(resolved, liveHass));
 
     // If a menu is already open, treat a newly opened menu as a nested menu.
-    // nested_expand keeps the current Honeycomb element alive and only updates
+    // nested_expand keeps the current Jefferies Navigation element alive and only updates
     // its config, so existing inner-ring buttons do not animate out/in again.
-    const nested = !! context.honeycomb && !! context.currentConfig;
+    const nested = !! context.scene && !! context.currentConfig;
 
-    if( nested && honeycombConfig.nested_expand === true )
+    if( nested && navigationConfig.nested_expand === true )
     {
         const current = context.currentConfig || {};
-        if (honeycombConfig.inherit_inner && !honeycombConfig._light_palette_view)
-            honeycombConfig._light_palette_view=current._light_palette_view;
+        if (navigationConfig.inherit_inner && !navigationConfig._light_palette_view)
+            navigationConfig._light_palette_view=current._light_palette_view;
 
         // Promotion selects a new physical center; palettes/siblings keep it.
-        navigationCore.enterNested(context, current, honeycombConfig);
-        honeycombConfig.size=current.size;
-        if (honeycombConfig.layout_envelope === undefined) honeycombConfig.layout_envelope=current.layout_envelope;
-        if (!navigationCore.isHubRoot(current) && honeycombConfig.promote_to_center !== true) {
-            honeycombConfig.anchor_x=context.honeycomb._anchorX;
-            honeycombConfig.anchor_y=context.honeycomb._anchorY;
+        navigationCore.enterNested(context, current, navigationConfig);
+        navigationConfig.size=current.size;
+        if (navigationConfig.layout_envelope === undefined) navigationConfig.layout_envelope=current.layout_envelope;
+        if (!navigationCore.isHubRoot(current) && navigationConfig.promote_to_center !== true) {
+            navigationConfig.anchor_x=context.scene._anchorX;
+            navigationConfig.anchor_y=context.scene._anchorY;
         }
 
-        if (!navigationCore.areSiblings(current, honeycombConfig))
+        if (!navigationCore.areSiblings(current, navigationConfig))
             context.stack.push({
-                __honeycomb_stack_entry: true,
+                __jts_n_stack_entry: true,
                 config: merge({}, current),
                 inPlace: true
             });
 
         // Inherit explicit zero as well as positive idle settings. Completing
         // asynchronous navigation is not itself a new user interaction.
-        if (honeycombConfig.idle_timeout === undefined && current.idle_timeout !== undefined)
-            honeycombConfig.idle_timeout = current.idle_timeout;
+        if (navigationConfig.idle_timeout === undefined && current.idle_timeout !== undefined)
+            navigationConfig.idle_timeout = current.idle_timeout;
 
         // Optional expansion mode used by palettes and similar controls:
         // keep the currently visible inner ring and add the nested menu to the
         // outer physical slots. The nested menu remains generic and can still
         // override any of the inherited buttons explicitly.
-        if( honeycombConfig.inherit_inner === true && context.honeycomb )
+        if( navigationConfig.inherit_inner === true && context.scene )
         {
             const combined = [];
-            const currentButtons = context.honeycomb.buttons || [];
+            const currentButtons = context.scene.buttons || [];
 
             for( let i = 0; i < 6; i++ )
             {
@@ -151,16 +151,16 @@ function openHoneycombMenu(context, config)
                 {
                     // Capture the actual parent appearance before replacing
                     // the scene; independent child menus retain their own defaults.
-                    const inherited=context.honeycomb._computeItemConfig(button);
-                    if (inherited._light_palette_launcher && honeycombConfig._light_palette_view)
-                        Object.assign(inherited,paletteIndicator(inherited.entity,liveHass,honeycombConfig._light_palette_view));
+                    const inherited=context.scene._computeItemConfig(button);
+                    if (inherited._light_palette_launcher && navigationConfig._light_palette_view)
+                        Object.assign(inherited,paletteIndicator(inherited.entity,liveHass,navigationConfig._light_palette_view));
                     inherited.slot=i+1;
                     inherited.slot_mode='hard';
                     combined[i]=[inherited];
                 }
             }
 
-            const nestedButtons = honeycombConfig.buttons || [];
+            const nestedButtons = navigationConfig.buttons || [];
 
             nestedButtons.forEach((stack, index) => {
                 if( ! stack )
@@ -174,91 +174,91 @@ function openHoneycombMenu(context, config)
                     : [merge({}, stack)];
             });
 
-            honeycombConfig.buttons = combined;
-            honeycombConfig.empty_slots = 'hidden';
+            navigationConfig.buttons = combined;
+            navigationConfig.empty_slots = 'hidden';
         }
 
         // Persistent menus expand in-place around a real dashboard/floorplan
         // anchor. Preserve that context through nested menus so the screen does
         // not jump and the center keeps the same physical size and styling.
-        if( current.persistent_center || honeycombConfig.persistent_center )
+        if( current.persistent_center || navigationConfig.persistent_center )
         {
-            honeycombConfig.position_mode = current.position_mode || 'anchored';
-            honeycombConfig.size = current.size;
+            navigationConfig.position_mode = current.position_mode || 'anchored';
+            navigationConfig.size = current.size;
 
-            if( honeycombConfig.spacing === undefined && current.spacing !== undefined )
-                honeycombConfig.spacing = current.spacing;
+            if( navigationConfig.spacing === undefined && current.spacing !== undefined )
+                navigationConfig.spacing = current.spacing;
 
-            if( honeycombConfig.promote_to_center === true && honeycombConfig.promoted_center )
+            if( navigationConfig.promote_to_center === true && navigationConfig.promoted_center )
             {
-                honeycombConfig.persistent_center = merge(
+                navigationConfig.persistent_center = merge(
                     {},
-                    honeycombConfig.promoted_center,
+                    navigationConfig.promoted_center,
                     {
                         interactive: true,
-                        tap_action: { action: 'honeycomb-back' },
-                        size: (current.persistent_center || {}).size || honeycombConfig.promoted_center.size
+                        tap_action: { action: 'jts-n-back' },
+                        size: (current.persistent_center || {}).size || navigationConfig.promoted_center.size
                     }
                 );
             }
             else
             {
-                honeycombConfig.persistent_center = merge(
+                navigationConfig.persistent_center = merge(
                     {},
                     current.persistent_center,
-                    honeycombConfig.persistent_center || {},
+                    navigationConfig.persistent_center || {},
                     {
                         interactive: true,
                         icon: 'mdi:arrow-left',
-                        tap_action: { action: 'honeycomb-back' }
+                        tap_action: { action: 'jts-n-back' }
                     }
                 );
             }
 
-            honeycombConfig.center_button = null;
+            navigationConfig.center_button = null;
         }
 
-        context.currentConfig = merge({}, honeycombConfig);
-        context.honeycomb.replaceConfig(honeycombConfig);
+        context.currentConfig = merge({}, navigationConfig);
+        context.scene.replaceConfig(navigationConfig);
 
         if(context.owner && context.owner._hubExpanded) {
             delete context.currentConfig._expanded_fit;
-            context.owner._fitExpansion({entering:true,preferred:navigationCore.readAnchor(honeycombConfig)});
-            return context.honeycomb;
+            context.owner._fitExpansion({entering:true,preferred:navigationCore.readAnchor(navigationConfig)});
+            return context.scene;
         }
 
         if(
-            Number.isFinite(Number(honeycombConfig.anchor_x)) &&
-            Number.isFinite(Number(honeycombConfig.anchor_y)) &&
-            typeof context.honeycomb.reanchor === 'function'
+            Number.isFinite(Number(navigationConfig.anchor_x)) &&
+            Number.isFinite(Number(navigationConfig.anchor_y)) &&
+            typeof context.scene.reanchor === 'function'
         )
         {
-            context.honeycomb.reanchor(
-                Number(honeycombConfig.anchor_x),
-                Number(honeycombConfig.anchor_y)
+            context.scene.reanchor(
+                Number(navigationConfig.anchor_x),
+                Number(navigationConfig.anchor_y)
             );
         }
 
-        return context.honeycomb;
+        return context.scene;
     }
 
-    return showHoneycombMenu( honeycombConfig, { nested, context } );
+    return showNavigationMenu( navigationConfig, { nested, context } );
 };
 
 
-window.honeycombNG.open = (config, owner = null) => {
+window.jefferiesNavigation.open = (config, owner = null) => {
     manager.owner=owner;
-    return openHoneycombMenu(manager, config);
+    return openNavigationMenu(manager, config);
 };
 
-window.honeycombNG.createContext = () =>
+window.jefferiesNavigation.createContext = () =>
     navigationCore.createMenuContext({ local: true });
 
-window.honeycombNG.openInContext = (context, config) => {
+window.jefferiesNavigation.openInContext = (context, config) => {
     if( ! context || typeof context !== 'object' )
-        return openHoneycombMenu(manager, config);
+        return openNavigationMenu(manager, config);
 
-    return openHoneycombMenu(context, config);
+    return openNavigationMenu(context, config);
 };
 document.addEventListener('touchstart', manager.handleXYPosition, false);
 document.addEventListener('mousedown', manager.handleXYPosition, false);
@@ -268,52 +268,52 @@ document.addEventListener('pointercancel', manager.handlePointerUp, true);
 window.addEventListener('blur', () => {
     const contexts = new Set([manager, ...manager.pointerOwners.values()]);
     let view = null;
-    // Honeycomb can remain loaded after navigation away from Lovelace.
+    // Jefferies Navigation can remain loaded after navigation away from Lovelace.
     try { view = lovelace_view(); } catch (_) { /* No active dashboard. */ }
-    if (view) view.querySelectorAll('honeycomb-menu-ng').forEach(menu => contexts.add(menu._menuContext || manager));
+    if (view) view.querySelectorAll('jts-n-menu').forEach(menu => contexts.add(menu._menuContext || manager));
     for (const context of contexts) {
         context.pointers.clear();
         for (const item of [...context.pendingActions]) item._cancelGesture();
-        if (context.honeycomb) {
-            context.honeycomb._dragPointerActive = false;
-            context.honeycomb._dragPointerId = null;
-            context.honeycomb.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control').forEach(item => item._cancelGesture());
+        if (context.scene) {
+            context.scene._dragPointerActive = false;
+            context.scene._dragPointerId = null;
+            context.scene.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control').forEach(item => item._cancelGesture());
         }
         notifyContext(context);
     }
     manager.pointerOwners.clear(); manager.pointerDown = false; manager.pointerId = null;
 });
 
-window.honeycombNG.updateBase = (context, config) => {
+window.jefferiesNavigation.updateBase = (context, config) => {
     if (context && context.info) return false;
-    if (!context || !context.honeycomb || context.honeycomb.closing || context.stack.length || !navigationCore.isHubRoot(context.currentConfig)) return false;
+    if (!context || !context.scene || context.scene.closing || context.stack.length || !navigationCore.isHubRoot(context.currentConfig)) return false;
     const prepared = prepareMenuConfig(config);
     context.currentConfig = merge({}, prepared);
-    context.honeycomb.replaceConfig(prepared);
+    context.scene.replaceConfig(prepared);
     return true;
 };
 
 document.body.addEventListener("ll-custom", e => {
     const detail = e.detail || {};
-    if (detail.honeycomb_ng_info) {
+    if (detail.jts_n_info) {
         const path=e.composedPath();
         const owner=path.find(node=>node && node._menuContext);
-        const source=path.find(node=>node && node.matches && node.matches('honeycomb-menu-ng-item,honeycomb-persistent-control'));
-        openInfo(owner ? owner._menuContext : manager,detail.honeycomb_ng_info,source);
+        const source=path.find(node=>node && node.matches && node.matches('jts-n-menu-item,navigation-control'));
+        openInfo(owner ? owner._menuContext : manager,detail.jts_n_info,source);
         return;
     }
     // Ambiguous external legacy events belong to original when it is loaded.
     // NG-owned actions use the explicit key; NG-only dashboards keep old YAML.
-    const ownConfig = detail.honeycomb_ng_menu;
-    const legacyConfig = !customElements.get('honeycomb-menu') && detail.honeycomb_menu;
+    const ownConfig = detail.jts_n_menu;
+    const legacyConfig = !customElements.get('navigation-menu') && detail.jts_n_menu;
     if(ownConfig || legacyConfig)
     {
-        const nestedConfig = merge({}, ownConfig || legacyConfig);
+        const nestedConfig = merge({}, detail.jts_n_menu);
         const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
         const sourceMenu = path.find(node =>
             node &&
             node.tagName &&
-            node.tagName.toLowerCase() === 'honeycomb-menu-ng'
+            node.tagName.toLowerCase() === 'jts-n-menu'
         );
         const context = sourceMenu && sourceMenu._menuContext
             ? sourceMenu._menuContext
@@ -328,7 +328,7 @@ document.body.addEventListener("ll-custom", e => {
             const sourceItem = path.find(node =>
                 node &&
                 node.tagName &&
-                ['honeycomb-menu-ng-item','honeycomb-persistent-control'].includes(node.tagName.toLowerCase())
+                ['jts-n-menu-item','navigation-control'].includes(node.tagName.toLowerCase())
             );
 
             if( sourceItem && typeof sourceItem.getBoundingClientRect === 'function' )
@@ -340,14 +340,14 @@ document.body.addEventListener("ll-custom", e => {
             }
         }
 
-        openHoneycombMenu(context, nestedConfig);
+        openNavigationMenu(context, nestedConfig);
     }
 });
 
-function showHoneycombMenu( _config, options = {} )
+function showNavigationMenu( _config, options = {} )
 {
     const context = options.context || manager;
-    const previous = context.honeycomb;
+    const previous = context.scene;
 
     if( options.resetStack )
         context.stack = [];
@@ -358,9 +358,9 @@ function showHoneycombMenu( _config, options = {} )
     if( previous )
         previous.close();
 
-    const menu = document.createElement('honeycomb-menu-ng');
+    const menu = document.createElement('jts-n-menu');
     menu._menuContext = context;
-    context.honeycomb = menu;
+    context.scene = menu;
     context.currentConfig = merge({}, _config);
 
     menu.setConfig( _config );
@@ -376,9 +376,9 @@ function showHoneycombMenu( _config, options = {} )
     const mount=owner && owner.isConnected && owner.parentElement && owner.parentElement !== document.body
         ? owner.parentElement : lovelace_view();
     menu.display( mount, anchorX, anchorY );
-    menu.addEventListener('honeycomb-ng-closing', e => {
-        if( context.honeycomb === menu )
-            context.honeycomb = null;
+    menu.addEventListener('jts-n-closing', e => {
+        if( context.scene === menu )
+            context.scene = null;
     });
 
     return menu;
@@ -391,9 +391,9 @@ function dismissInfo(context, resume = true)
     if (!view) return false;
     context.info=null;
     view.remove();
-    const menu=context.honeycomb;
+    const menu=context.scene;
     if (menu) {
-        menu.shadowRoot.querySelectorAll('#honeycombs,honeycomb-ng-xy-pad').forEach(node=>{node.inert=false;});
+        menu.shadowRoot.querySelectorAll('#navigation-cells,jts-n-xy-pad').forEach(node=>{node.inert=false;});
         if (resume && !menu.closing) menu._resetIdleTimeout();
     }
     if(resume && context.owner && context.owner._hubExpanded && typeof context.owner._fitExpansion==='function')context.owner._fitExpansion();
@@ -405,7 +405,7 @@ function dismissInfo(context, resume = true)
 function openInfo(context, config, source = null)
 {
     context=context || manager;
-    const menu=context.honeycomb;
+    const menu=context.scene;
     if (!menu || !menu.isConnected || menu.closing || context.owner && context.owner.preview) return null;
     require('./core/info-cube').validate(config);
     const savedFocus=context.infoFocus;
@@ -418,24 +418,24 @@ function openInfo(context, config, source = null)
     source=source || center;
     const sourceGeometry=()=>{
         if(!source || !source.isConnected)return null;
-        const box=source.getBoundingClientRect(),index=source.getAttribute('data-honeycomb-slot'),slot=index===null||index==='center'?0:Number(index)+1;
+        const box=source.getBoundingClientRect(),index=source.getAttribute('data-jts-n-slot'),slot=index===null||index==='center'?0:Number(index)+1;
         return {x:box.left+box.width/2,y:box.top+box.height/2,slot:Number.isSafeInteger(slot)?slot:null,inner:require('./core/info-paint').connectorColor(source)};
     };
     const paintSnapshot=require('./core/info-paint').capture(source);
-    const view=document.createElement('honeycomb-ng-info');
+    const view=document.createElement('jts-n-info-cube');
     let focused=document.activeElement;
     while(focused && focused.shadowRoot && focused.shadowRoot.activeElement) focused=focused.shadowRoot.activeElement;
     context.infoFocus=savedFocus && savedFocus.isConnected ? savedFocus : focused;
     view._menuContext=context;
-    view.configure(config,{paintSnapshot,hass:menu.hass,anchor,size:menu.sizes.item,observe:center || menu.shadowRoot.querySelector('#honeycombs'),positionElement:menu,
+    view.configure(config,{paintSnapshot,hass:menu.hass,anchor,size:menu.sizes.item,observe:center || menu.shadowRoot.querySelector('#navigation-cells'),positionElement:menu,
         readGeometry:()=>{const point=menu._computeCenterPosition(),box=(center || menu).getBoundingClientRect();return {size:menu.sizes.item,source:sourceGeometry(),anchor:center?{x:box.left+box.width/2,y:box.top+box.height/2}:
             {x:box.left+(point.x+.5)*menu.sizes.item,y:box.top+(point.y+.57735)*menu.sizes.item}};},
-        onReturn:()=>dismissInfo(context),onExpire:()=>{dismissInfo(context,false);honeycombClose(context);}});
+        onReturn:()=>dismissInfo(context),onExpire:()=>{dismissInfo(context,false);closeNavigation(context);}});
     context.info=view;
     menu._clearIdleTimeout();
     menu._dragPointerActive=false;menu._dragPointerId=null;menu._dragHoverSlot=-1;
-    menu.shadowRoot.querySelectorAll('#honeycombs,honeycomb-ng-xy-pad').forEach(node=>{node.inert=true;});
-    menu.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control,honeycomb-ng-xy-pad').forEach(item=>item._cancelGesture());
+    menu.shadowRoot.querySelectorAll('#navigation-cells,jts-n-xy-pad').forEach(node=>{node.inert=true;});
+    menu.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control,jts-n-xy-pad').forEach(item=>item._cancelGesture());
     const topLayer=menu.hasAttribute('popover') && typeof menu.showPopover==='function' && menu.matches(':popover-open');
     if(topLayer){
         view.setAttribute('popover','manual');
@@ -445,25 +445,25 @@ function openInfo(context, config, source = null)
     if(topLayer)view.showPopover();
     return view;
 }
-window.honeycombNG.openInfoInContext=(context,config,source)=>openInfo(context,config,source);
-window.honeycombNG.openInfo=config=>openInfo(manager,config);
+window.jefferiesNavigation.openInfoInContext=(context,config,source)=>openInfo(context,config,source);
+window.jefferiesNavigation.openInfo=config=>openInfo(manager,config);
 
-function honeycombBack(context = manager, { interaction = true } = {})
+function navigateBack(context = manager, { interaction = true } = {})
 {
     if (dismissInfo(context)) return true;
     if(context.owner && context.owner._hubExpanded && context.stack.length===0)return context.owner._collapseHub();
-    if( !context.honeycomb || context.honeycomb.closing || context.stack.length === 0 )
+    if( !context.scene || context.scene.closing || context.stack.length === 0 )
         return false;
 
     const previous = context.stack.pop();
 
-    if( previous && previous.__honeycomb_stack_entry && previous.inPlace && context.honeycomb )
+    if( previous && previous.__jts_n_stack_entry && previous.inPlace && context.scene )
     {
         navigationCore.prepareBack(context, previous.config);
 
         context.currentConfig = merge({}, previous.config);
-        context.honeycomb.replaceConfig(previous.config);
-        if (interaction) context.honeycomb._resetIdleTimeout();
+        context.scene.replaceConfig(previous.config);
+        if (interaction) context.scene._resetIdleTimeout();
 
         if(context.owner && context.owner._hubExpanded) {
             context.owner._fitExpansion();notifyContext(context);return true;
@@ -472,10 +472,10 @@ function honeycombBack(context = manager, { interaction = true } = {})
         if(
             Number.isFinite(Number(previous.config && previous.config.anchor_x)) &&
             Number.isFinite(Number(previous.config && previous.config.anchor_y)) &&
-            typeof context.honeycomb.reanchor === 'function'
+            typeof context.scene.reanchor === 'function'
         )
         {
-            context.honeycomb.reanchor(
+            context.scene.reanchor(
                 Number(previous.config.anchor_x),
                 Number(previous.config.anchor_y)
             );
@@ -485,17 +485,17 @@ function honeycombBack(context = manager, { interaction = true } = {})
         return true;
     }
 
-    const previousConfig = previous && previous.__honeycomb_stack_entry
+    const previousConfig = previous && previous.__jts_n_stack_entry
         ? previous.config
         : previous;
 
     navigationCore.prepareBack(context, previousConfig);
-    showHoneycombMenu(previousConfig, { nested: false, context });
+    showNavigationMenu(previousConfig, { nested: false, context });
     notifyContext(context);
     return true;
 }
 
-function honeycombClose(context = manager)
+function closeNavigation(context = manager)
 {
     if(context.owner && context.owner._hubExpanded){dismissInfo(context,false);return context.owner._collapseHub();}
     dismissInfo(context,false);
@@ -503,20 +503,20 @@ function honeycombClose(context = manager)
     context.currentConfig = null;
     navigationCore.resetNavigation(context);
 
-    if( context.honeycomb )
-        context.honeycomb.close();
+    if( context.scene )
+        context.scene.close();
     notifyContext(context);
 }
 
-function honeycombDispose(context = manager)
+function disposeNavigation(context = manager)
 {
     dismissInfo(context,false);
-    const menu = context.honeycomb;
+    const menu = context.scene;
     if(context.owner && context.owner._originReference)context.owner._clearExpansion();
 
     context.stack = [];
     context.currentConfig = null;
-    context.honeycomb = null;
+    context.scene = null;
     context.pointers.clear(); context.pendingActions.clear();
     context.onIdle = null; context.owner = null;
     for (const [id,owner] of manager.pointerOwners) if (owner === context) manager.pointerOwners.delete(id);
@@ -531,11 +531,11 @@ function honeycombDispose(context = manager)
         menu.remove();
 }
 
-window.honeycombNG.back = () => honeycombBack(manager);
-window.honeycombNG.close = () => honeycombClose(manager);
-window.honeycombNG.backInContext = context => honeycombBack(context || manager);
-window.honeycombNG.closeInContext = context => honeycombClose(context || manager);
-window.honeycombNG.disposeContext = context => honeycombDispose(context || manager);
+window.jefferiesNavigation.back = () => navigateBack(manager);
+window.jefferiesNavigation.close = () => closeNavigation(manager);
+window.jefferiesNavigation.backInContext = context => navigateBack(context || manager);
+window.jefferiesNavigation.closeInContext = context => closeNavigation(context || manager);
+window.jefferiesNavigation.disposeContext = context => disposeNavigation(context || manager);
 
 function traverseConfigs( _config, _buttons )
 {
@@ -574,22 +574,22 @@ function traverseConfigs( _config, _buttons )
 
     _config = merge({}, _config );
 
-    const honeycomb_templates = honeycomb_menu_templates();
-    if( ! _config.template || ! honeycomb_templates || ! honeycomb_templates[_config.template] )
+    const navigationTemplates = jts_n_menu_templates();
+    if( ! _config.template || ! navigationTemplates || ! navigationTemplates[_config.template] )
         return Object.assign({}, _config, bindButtons( _config ));
 
-    let parentConfig = traverseConfigs( honeycomb_templates[_config.template], _buttons );
+    let parentConfig = traverseConfigs( navigationTemplates[_config.template], _buttons );
 
     delete _config.template;
 
     return Object.assign({}, parentConfig, _config, bindButtons( _config ));
 }
 
-class HoneycombMenu extends LitElement
+class NavigationMenu extends LitElement
 {
     static get is()
     {
-        return 'honeycomb-menu-ng';
+        return 'jts-n-menu';
     }
 
     static get properties()
@@ -736,64 +736,64 @@ class HoneycombMenu extends LitElement
                 animation-name: fadeOut;
                 animation-duration: 500ms;
             }
-            .honeycombs {
+            .navigation-cells {
                 --filter-color: rgba(0, 0, 0, 0.76);
                 width: var(--container-width);
                 height: var(--container-height);
                 pointer-events: none;
             }
-            honeycomb-menu-ng-item {
+            jts-n-menu-item {
                 position: absolute;
                 pointer-events: all;
                 box-sizing: border-box;
                 width: var(--item-size);
                 padding: 0;
             }
-            honeycomb-menu-ng-item.center-item,
-            honeycomb-persistent-control.center-item {
+            jts-n-menu-item.center-item,
+            navigation-control.center-item {
                 z-index: 2;
             }
-            honeycomb-persistent-control.center-item,
-            honeycomb-persistent-control.ring-item {
+            navigation-control.center-item,
+            navigation-control.ring-item {
                 position: absolute;
                 width: var(--item-size);
                 pointer-events: all;
                 box-sizing: border-box;
             }
-            honeycomb-menu-ng-item.center-item.center-auto-style {
-                filter: brightness(var(--honeycomb-center-brightness, 1.25));
+            jts-n-menu-item.center-item.center-auto-style {
+                filter: brightness(var(--jts-n-center-brightness, 1.25));
             }
-            honeycomb-menu-ng-item.drag-hover {
+            jts-n-menu-item.drag-hover {
                 filter: brightness(1.18);
                 transform: scale3d(var(--hub-hover-scale,1.08), var(--hub-hover-scale,1.08), var(--hub-hover-scale,1.08));
                 z-index: 3;
             }
-            honeycomb-menu-ng-item.center-item.center-auto-style.drag-hover {
-                filter: brightness(calc(var(--honeycomb-center-brightness, 1.25) * 1.18));
+            jts-n-menu-item.center-item.center-auto-style.drag-hover {
+                filter: brightness(calc(var(--jts-n-center-brightness, 1.25) * 1.18));
             }
-            honeycomb-menu-ng-item,
-            honeycomb-persistent-control.ring-item,
-            honeycomb-ng-xy-pad {
+            jts-n-menu-item,
+            navigation-control.ring-item,
+            jts-n-xy-pad {
                 animation-duration: 0.5s;
                 animation-fill-mode: both;
                 animation-name: zoomIn;
             }
-            :host([closing]) honeycomb-menu-ng-item,
-            :host([closing]) honeycomb-persistent-control.ring-item,
-            :host([closing]) honeycomb-ng-xy-pad {
+            :host([closing]) jts-n-menu-item,
+            :host([closing]) navigation-control.ring-item,
+            :host([closing]) jts-n-xy-pad {
                 animation-name: zoomOut;
             }
-            :host([closing]) honeycomb-menu-ng-item[selected] {
+            :host([closing]) jts-n-menu-item[selected] {
                 animation-duration: 0.75s;
                 animation-name: bounceOut;
             }
-            :host([no-animation]) honeycomb-menu-ng-item,
-            :host([no-animation]) honeycomb-persistent-control.ring-item,
-            :host([no-animation]) honeycomb-ng-xy-pad {
+            :host([no-animation]) jts-n-menu-item,
+            :host([no-animation]) navigation-control.ring-item,
+            :host([no-animation]) jts-n-xy-pad {
                 animation: none !important;
                 animation-delay: 0ms !important;
             }
-            honeycomb-ng-xy-pad {
+            jts-n-xy-pad {
                 width: var(--container-width);
                 height: var(--container-height);
             }`;
@@ -810,17 +810,17 @@ class HoneycombMenu extends LitElement
             `}
 
             ${(this.config.xy_pad) ? html`
-                <honeycomb-ng-xy-pad
+                <jts-n-xy-pad
                     style="animation-delay: ${this._computeAnimateDelay(1)};"
                     .hass=${this.hass}
                     .config=${this.config.xy_pad}
                     .size=${this._computeXYPadSize()}
                     .clampX=${this._computeXYPadClamp()}
                     .clampY=${this._computeXYPadClamp()}
-                    @honeycomb-ng-drag=${this._handleXYPad}
-                    @honeycomb-ng-drag-interval=${this._handleXYPad}
-                    @honeycomb-ng-drag-end=${this._handleXYPad}>
-                </honeycomb-ng-xy-pad>`:''}
+                    @jts-n-drag=${this._handleXYPad}
+                    @jts-n-drag-interval=${this._handleXYPad}
+                    @jts-n-drag-end=${this._handleXYPad}>
+                </jts-n-xy-pad>`:''}
 
             ${this.hasAttribute('popover') ? html`<div class="hub-shield" @click=${e=>this._menuContext.owner._handleExpansionOutside(e)}></div>`:''}
             ${this._originReference ? html`
@@ -836,29 +836,29 @@ class HoneycombMenu extends LitElement
                         </defs>
                         <polygon fill=${'url(#'+this._originReference.id+')'} filter=${'url(#'+this._originReference.id+'-soft)'}></polygon>
                     </svg>
-                    <honeycomb-persistent-control class="origin-reference" inert aria-hidden="true"
+                    <navigation-control class="origin-reference" inert aria-hidden="true"
                         .visualOnly=${true} .config=${this._originReference.config} .hass=${this.hass}>
-                    </honeycomb-persistent-control>
+                    </navigation-control>
                 </div>` : ''}
-            <div id="honeycombs" class="honeycombs">
+            <div id="navigation-cells" class="navigation-cells">
                 ${this.config.persistent_center ? html`
-                    <honeycomb-persistent-control
+                    <navigation-control
                         class="center-item persistent-center-item"
-                        data-honeycomb-id=${this.config.persistent_center._hub_item_id || ''}
+                        data-jts-n-id=${this.config.persistent_center._hub_item_id || ''}
                         style="
                             left: calc(var(--item-size) * ${centerPos.x});
                             top: calc(var(--item-size) * ${centerPos.y});
-                            --honeycomb-persistent-size: var(--item-size);
+                            --jts-n-persistent-size: var(--item-size);
                         "
                         .hass=${this.hass}
                         .config=${this.config.persistent_center}
                         .size=${this.sizes.item}>
-                    </honeycomb-persistent-control>
+                    </navigation-control>
                 ` : (centerConfig ? html`
-                    <honeycomb-menu-ng-item
+                    <jts-n-menu-item
                         class="center-item ${this._centerUseFilterFallback ? 'center-auto-style' : ''} ${this._dragHoverSlot === -2 ? 'drag-hover' : ''}"
-                        data-honeycomb-slot="center"
-                        data-honeycomb-id=${centerConfig._hub_item_id || ''}
+                        data-jts-n-slot="center"
+                        data-jts-n-id=${centerConfig._hub_item_id || ''}
                         @pointerenter=${() => this._setDragHoverSlot(-2)}
                         @pointerleave=${() => this._clearDragHoverSlot(-2)}
                         style="
@@ -870,7 +870,7 @@ class HoneycombMenu extends LitElement
                         .size=${this.sizes.item}
                         .config=${centerConfig}
                         @action=${this._handleItemAction}>
-                    </honeycomb-menu-ng-item>
+                    </jts-n-menu-item>
                 ` : '')}
 
                 ${this.buttons.map((v, i) => {
@@ -883,10 +883,10 @@ class HoneycombMenu extends LitElement
                         return '';
 
                     return html`
-                        <honeycomb-menu-ng-item
+                        <jts-n-menu-item
                             class="${this._dragHoverSlot === i ? 'drag-hover' : ''}"
-                            data-honeycomb-slot="${i}"
-                            data-honeycomb-id=${v._hub_item_id || ''}
+                            data-jts-n-slot="${i}"
+                            data-jts-n-id=${v._hub_item_id || ''}
                             @pointerenter=${() => this._setDragHoverSlot(i)}
                             @pointerleave=${() => this._clearDragHoverSlot(i)}
                             style="
@@ -898,7 +898,7 @@ class HoneycombMenu extends LitElement
                             .size=${this.sizes.item}
                             .config=${this._computeItemConfig(v)}
                             @action=${this._handleItemAction}>
-                        </honeycomb-menu-ng-item>
+                        </jts-n-menu-item>
                     `;
                 })}
             </div>`;
@@ -913,7 +913,7 @@ class HoneycombMenu extends LitElement
     set hass(value)
     {
         this._hass=value;
-        if (this.shadowRoot) this.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control,honeycomb-ng-xy-pad')
+        if (this.shadowRoot) this.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control,jts-n-xy-pad')
             .forEach(item=>{item.hass=value;});
         // Resolve caller colors before Info reads its source edge on this update.
         if (this._menuContext && this._menuContext.info) this._menuContext.info.hass=value;
@@ -989,7 +989,7 @@ class HoneycombMenu extends LitElement
         {
             // Keep anchored menus in the Lovelace subtree so wrapped cards
             // retain the same Home Assistant action/event context as normal
-            // Honeycomb menus. position:fixed keeps the overlay out of layout
+            // Jefferies Navigation menus. position:fixed keeps the overlay out of layout
             // flow, so it still cannot increase scrollable document height.
             this.style.position = 'fixed';
             this.view.append(this);
@@ -1070,7 +1070,7 @@ class HoneycombMenu extends LitElement
 
     _cancelXYPad()
     {
-        if(this.shadowRoot)this.shadowRoot.querySelectorAll('honeycomb-ng-xy-pad').forEach(pad=>pad._cancelGesture());
+        if(this.shadowRoot)this.shadowRoot.querySelectorAll('jts-n-xy-pad').forEach(pad=>pad._cancelGesture());
     }
 
     dispose()
@@ -1117,8 +1117,8 @@ class HoneycombMenu extends LitElement
         document.removeEventListener('pointerup', this._boundPointerUp, true);
         document.removeEventListener('pointercancel', this._boundPointerUp, true);
 
-        if (this.config.animate === false) { fireEvent(this,'honeycomb-ng-closing',{item:_item}); this.dispose(); fireEvent(this,'honeycomb-ng-closed',{item:_item}); return; }
-        const items = this.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control');
+        if (this.config.animate === false) { fireEvent(this,'jts-n-closing',{item:_item}); this.dispose(); fireEvent(this,'jts-n-closed',{item:_item}); return; }
+        const items = this.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control');
         let ele = _item || items[items.length - 1];
 
         if( _item )
@@ -1127,7 +1127,7 @@ class HoneycombMenu extends LitElement
             _item.style.animationDelay = this._computeAnimateDelay(3);
         }
 
-        fireEvent(this, 'honeycomb-ng-closing', { item: _item });
+        fireEvent(this, 'jts-n-closing', { item: _item });
 
         const shade = this.shadowRoot.querySelector('#shade');
         if( shade )
@@ -1141,13 +1141,13 @@ class HoneycombMenu extends LitElement
         {
             ele.addEventListener('animationend', e => {
                 this.remove();
-                fireEvent(this, 'honeycomb-ng-closed', { item: _item });
+                fireEvent(this, 'jts-n-closed', { item: _item });
             });
         }
         else
         {
             this.remove();
-            fireEvent(this, 'honeycomb-ng-closed', { item: _item });
+            fireEvent(this, 'jts-n-closed', { item: _item });
         }
     }
 
@@ -1252,7 +1252,7 @@ class HoneycombMenu extends LitElement
             else
             {
                 console.warn(
-                    `[Honeycomb Menu NG] Hard slot ${entry.target + 1} is already occupied. Ignoring duplicate hard slot.`
+                    `[Jefferies Navigation] Hard slot ${entry.target + 1} is already occupied. Ignoring duplicate hard slot.`
                 );
             }
         });
@@ -1311,7 +1311,7 @@ class HoneycombMenu extends LitElement
             if( target !== undefined )
                 assigned[target] = entry.button;
             else
-                console.warn('[Honeycomb Menu NG] No free slot available for soft slot button.');
+                console.warn('[Jefferies Navigation] No free slot available for soft slot button.');
         });
 
         // Buttons without slot information use the first free active position.
@@ -1321,7 +1321,7 @@ class HoneycombMenu extends LitElement
             if( target !== undefined )
                 assigned[target] = entry.button;
             else
-                console.warn('[Honeycomb Menu NG] No free slot available for automatic button.');
+                console.warn('[Jefferies Navigation] No free slot available for automatic button.');
         });
 
         const showEmptySlots = this.config.empty_slots !== 'hidden';
@@ -1350,7 +1350,7 @@ class HoneycombMenu extends LitElement
 
         const context = this._menuContext || manager;
 
-        if( context.honeycomb === this && context.currentConfig )
+        if( context.scene === this && context.currentConfig )
         {
             context.currentConfig.anchor_x = x;
             context.currentConfig.anchor_y = y;
@@ -1436,7 +1436,7 @@ class HoneycombMenu extends LitElement
 
     _setCssVarProperty(orig_property, var_property)
     {
-        this.shadowRoot.querySelector('#honeycombs').style.setProperty(orig_property, `var(${var_property}, ${this.view.style.getPropertyValue(orig_property)})`, "important");
+        this.shadowRoot.querySelector('#navigation-cells').style.setProperty(orig_property, `var(${var_property}, ${this.view.style.getPropertyValue(orig_property)})`, "important");
     }
 
     _setCssVars()
@@ -1452,12 +1452,12 @@ class HoneycombMenu extends LitElement
         const centerBrightnessFactor = Number.isFinite(centerBrightness)
             ? Math.max(0, 1 + (centerBrightness / 100))
             : 1.25;
-        this.style.setProperty('--honeycomb-center-brightness', `${centerBrightnessFactor}`);
+        this.style.setProperty('--jts-n-center-brightness', `${centerBrightnessFactor}`);
 
-        this._setCssVarProperty('--paper-item-icon-color', '--honeycomb-menu-ng-icon-color');
-        this._setCssVarProperty('--paper-item-icon-active-color', '--honeycomb-menu-ng-icon-active-color');
-        this._setCssVarProperty('--ha-card-background', '--honeycomb-menu-ng-background-color');
-        this._setCssVarProperty('--ha-card-active-background', '--honeycomb-menu-ng-active-background-color');
+        this._setCssVarProperty('--paper-item-icon-color', '--navigation-compass-color');
+        this._setCssVarProperty('--paper-item-icon-active-color', '--navigation-compass-active-color');
+        this._setCssVarProperty('--ha-card-background', '--jts-n-menu-background-color');
+        this._setCssVarProperty('--ha-card-active-background', '--jts-n-menu-active-background-color');
     }
 
     _handleShadeClick(e)
@@ -1493,37 +1493,37 @@ class HoneycombMenu extends LitElement
             : null;
 
         // Native nested actions must stay inside the menu context that owns
-        // this Honeycomb. Using button-card fire-dom-event can lose the local
+        // this Jefferies Navigation. Using button-card fire-dom-event can lose the local
         // persistent-Hub context at a shadow-DOM boundary and accidentally
-        // open a second global Honeycomb (with shade) on top of the Hub.
+        // open a second global Jefferies Navigation (with shade) on top of the Hub.
         if(
-            configuredAction === 'honeycomb-open-nested' &&
+            configuredAction === 'jts-n-open-nested' &&
             actionConfig &&
-            actionConfig.honeycomb_nested_menu
+            actionConfig.jts_n_nested_menu
         )
         {
             e.stopPropagation();
 
-            openHoneycombMenu(
+            openNavigationMenu(
                 this._menuContext || manager,
-                merge({}, actionConfig.honeycomb_nested_menu)
+                merge({}, actionConfig.jts_n_nested_menu)
             );
 
             this._resetIdleTimeout();
             return;
         }
 
-        if( configuredAction === 'honeycomb-back' )
+        if( configuredAction === 'jts-n-back' )
         {
             e.stopPropagation();
-            honeycombBack(this._menuContext || manager);
+            navigateBack(this._menuContext || manager);
             return;
         }
 
-        if( configuredAction === 'honeycomb-close' )
+        if( configuredAction === 'jts-n-close' )
         {
             e.stopPropagation();
-            honeycombClose(this._menuContext || manager);
+            closeNavigation(this._menuContext || manager);
             return;
         }
 
@@ -1580,7 +1580,7 @@ class HoneycombMenu extends LitElement
 
         while( element && element !== this.shadowRoot )
         {
-            if( element.tagName && ['honeycomb-menu-ng-item','honeycomb-persistent-control'].includes(element.tagName.toLowerCase()) )
+            if( element.tagName && ['jts-n-menu-item','navigation-control'].includes(element.tagName.toLowerCase()) )
                 return element;
 
             element = element.parentElement;
@@ -1638,7 +1638,7 @@ class HoneycombMenu extends LitElement
 
         const slot = item.classList.contains('center-item')
             ? -2
-            : Number(item.dataset.honeycombSlot);
+            : Number(item.dataset.jtsNSlot);
 
         this._dragHoverSlot = Number.isFinite(slot) ? slot : -1;
     }
@@ -1729,10 +1729,10 @@ class HoneycombMenu extends LitElement
             {
                 // A persistent Hub never disappears on idle. Unwind nested
                 // levels in-place back to the base instead of closing the
-                // Honeycomb and briefly exposing the hidden bootstrap card.
+                // Jefferies Navigation and briefly exposing the hidden bootstrap card.
                 while( context.stack.length > 0 )
                 {
-                    if( ! honeycombBack(context, { interaction: false }) )
+                    if( ! navigateBack(context, { interaction: false }) )
                         break;
                 }
 
@@ -1750,11 +1750,11 @@ class HoneycombMenu extends LitElement
         if( ! isString(_item.config.audio) )
             return;
 
-        let audio_ele = document.querySelector('#honeycomb-ng-audio');
+        let audio_ele = document.querySelector('#jts-n-audio');
         if( ! audio_ele )
         {
             audio_ele = document.createElement('audio');
-            audio_ele.id = 'honeycomb-ng-audio';
+            audio_ele.id = 'jts-n-audio';
             document.querySelector("home-assistant").append(audio_ele);
         }
         audio_ele.src = _item.config.audio;
@@ -1766,8 +1766,8 @@ class HoneycombMenu extends LitElement
         const context=this._menuContext;
         if(this.closing || !this.isConnected || !this.config.xy_pad ||
             context && (context.info || context.owner && context.owner.preview === true))return;
-        if( (this.config.xy_pad.on_release && e.type != 'honeycomb-ng-drag-end') ||
-            (this.config.xy_pad.repeat && e.type != 'honeycomb-ng-drag-interval')
+        if( (this.config.xy_pad.on_release && e.type != 'jts-n-drag-end') ||
+            (this.config.xy_pad.repeat && e.type != 'jts-n-drag-interval')
         ) return;
 
         ['x', 'y'].forEach( axis => {
@@ -1989,7 +1989,7 @@ class HoneycombMenu extends LitElement
                 autoclose: false,
                 icon: 'mdi:arrow-left',
                 tap_action: {
-                    action: 'honeycomb-back'
+                    action: 'jts-n-back'
                 }
             }
             : {
@@ -2094,7 +2094,7 @@ class HoneycombMenu extends LitElement
             for( const actionKey of actionKeys )
             {
                 const action = button[actionKey];
-                const nested = action && action.honeycomb_menu;
+                const nested = action && action.jts_n_menu;
 
                 if( ! nested || nested.nested_expand !== true )
                     continue;
@@ -2176,4 +2176,4 @@ class HoneycombMenu extends LitElement
     }
 }
 
-customElements.define(HoneycombMenu.is, HoneycombMenu);
+customElements.define(NavigationMenu.is, NavigationMenu);

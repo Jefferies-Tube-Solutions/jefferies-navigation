@@ -19,7 +19,7 @@ function buildCubeConfig(item, hass, index = 0, slot = 0)
 {
     rejectRemovedSonosOptions(item);
     rejectRemovedSonosOptions(item.persistent || {});
-    if (item.module && !moduleRegistry.get(item.module)) throw new Error(`Unknown Honeycomb module: ${item.module}`);
+    if (item.module && !moduleRegistry.get(item.module)) throw new Error(`Unknown Jefferies Navigation module: ${item.module}`);
     const module = moduleRegistry.resolve(item, hass);
     const submenu = item.menu !== undefined ? merge({}, item.menu)
         : module.buildMenu ? module.buildMenu({ item, hass }) : null;
@@ -42,10 +42,10 @@ function buildCubeConfig(item, hass, index = 0, slot = 0)
 // keep their existing show semantics; unsupported dynamic keys fail explicitly.
 function validateCubeConfig(config, {hubItems = false, placement = false} = {})
 {
-    if (!config || typeof config !== 'object') throw new Error('A Honeycomb configuration is required.');
+    if (!config || typeof config !== 'object') throw new Error('A Jefferies Navigation configuration is required.');
     if(config.size_debug!==undefined && typeof config.size_debug!=='boolean')throw new Error('size_debug must be a boolean.');
     rejectRemovedSonosOptions(config);
-    if (config.action === 'honeycomb-info') require('./info-cube').validate(config.info);
+    if (config.action === 'jts-n-info') require('./info-cube').validate(config.info);
     if (!placement && (config.visibility !== undefined || config.slot_mode === 'priority'))
         throw new Error('Dynamic visibility and priority placement are supported only on Hub items.');
     validateGradient(config.colors && config.colors.fill_gradient);
@@ -58,7 +58,7 @@ function validateCubeConfig(config, {hubItems = false, placement = false} = {})
         return;
     }
     for (const key of ['items','buttons','menu','tap_action','hold_action',
-        'double_tap_action','honeycomb_menu','honeycomb_nested_menu','persistent']) {
+        'double_tap_action','jts_n_menu','jts_n_nested_menu','persistent']) {
         const value = config[key];
         if (value && typeof value === 'object') validateCubeConfig(value, {placement:hubItems && key === 'items'});
     }

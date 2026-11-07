@@ -1,5 +1,5 @@
 /*
- * Honeycomb Menu NG navigation core.
+ * Jefferies Navigation navigation core.
  *
  * Invariant:
  * - The persistent Hub base may establish a new module anchor.
@@ -59,7 +59,7 @@ function createMenuContext(options = {})
     const local = options.local === true;
 
     return {
-        honeycomb: null,
+        scene: null,
         stack: [],
         currentConfig: null,
         pointers: new Set(),

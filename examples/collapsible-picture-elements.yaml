@@ -1,7 +1,7 @@
 type: picture-elements
 image: https://demo.home-assistant.io/stub_config/floorplan.png
 elements:
-  - type: custom:honeycomb-persistent-hub
+  - type: custom:navigation-hub
     style: {left: 50%, top: 50%}
     collapsible: true
     items:

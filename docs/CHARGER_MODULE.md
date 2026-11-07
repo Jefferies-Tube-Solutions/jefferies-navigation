@@ -8,15 +8,15 @@ Car and Climate modules are not implemented.
 
 ## Install and copy a complete dashboard
 
-1. In HACS, keep the custom repository `NicolaiTandrup/honeycomb-menu-ng`, type
+1. In HACS, keep the custom repository `NicolaiTandrup/jts-n-menu`, type
    **Dashboard**. Enable/show prereleases in its version selector, choose
    **v1.9.0-beta.3**, and download. Normal stable installs remain on v1.8.1.
 2. Keep one JavaScript module resource at
-   `/hacsfiles/honeycomb-menu-ng/honeycomb-menu-ng.js`. Keep the existing
-   custom:button-card dependency/resource for other Honeycomb functionality.
-   Do not load a second manual/old Honeycomb NG bundle alongside it.
+   `/hacsfiles/jts-n-menu/jefferies-navigation.js`. Keep the existing
+   custom:button-card dependency/resource for other Jefferies Navigation functionality.
+   Do not load a second manual/old Jefferies Navigation bundle alongside it.
 3. Reload the HA frontend/app; hard-refresh cached resources if necessary.
-   Verify the loaded JS starts with `/*! Honeycomb Menu NG v1.9.0-beta.3 */`.
+   Verify the loaded JS starts with `/*! Jefferies Navigation v1.9.0-beta.3 */`.
 4. Copy [the complete one-Easee dashboard](../examples/charger-easee.yaml), or
    [the two-charger dashboard](../examples/charger-multi.yaml), into a new
    dashboard's raw configuration editor. These include `views`, `picture-elements`,
@@ -42,7 +42,7 @@ electrical limits; confirm each charger's actual capabilities separately.
 ## Public API and shared presentation
 
 Use `type: charger` on a Hub item, or `module: charger` on a standalone
-`custom:honeycomb-persistent-control`. The optional aggregate uses
+`custom:navigation-control`. The optional aggregate uses
 `type: charging-hub` (or standalone `module: charging-hub`) with a `chargers` list.
 It is an ordinary Hub item: use `slot: 0`, `logo: false` for the summary center.
 Other Light, Sonos, generic and future independent Car cubes retain their own slots.
@@ -190,7 +190,7 @@ shows `Not confirmed`. Easee can swallow upstream errors, so a service response
 alone is not success. Even an HA acknowledgement is not independent hardware
 confirmation. A timeout may mean the device received the command; inspect HA and
 the charger before deliberately retrying. External automation may change permission
-again; Honeycomb does not fight it. Pending actions are isolated by physical charger
+again; Jefferies Navigation does not fight it. Pending actions are isolated by physical charger
 and capability, with a bounded queue. Navigation remains available during failures.
 
 ## Easee source-backed adapter
@@ -227,7 +227,7 @@ responses only refresh current subscribed faces and cannot reopen a menu.
 The module works without this sensor. The two-charger example shows optional
 configuration; replace its exact external charger keys when the feed exists.
 No direct Node-RED endpoint or Car module is required. The external system is
-solely responsible for current, confirmed assignments; Honeycomb does not infer
+solely responsible for current, confirmed assignments; Jefferies Navigation does not infer
 identity from power, names, GPS, charging status or a previous session.
 
 Expected HA sensor attributes (synthetic data; state may be the assignment count):

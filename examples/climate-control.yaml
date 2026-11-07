@@ -1,5 +1,5 @@
 # v1.10.0-beta.1 only. Native capabilities; no helpers.
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: climate
 entity: climate.room_a
 name: Room A

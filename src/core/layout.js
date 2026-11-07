@@ -1,5 +1,5 @@
 /*
- * Physical Honeycomb layout.
+ * Physical Jefferies Navigation layout.
  *
  * Slot indexes are zero-based internally:
  *   center = 0 conceptually, ring buttons are indexes 0..17.
@@ -41,9 +41,9 @@ const OUTER_POOL = Object.freeze([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
 // persistent Hub base consists entirely of persistent controls and therefore
 // gets a visibly larger gap between neighbouring cubes.
 //
-// "cell" uses the full pointy-hex cell. With the normal Honeycomb center
+// "cell" uses the full pointy-hex cell. With the normal Jefferies Navigation center
 // offsets, neighbouring base cubes then meet with the same visual spacing as
-// classic honeycomb-menu-ng-item cubes.
+// classic jts-n-menu-item cubes.
 const PERSISTENT_HEX_POINTS = Object.freeze({
     inset: '50,5 95.67,31.3675 95.67,84.1025 50,110.47 4.33,84.1025 4.33,31.3675',
     cell: '50,0 100,28.8675 100,86.6025 50,115.47 0,86.6025 0,28.8675'

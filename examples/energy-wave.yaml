@@ -1,5 +1,5 @@
 # Synthetic shared-renderer demonstration only. No device/service/backend required.
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 size: 82
 logo: false
 items:

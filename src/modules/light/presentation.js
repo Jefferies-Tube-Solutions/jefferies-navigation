@@ -95,7 +95,7 @@ function offHubLabels(config, state, evaluate = value => value)
 {
     const tap = config.tap_action;
     if( !config._hub_item_id || !state || state.state !== 'off' ||
-        (typeof tap === 'string' ? tap : tap && tap.action) === 'honeycomb-back' )
+        (typeof tap === 'string' ? tap : tap && tap.action) === 'jts-n-back' )
         return null;
 
     const text = value => typeof value === 'string' && value.trim() ? value.trim() : null;

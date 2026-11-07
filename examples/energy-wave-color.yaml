@@ -1,5 +1,5 @@
 # v1.8.0-beta.7: synthetic, no device/helpers/services.
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 size: 82
 logo: false
 items:

@@ -3,7 +3,7 @@ entity: light.zone_a
 name: Light A
 hold_action:
   action: fire-dom-event
-  honeycomb_menu:
+  jts_n_menu:
     entity: light.zone_a
     size: 225
     empty_slots: hidden

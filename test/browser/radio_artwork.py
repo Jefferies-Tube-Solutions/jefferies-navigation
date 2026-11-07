@@ -30,14 +30,14 @@ class RadioArtwork(Cubes):
    if text.count():self.assertLess(g['paint']['y']+g['paint']['h'],text.bounding_box()['y']+.5)
   if self.evidence:self.evidence.joinpath('measurements.jsonl').open('a').write(json.dumps({'viewport':self.viewport['width'],'surface':label,**g})+'\n')
  def test_native_launcher_promoted_and_radio_all_ratios_and_states(self):
-  self.station_hub();launcher=self.page.locator('honeycomb-menu-ng .center-item')
+  self.station_hub();launcher=self.page.locator('jts-n-menu .center-item')
   for shape in ['square','wide','tall']:
    self.meta(shape)
    for state in ['playing','paused','idle']:
     self.page.evaluate('s=>stationUpdate(s)',state);self.settle();self.check_art(launcher,'launcher-'+shape+'-'+state)
     if state!='playing':self.assertEqual(launcher.locator('.hex-fill').get_attribute('fill'),'#202224')
    self.page.evaluate("stationUpdate('playing')");self.hold_input(launcher.locator('.interaction-surface'));self.settle()
-   self.check_art(self.page.locator('honeycomb-menu-ng .center-item'),'promoted-'+shape)
+   self.check_art(self.page.locator('jts-n-menu .center-item'),'promoted-'+shape)
    self.activate(self.sonos_slot(1).locator('.interaction-surface'));self.settle();favorite=self.sonos_slot(7);self.check_art(favorite,'radio-'+shape)
    self.assertEqual(favorite.locator('.primary').count(),0);self.capture('radio-'+shape)
    self.activate(favorite.locator('.interaction-surface'));self.assertEqual(self.page.evaluate('calls.at(-1).slice(0,2)'),['media_player','play_media']);self.assertEqual(self.page.evaluate('calls.at(-1)[2].media_content_id'),'favorite_a')
@@ -47,21 +47,21 @@ class RadioArtwork(Cubes):
   self.station_hub();item=self.page.evaluate('hub.config.items[0]')
   for size in [82,60,41]:
    self.page.evaluate('(x)=>hub.setConfig({logo:false,size:x.size,items:[{...x.item,border:{inner_width:5,outer_width:4}}]})',{'size':size,'item':item});self.settle()
-   self.meta('square');self.check_art(self.page.locator('honeycomb-menu-ng .center-item'),'responsive-'+str(size))
-   self.assertAlmostEqual(self.page.locator('honeycomb-menu-ng .center-item').bounding_box()['width'],size,delta=.05);self.capture('responsive-'+str(size))
+   self.meta('square');self.check_art(self.page.locator('jts-n-menu .center-item'),'responsive-'+str(size))
+   self.assertAlmostEqual(self.page.locator('jts-n-menu .center-item').bounding_box()['width'],size,delta=.05);self.capture('responsive-'+str(size))
   self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_unknown_missing_failure_and_live_recovery(self):
-  self.station_hub();self.meta('square');cube=self.page.locator('honeycomb-menu-ng .center-item');self.check_art(cube,'known')
+  self.station_hub();self.meta('square');cube=self.page.locator('jts-n-menu .center-item');self.check_art(cube,'known')
   self.page.evaluate("stationUpdate('playing',{media_content_id:'unconfigured',media_channel:'Unknown station',media_title:'Unknown station'})");self.settle();self.assertEqual(cube.locator('.station-artwork').count(),0);self.assertEqual(cube.locator('ha-icon').count(),1)
   self.page.evaluate("stationUpdate('playing',{media_content_id:'favorite_a'})");self.settle();self.check_art(cube,'recovered')
   cube.locator('.station-artwork').dispatch_event('error');self.settle();self.assertEqual(cube.locator('.station-artwork').count(),0)
   self.meta('wide');self.check_art(cube,'image-replaced');self.capture('fallback-recovery');self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_named_volume_center_and_configured_media_background(self):
-  self.station_hub({'name':'Speaker A','show_name':True});self.meta('square');self.check_art(self.page.locator('honeycomb-menu-ng .center-item'),'named-volume');self.capture('named-volume')
+  self.station_hub({'name':'Speaker A','show_name':True});self.meta('square');self.check_art(self.page.locator('jts-n-menu .center-item'),'named-volume');self.capture('named-volume')
   self.page.evaluate('hub.remove()')
   for mode in ['media','sonos']:
    self.page.evaluate("mode=>makeControl({module:mode,entity:'media_player.player_a',show_icon:false,styles:{card:[{'background-image':'url(/station-square.svg)'},{'background-size':'cover'}]}})",mode)
-   cube=self.page.locator('body > honeycomb-persistent-control');box=cube.locator('.media-background-artwork');self.assertEqual(box.evaluate('e=>getComputedStyle(e).backgroundSize'),'contain');self.assertLess(box.bounding_box()['y']+box.bounding_box()['height'],cube.locator('.secondary').bounding_box()['y']);self.capture('custom-'+mode);self.page.evaluate('control.remove()')
+   cube=self.page.locator('body > navigation-control');box=cube.locator('.media-background-artwork');self.assertEqual(box.evaluate('e=>getComputedStyle(e).backgroundSize'),'contain');self.assertLess(box.bounding_box()['y']+box.bounding_box()['height'],cube.locator('.secondary').bounding_box()['y']);self.capture('custom-'+mode);self.page.evaluate('control.remove()')
   self.assertEqual(self.page.evaluate('calls.length'),0)
 
 def main():

@@ -5,7 +5,7 @@ primary action; hold opens the full Hub. It automatically enlarges on a phone, t
 outside the floorplan image. Tap center to return, or wait 30 seconds without activity.
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 style: {left: 50%, top: 50%}
 collapsible: true
 items:
@@ -43,13 +43,13 @@ collapsible:
 The original room cube remains at its floorplan position and collapsed size,
 using the shared cube renderer and the same HA state updates for its icon, name,
 brightness, borders and gradients. It is a **visual reference, not a second
-clickable control**. Only the expanded Honeycomb accepts actions.
+clickable control**. Only the expanded Jefferies Navigation accepts actions.
 
 A soft, transparent SVG fan fades from that source toward the nearest facing
 hex boundaries along the current expanded cluster silhouette. It shares their top-layer popover,
 above the backdrop and behind the cubes; Info Cube keeps higher priority. The
 beam follows measured navigation and responsive geometry without changing the
-approved placement, parent size ceiling or Bee behavior. No extra sizing,
+approved placement, parent size ceiling or Compass behavior. No extra sizing,
 positioning, opacity or animation settings are needed.
 
 Near/overlapping source and destination suppress both the beam and duplicate
@@ -134,7 +134,7 @@ if the viewport changed. This is shared navigation, with no Sonos/slot-specific 
 
 Center is Back at the expanded root. The default keeps the primary's live visual
 appearance there; tapping it collapses instead of performing its primary action.
-Choose bee center below for direct access to the primary action while expanded.
+Choose compass center below for direct access to the primary action while expanded.
 Nested Back returns to its parent before collapsing. Escape follows the same
 navigation. There is no separate rectangular Back button.
 
@@ -143,21 +143,21 @@ ambiguity with soft/priority placement. Invisible primary items stay invisible.
 Multiple Hubs own separate contexts. Removing/reconfiguring a Hub cleans up its
 overlay and listeners. Dashboard editing previews do not execute actions.
 Keyboard: Tab to the primary, Shift+Enter/Shift+Space to expand, Enter/Space on
-the root center to collapse. With bee center, hold or Shift+Enter/Shift+Space
+the root center to collapse. With compass center, hold or Shift+Enter/Shift+Space
 reveals the installed version for three seconds without collapse. Keyboard focus
-has a visible hexagonal ring. See [shared Bee behavior](SHARED_BEE.md).
+has a visible hexagonal ring. See [shared Compass behavior](NAVIGATION_COMPASS.md).
 
 ## Optional settings
 
 | Option | Default | Override |
 | --- | --- | --- |
 | `size` | `auto` when collapsible | Numeric `size: 82` (or another positive value) fixes collapsed size. Numeric sizes are not auto capped. |
-| `collapsible.expanded_center` | `primary` | `bee` moves primary to `primary_slot` and shows bee as Back. |
-| `collapsible.primary_slot` | Required for `bee` | Available slot 1–216. Hard collisions including hidden reservations fail; soft/priority use existing allocation. |
+| `collapsible.expanded_center` | `primary` | `compass` moves primary to `primary_slot` and shows compass as Back. |
+| `collapsible.primary_slot` | Required for `compass` | Available slot 1–216. Hard collisions including hidden reservations fail; soft/priority use existing allocation. |
 | `collapsible.idle_timeout` | `30000` | At least 1000ms. Meaningful user activity resets it; HA updates and resize do not. |
 | `collapsible.small_screen` | `true` | Explicit `false` retains the legacy compact-phone opt-out. Desktop enlargement stays enabled. |
 | `collapsible.expanded_size` | Parent ceiling | Optional 44–200px requested target. Effective target is min(request, parent ceiling); fitting may shrink further. |
-| `size_debug` | `false` | Optional boolean developer diagnostic: show measured CSS-pixel width only during Bee version reveal. |
+| `size_debug` | `false` | Optional boolean developer diagnostic: show measured CSS-pixel width only during Compass version reveal. |
 
 Fixed collapsed size:
 
@@ -166,11 +166,11 @@ size: 82
 collapsible: true
 ```
 
-Bee center with primary at slot 1:
+Compass center with primary at slot 1:
 
 ```yaml
 collapsible:
-  expanded_center: bee
+  expanded_center: compass
   primary_slot: 1
 ```
 
@@ -182,23 +182,23 @@ collapsible:
   expanded_size: 70
 ```
 
-Optional shared Bee measurement, without changing normal minimal YAML:
+Optional shared Compass measurement, without changing normal minimal YAML:
 
 ```yaml
 size: 65
 size_debug: true
 collapsible:
-  expanded_center: bee
+  expanded_center: compass
   primary_slot: 1
 ```
 
 Add your ordinary primary item in slot 0 and other items as usual. Hold the expanded
-Bee (or Shift+Enter) to read the version plus measured cube width. Short tap remains
+Compass (or Shift+Enter) to read the version plus measured cube width. Short tap remains
 Back/Collapse. The width is the visible hex rectangle in CSS pixels, not configured
 size, container width or device pixels. It updates on reveal and geometry changes,
 uses whole pixels or one decimal, and reports `N/A` when not measurable.
 No continuous polling or permanent label is introduced. With debug omitted/false,
-version-only presentation stays unchanged. [Shared Bee guide](SHARED_BEE.md).
+version-only presentation stays unchanged. [Shared Compass guide](NAVIGATION_COMPASS.md).
 
 Retain the legacy compact presentation on narrow phones (explicit opt-out only):
 
@@ -211,7 +211,7 @@ Migration: replace `collapsible.mobile` with `collapsible.small_screen`. The old
 boolean alias still works. Matching old/new values are accepted; contradictory
 values are a configuration error. Only an explicit false uses the legacy narrow
 phone opt-out (up to 600px); default expansion and desktop fitting use actual
-geometry, with no breakpoint eligibility rule. [Bee example](../examples/collapsible-hub-bee.yaml)
+geometry, with no breakpoint eligibility rule. [Compass example](../examples/collapsible-hub-compass.yaml)
 and [calibrated auto element](../examples/collapsible-hub-auto.yaml) remain available.
 
 Very large Hubs may need targets smaller than 44px to fit a phone; prefer compact

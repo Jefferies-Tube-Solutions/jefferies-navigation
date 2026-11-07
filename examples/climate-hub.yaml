@@ -1,5 +1,5 @@
 # v1.10.0-beta.1 only. Synthetic entities: replace in HA.
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 size: 82
 items:

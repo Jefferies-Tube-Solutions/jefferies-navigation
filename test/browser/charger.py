@@ -54,10 +54,10 @@ class Charger(Cubes):
             self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-{name}-focus.png'),clip={'x':x,'y':y,'width':right-x,'height':bottom-y})
     def settle(self):
         self.page.evaluate('''async()=>{await new Promise(r=>requestAnimationFrame(r));for(const menu of [hub._hubMenu].filter(Boolean)){
-          await menu.updateComplete;await Promise.all([...menu.shadowRoot.querySelectorAll('honeycomb-menu-ng-item,honeycomb-persistent-control')].map(e=>e.updateComplete));
+          await menu.updateComplete;await Promise.all([...menu.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control')].map(e=>e.updateComplete));
           await Promise.all(menu.shadowRoot.getAnimations({subtree:true}).filter(a=>a.effect?.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));}}''')
     def cell(self,slot):
-        return self.page.locator('honeycomb-menu-ng .center-item' if slot==0 else f'honeycomb-menu-ng [data-honeycomb-slot="{slot-1}"]')
+        return self.page.locator('jts-n-menu .center-item' if slot==0 else f'jts-n-menu [data-jts-n-slot="{slot-1}"]')
     def state(self,index,role,state,attributes=None):
         domain='switch' if role in ('enabled','permanent_lock') else 'binary_sensor' if role in ('online','lock','connected') else 'sensor'
         self.page.evaluate('([id,s,a])=>chargerSet(id,s,a)',[f'{domain}.charger_{index}_{role}',state,attributes or {}]);self.settle()
@@ -143,7 +143,7 @@ class Charger(Cubes):
         for i in range(9):self.state(1,'power',str(5+i/10));self.page.clock.fast_forward(1000)
         self.page.clock.run_for(500);self.page.wait_for_function('hub._menuContext.stack.length===0')
         self.page.evaluate('if(registryFinish)registryFinish(Object.values(hass.entities))');self.page.clock.run_for(200)
-        self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0);self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),1);self.assert_no_commands()
+        self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0);self.assertEqual(self.page.locator('jts-n-menu').count(),1);self.assert_no_commands()
 
     def test_power_animation_safety_rate_stability_and_unrelated_updates(self):
         a=charger(1);a['energy_wave']={'max_power_w':7400,'color':'#123456'};self.overview([a]);cube=self.cell(1)
@@ -157,7 +157,7 @@ class Charger(Cubes):
         self.page.evaluate("Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'))");self.assertFalse(cube.evaluate('(e)=>e.hasAttribute("energy-wave-running")'))
         self.page.evaluate("Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'))")
         self.state(1,'power','0');self.assertFalse(cube.evaluate('(e)=>e.hasAttribute("energy-wave-running")'));self.page.evaluate('hub.remove()');self.page.wait_for_timeout(100)
-        self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0);self.assert_no_commands()
+        self.assertEqual(self.page.locator('jts-n-menu').count(),0);self.assert_no_commands()
 
     def test_light_and_sonos_context_survive_charger_navigation(self):
         self.overview([charger(1)],extra=[{'type':'light','entity':'light.zone_a','slot':2},{'type':'sonos','entity':'media_player.player_a','slot':3}]);self.open_details()
@@ -177,7 +177,7 @@ class Charger(Cubes):
             config=document['views'][0]['cards'][0]['elements'][0]
             self.page.evaluate(FLOORPLAN,config)
             self.page.evaluate('''async([width,image])=>{floor.style.width=width+'px';imageHost.style.height=width*2/3+'px';floorImage.src=image;await floorImage.decode()}''',[min(900,self.viewport['width']),document['views'][0]['cards'][0]['image']])
-            self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#honeycombs")');self.settle();self.assertEqual(self.model(0)['name'],'7.4 kW' if name=='charger-easee.yaml' else '14.8 kW')
+            self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#navigation-cells")');self.settle();self.assertEqual(self.model(0)['name'],'7.4 kW' if name=='charger-easee.yaml' else '14.8 kW')
             self.open_details();self.assertEqual(self.model(3)['secondary'],'2.50 kWh');self.assert_no_commands();self.capture('documented-'+name[:-5])
 
     def test_zero_many_numeric_auto_and_keyboard_accessibility(self):
@@ -189,12 +189,12 @@ class Charger(Cubes):
         running=self.controls().evaluate_all('(els)=>els.filter(e=>e.hasAttribute("energy-wave-running")).length');self.assertLessEqual(running,24)
         self.page.evaluate('hub.remove()')
         for size,reference,width in [(60,None,900),(82,None,900),('auto',900,450)]:
-            config={'type':'custom:honeycomb-persistent-control','module':'charger',**{k:v for k,v in charger().items() if k not in ('type','slot')},'size':size}
+            config={'type':'custom:navigation-control','module':'charger',**{k:v for k,v in charger().items() if k not in ('type','slot')},'size':size}
             if reference:config['auto_reference_width']=reference
             self.page.evaluate(FLOORPLAN,config);self.page.evaluate('w=>{floor.style.width=w+"px";imageHost.style.height=w*2/3+"px"}',width);self.page.wait_for_timeout(100)
-            control=self.page.locator('hui-picture-elements-card honeycomb-persistent-control').last
+            control=self.page.locator('hui-picture-elements-card navigation-control').last
             self.assertAlmostEqual(control.bounding_box()['width'],41 if size=='auto' else size,delta=.1)
-            control.locator('.interaction-surface').press('Enter');self.page.wait_for_function('hub._ownedMenuContext?.honeycomb?.isConnected')
+            control.locator('.interaction-surface').press('Enter');self.page.wait_for_function('hub._ownedMenuContext?.scene?.isConnected')
             self.assert_no_commands();self.page.evaluate('ng.close();hub.remove();floor.remove()');self.page.wait_for_timeout(300)
 
 def main():

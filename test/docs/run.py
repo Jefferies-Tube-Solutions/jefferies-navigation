@@ -59,8 +59,8 @@ def actions(obj):
     elif isinstance(obj,dict):
         for key,value in obj.items():
             if key in ('tap_action','hold_action','double_tap_action'):
-                known(value,set('action perform_action service data service_data target navigation_path url_path honeycomb_menu honeycomb_nested_menu info'.split()),key)
-                assert value['action'] in ('none','toggle','more-info','perform-action','call-service','navigate','url','fire-dom-event','honeycomb-info','honeycomb-open-nested')
+                known(value,set('action perform_action service data service_data target navigation_path url_path jts_n_menu jts_n_nested_menu info'.split()),key)
+                assert value['action'] in ('none','toggle','more-info','perform-action','call-service','navigate','url','fire-dom-event','jts-n-info','jts-n-open-nested')
 
                 if value['action']=='perform-action': assert re.fullmatch(r'\w+\.\w+',value['perform_action'])
             actions(value)
@@ -95,18 +95,18 @@ def item(value,where):
     if 'border' in value: known(value['border'],{'inner_width','outer_width'},where)
 def card(config,where):
     assert isinstance(config,dict),where
-    if config['type']=='custom:honeycomb-persistent-hub':
+    if config['type']=='custom:navigation-hub':
         if 'collapsible' in config:
             subprocess.run(['node','-e',"const c=JSON.parse(process.argv[1]);require('./src/core/collapsible-hub').settings(c.collapsible,c.size)",json.dumps(config)],check=True,cwd=ROOT)
         if 'size_debug' in config:assert type(config['size_debug']) is bool,where
         known(config,{'type','name','size','size_debug','logo','items','auto_open','menu','style','auto_reference_width','collapsible'},where)
         for i,value in enumerate(config['items']): item(value,f'{where} item {i}')
-    elif config['type']=='custom:honeycomb-persistent-control':
+    elif config['type']=='custom:navigation-control':
         known(config,SHARED|SONOS|CHARGER|CLIMATE|{'type','module','size','style','auto_reference_width'},where)
         item({k:v for k,v in config.items() if k not in ('type','size','style','auto_reference_width')},where)
     elif config['type']=='button':
         known(config,{'type','entity','name','hold_action'},where)
-        menu=config['hold_action']['honeycomb_menu']
+        menu=config['hold_action']['jts_n_menu']
         known(menu,{'entity','size','empty_slots','center_button','buttons'},where)
         for button in menu['buttons']: known(button,{'slot','slot_mode','icon','tap_action'},where)
     else: raise AssertionError(f'Unsupported card {where}')
@@ -115,32 +115,35 @@ def card(config,where):
 def fragment(config,where):
     """Give reference fragments their documented context before checking contracts."""
     if isinstance(config,list):
-        if config and all(isinstance(v,dict) and v.get('type') in ('custom:honeycomb-persistent-hub','custom:honeycomb-persistent-control') for v in config):
+        if config and all(isinstance(v,dict) and v.get('type') in ('custom:navigation-hub','custom:navigation-control') for v in config):
             for i,value in enumerate(config):card(value,f'{where} picture element {i}')
             return None
         if all(isinstance(v,dict) and v.get('type') in ('light','sonos','media','generic') for v in config):
-            return {'type':'custom:honeycomb-persistent-hub','items':config}
+            return {'type':'custom:navigation-hub','items':config}
         for value in config:known(value,SHARED|{'slot','slot_mode','position','active','show'},where)
     elif 'homeassistant' in config:
         assert config=={'homeassistant':{'packages':'packages'}},where
     elif 'type' in config:
         if config['type'] in ('light','sonos','media','generic','charger','charging-hub','climate'):
-            return {'type':'custom:honeycomb-persistent-hub','items':[config]}
-        if config['type']=='picture-elements':
+            return {'type':'custom:navigation-hub','items':[config]}
+        if config['type']=='state-icon':
+            known(config,{'type','entity','style','tap_action','hold_action'},where)
+            actions(config)
+        elif config['type']=='picture-elements':
             known(config,{'type','image','elements'},where)
             for element in config['elements']:
 
-                if element.get('type') in ('custom:honeycomb-persistent-hub','custom:honeycomb-persistent-control'):card(element,where+' picture element')
+                if element.get('type') in ('custom:navigation-hub','custom:navigation-control'):card(element,where+' picture element')
                 else:known(element,{'type','entity','style','tap_action','hold_action'},where)
             actions(config)
         else:raise AssertionError(f'{where}: unrecognized card type')
     elif set(config)<={'presets'} or set(config)<=SONOS:
-        return {'type':'custom:honeycomb-persistent-control','module':'light' if 'presets' in config else 'sonos',
+        return {'type':'custom:navigation-control','module':'light' if 'presets' in config else 'sonos',
                 'entity':'light.zone_a' if 'presets' in config else 'media_player.player_a',**config}
     elif 'collapsible' in config or 'size_debug' in config:
-        return {'type':'custom:honeycomb-persistent-hub','items':[{'type':'light','entity':'light.zone_a','slot':0}],**config}
+        return {'type':'custom:navigation-hub','items':[{'type':'light','entity':'light.zone_a','slot':0}],**config}
     elif 'visibility' in config:
-        return {'type':'custom:honeycomb-persistent-hub','items':[{'type':'generic','entity':'sensor.value_a',**config}]}
+        return {'type':'custom:navigation-hub','items':[{'type':'generic','entity':'sensor.value_a',**config}]}
     elif 'input_number' in config:
         for helper in config['input_number'].values():
             known(helper,{'name','min','max','step','initial'},where)
@@ -155,7 +158,7 @@ def fragment(config,where):
     else:
         # Classic menu/button/service-data/template fragments use the documented
         # boundary, not Hub item visibility or the standalone Control schema.
-        known(config,{'honeycomb_menu','layout_envelope','empty_slots','center_button',
+        known(config,{'jts_n_menu','layout_envelope','empty_slots','center_button',
                       'center_brightness','buttons','active','name','brightness_step_pct',
                       'light','hold_action'},where)
         if 'layout_envelope' in config:assert config['layout_envelope'] in ('auto','inner','outer')
@@ -234,9 +237,9 @@ class Examples(BROWSER.Cubes):
         for name in ['info-text.yaml','info-stack.yaml','info-positioned.yaml','info-dynamic.yaml','info-charging-plan.yaml']:
             if self.page.evaluate('!!window.hub'):self.page.evaluate('hub.remove()')
             self.hub(load((ROOT/'examples'/name).read_text()));self.settle()
-            self.activate(self.page.locator('honeycomb-menu-ng [data-honeycomb-slot="0"] .interaction-surface'))
-            self.page.locator('honeycomb-ng-info .surface').wait_for();self.page.locator('honeycomb-ng-info .surface').press('Escape')
-            self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0)
+            self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="0"] .interaction-surface'))
+            self.page.locator('jts-n-info-cube .surface').wait_for();self.page.locator('jts-n-info-cube .surface').press('Escape')
+            self.assertEqual(self.page.locator('jts-n-info-cube').count(),0)
         self.assertEqual(self.page.evaluate('calls.length'),0)
     def test_docs_basic_hub_and_auto_tables(self):
         self.hub(self.examples['hub.yaml']);self.assert_visible_unique_cells(3)
@@ -244,7 +247,7 @@ class Examples(BROWSER.Cubes):
             actual=self.page.evaluate('([n,logo])=>hub._hubSlots(n,logo)',[count,False]);self.assertEqual(actual,without)
             self.assertEqual(self.page.evaluate('n=>hub._shouldShowLogo.call({config:{items:Array.from({length:n},()=>({})),logo:"auto"}})',count),2<=count<=6)
             if with_logo:self.assertEqual(self.page.evaluate('n=>hub._hubSlots(n,true)',count),with_logo)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="1"] .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="1"] .interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.at(-1)'),['homeassistant','toggle',{}, {'entity_id':'light.zone_a'}])
         self.capture('docs-basic-hub')
     def test_docs_dynamic_hub(self):
@@ -261,12 +264,12 @@ class Examples(BROWSER.Cubes):
         self.control_example('control-light.yaml')
         launcher=self.page.locator('#anchor .interaction-surface');self.assertEqual(launcher.evaluate('(el)=>el.getBoundingClientRect().width'),82)
         self.hold_input(launcher)
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")?.buttons?.length===6')
+        self.page.wait_for_function('view.querySelector("jts-n-menu")?.buttons?.length===6')
         # DOM ring indices are zero-based: physical preset slot 2 is data slot 1.
-        preset=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="1"] .interaction-surface')
+        preset=self.page.locator('jts-n-menu [data-jts-n-slot="1"] .interaction-surface')
         self.activate(preset);self.assertEqual(self.page.evaluate('calls.at(-1)'),['light','turn_on',{'brightness_pct':60},{'entity_id':'light.zone_a'}])
         self.hold_input(preset);self.assertEqual(self.page.evaluate('calls.at(-1)'),['number','set_value',{'value':50},{'entity_id':'number.relay_a_brightness'}])
-        color=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="3"] .interaction-surface')
+        color=self.page.locator('jts-n-menu [data-jts-n-slot="3"] .interaction-surface')
         self.hold_input(color);self.assertEqual(self.page.evaluate('calls.slice(-2).map(c=>c[0])'),['input_number','input_number'])
         self.capture('docs-control-light')
     def test_docs_kelvin_example(self):
@@ -278,43 +281,43 @@ class Examples(BROWSER.Cubes):
         self.hold_input(self.zoom_cell(8));self.settle();self.assertEqual(self.kelvin_palette()[1],original[1])
         self.assertEqual(self.page.evaluate('calls.length'),0)
         self.zoom_tap(8);self.assertEqual(self.page.evaluate('calls.at(-1)'),['light','turn_on',{'color_temp_kelvin':original[1]},{'entity_id':'light.white_a'}])
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle();self.assertEqual(self.kelvin_palette(),original)
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle();self.assertEqual(self.kelvin_palette(),original)
         self.capture('docs-kelvin-control')
     def test_docs_sonos(self):
         self.hub(self.examples['sonos.yaml']);self.assert_visible_unique_cells(1)
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Join"]'))
+        self.activate(self.page.locator('jts-n-menu [aria-label="Join"]'))
         self.page.wait_for_function('hub._menuContext.stack.length===2')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="6"] .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="6"] .interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.at(-1)'),['script','player_a_toggle_member',{'member':'media_player.player_b'},{}])
         self.back();self.page.wait_for_function('hub._menuContext.stack.length===1')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Radio"]'))
+        self.activate(self.page.locator('jts-n-menu [aria-label="Radio"]'))
         self.page.wait_for_function('hub._menuContext.stack.length===2')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="6"] .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="6"] .interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.at(-1)'),['media_player','play_media',{'media_content_id':'favorite_a','media_content_type':'favorite_item_id'},{'entity_id':'media_player.player_a'}])
         self.capture('docs-sonos')
     def test_docs_onoff_light(self):
         self.control_example('onoff-light.yaml')
         launcher=self.page.locator('#anchor .interaction-surface')
         self.activate(launcher);self.hold_input(launcher)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),0)
+        self.assertEqual(self.page.locator('jts-n-menu').count(),0)
         self.assertEqual(self.page.evaluate('calls[0]'),['homeassistant','toggle',{}, {'entity_id':'light.switch_a'}])
         self.capture('docs-onoff')
     def climate_seed(self):
         self.page.evaluate("()=>{hass.config={unit_system:{temperature:'°C'}};hass.services.climate={set_temperature:{},set_hvac_mode:{}};for(const entity of ['climate.room_a','climate.room_b'])pushState(entity,'heat',{supported_features:1,current_temperature:20.2,temperature:21,min_temp:7,max_temp:35,target_temp_step:.1,hvac_modes:['off','heat'],hvac_action:'heating'})}")
     def test_docs_climate_Hub_Control_and_exact_service(self):
-        self.climate_seed();self.hub(load((ROOT/'examples/climate-hub.yaml').read_text()));self.assert_visible_unique_cells(2);self.activate(self.page.locator('honeycomb-menu-ng .center-item .interaction-surface'));self.settle();self.assertEqual(self.page.locator('honeycomb-menu-ng .center-item .primary').inner_text(),'20.2°C');self.capture('docs-climate-Hub');self.page.evaluate('hub.remove()')
-        self.page.evaluate('config=>makeControl(config)',load((ROOT/'examples/climate-control.yaml').read_text()));self.activate(self.page.locator('body > honeycomb-persistent-control .interaction-surface'));self.settle();self.activate(self.page.locator('honeycomb-menu-ng [data-honeycomb-slot="5"] .interaction-surface'));self.assertEqual(self.page.evaluate('calls.at(-1)'),['climate','set_temperature',{'temperature':21.1},{'entity_id':'climate.room_a'}]);self.capture('docs-climate-Control')
+        self.climate_seed();self.hub(load((ROOT/'examples/climate-hub.yaml').read_text()));self.assert_visible_unique_cells(2);self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle();self.assertEqual(self.page.locator('jts-n-menu .center-item .primary').inner_text(),'20.2°C');self.capture('docs-climate-Hub');self.page.evaluate('hub.remove()')
+        self.page.evaluate('config=>makeControl(config)',load((ROOT/'examples/climate-control.yaml').read_text()));self.activate(self.page.locator('body > navigation-control .interaction-surface'));self.settle();self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="5"] .interaction-surface'));self.assertEqual(self.page.evaluate('calls.at(-1)'),['climate','set_temperature',{'temperature':21.1},{'entity_id':'climate.room_a'}]);self.capture('docs-climate-Control')
     def test_docs_climate_nested_entity_and_one_level_Back(self):
-        self.climate_seed();self.hub(load((ROOT/'examples/climate-nested.yaml').read_text()));self.activate(self.page.locator('honeycomb-menu-ng .center-item .interaction-surface'));self.settle();self.activate(self.page.locator('honeycomb-menu-ng [data-honeycomb-slot="0"] .interaction-surface'));self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.currentConfig.entity'),'climate.room_b');self.assertEqual(self.page.evaluate('calls.length'),0);self.capture('docs-climate-nested');self.back();self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.currentConfig.entity'),'sensor.value_a');self.back();self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
-        self.page.evaluate('hub.remove()');self.page.evaluate('config=>makeControl(config)',load((ROOT/'examples/climate-nested-control.yaml').read_text()));source=self.page.locator('body > honeycomb-persistent-control');self.activate(source.locator('.interaction-surface'));self.settle();self.assertAlmostEqual(self.page.locator('honeycomb-menu-ng .center-item').bounding_box()['width'],82,delta=.05);self.assertEqual(self.page.locator('honeycomb-menu-ng .center-item .primary').inner_text(),'20.2°C');self.assertEqual(self.page.evaluate('calls.length'),0);self.activate(self.page.locator('honeycomb-menu-ng .center-item .interaction-surface'));self.page.wait_for_selector('honeycomb-menu-ng',state='detached');self.assertTrue(source.is_visible())
+        self.climate_seed();self.hub(load((ROOT/'examples/climate-nested.yaml').read_text()));self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle();self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="0"] .interaction-surface'));self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.currentConfig.entity'),'climate.room_b');self.assertEqual(self.page.evaluate('calls.length'),0);self.capture('docs-climate-nested');self.back();self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.currentConfig.entity'),'sensor.value_a');self.back();self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
+        self.page.evaluate('hub.remove()');self.page.evaluate('config=>makeControl(config)',load((ROOT/'examples/climate-nested-control.yaml').read_text()));source=self.page.locator('body > navigation-control');self.activate(source.locator('.interaction-surface'));self.settle();self.assertAlmostEqual(self.page.locator('jts-n-menu .center-item').bounding_box()['width'],82,delta=.05);self.assertEqual(self.page.locator('jts-n-menu .center-item .primary').inner_text(),'20.2°C');self.assertEqual(self.page.evaluate('calls.length'),0);self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.page.wait_for_selector('jts-n-menu',state='detached');self.assertTrue(source.is_visible())
     def test_docs_classic_popup(self):
         config=self.examples['classic-popup.yaml']
         self.page.evaluate('config=>{const el=document.createElement("button");el.textContent="Light A";el.style.cssText="position:absolute;left:120px;top:280px";el.addEventListener("click",()=>el.dispatchEvent(new CustomEvent("ll-custom",{detail:config.hold_action,bubbles:true,composed:true})));document.body.append(el);}',config)
         self.activate(self.page.locator('button',has_text='Light A'))
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="0"] .interaction-surface'))
+        self.page.wait_for_function('view.querySelector("jts-n-menu")')
+        self.activate(self.page.locator('jts-n-menu [data-jts-n-slot="0"] .interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.at(-1)'),['light','turn_on',{}, {'entity_id':'light.zone_a'}])
         self.capture('docs-classic')
 
@@ -325,7 +328,7 @@ def main():
     os.chdir(ROOT);args.evidence_dir.mkdir(parents=True,exist_ok=True)
     examples={p.name:load(p.read_text()) for p in sorted((ROOT/'examples/v1.7').glob('*.yaml'))}
     cards=[{'source':f'examples/v1.7/{name}','config':config} for name,config in examples.items()]
-    for name in ('persistent-hub.yaml','light-presets.yaml','presentation-light.yaml','sonos-native-favorites.yaml','energy-wave.yaml','energy-wave-power.yaml','energy-wave-color.yaml','climate-hub.yaml','climate-control.yaml','climate-nested.yaml','climate-nested-control.yaml','collapsible-hub.yaml','collapsible-hub-bee.yaml','collapsible-hub-auto.yaml'):
+    for name in ('persistent-hub.yaml','light-presets.yaml','presentation-light.yaml','sonos-native-favorites.yaml','energy-wave.yaml','energy-wave-power.yaml','energy-wave-color.yaml','climate-hub.yaml','climate-control.yaml','climate-nested.yaml','climate-nested-control.yaml','collapsible-hub.yaml','collapsible-hub-compass.yaml','collapsible-hub-auto.yaml'):
         cards.append({'source':f'examples/{name}','config':load((ROOT/'examples'/name).read_text())})
     picture=load((ROOT/'examples/collapsible-picture-elements.yaml').read_text())
     fragment(picture,'examples/collapsible-picture-elements.yaml')
@@ -348,8 +351,10 @@ def main():
     for file in [ROOT/'README.md',*sorted((ROOT/'docs').glob('*.md'))]:
         for index,block in enumerate(blocks(file.read_text())):
             config=load(block);yaml_count+=1
+            if file.name in ('V1_7_PHASE1.md','V1_7_PHASE2.md'):
+                continue  # Archived v1 examples are parsed but use the v1 schema.
             source=f'{file.name} YAML {index+1}'
-            if isinstance(config,dict) and config.get('type','').startswith(('custom:honeycomb','button')):
+            if isinstance(config,dict) and config.get('type','').startswith(('custom:navigation-','button')):
                 cards.append({'source':source,'config':config})
             else:
                 contextual=fragment(config,source)
@@ -368,9 +373,10 @@ def main():
     external_recipes()
     link_count=links()
     payload={'cards':cards,'examples':examples,'states':STATES}
-    with tempfile.NamedTemporaryFile(mode='w',suffix='.json') as output:
-        json.dump(payload,output);output.flush()
-        subprocess.run(['node','test/docs/contracts.js',output.name],check=True)
+    with tempfile.TemporaryDirectory() as directory:
+        output=Path(directory)/'docs-contracts.json'
+        output.write_text(json.dumps(payload),encoding='utf-8')
+        subprocess.run(['node','test/docs/contracts.js',str(output)],check=True)
     complete=sum('(reference context)' not in card['source'] for card in cards)
     print(f'Documentation validation: {yaml_count} YAML blocks parsed, {complete} complete cards + {len(cards)-complete} contextual fragments checked, {link_count} local links/anchors resolved, optional Join Jinja exercised; native-only favorites contract checked',flush=True)
     table=(ROOT/'README.md').read_text().split('<!-- auto-slots:start -->')[1].split('<!-- auto-slots:end -->')[0]

@@ -7,12 +7,12 @@ Light remains the normal control layout reference. See [runtime](NG_RUNTIME.md),
 [shared presentation](CUBE_PRESENTATION.md) and [terminology](TERMINOLOGY.md).
 
 For read-only information in the beta.8 candidate (Info first shipped in beta.7), place
-`tap_action: {action: 'honeycomb-info', info: payload}` on any ordinary menu button.
+`tap_action: {action: 'jts-n-info', info: payload}` on any ordinary menu button.
 The payload follows the [Info Cube schema](INFO_CUBE.md). Alternatively call
-`window.honeycombNG.openInfoInContext(context, payload, sourceElement)` with the active controller
+`window.jefferiesNavigation.openInfoInContext(context, payload, sourceElement)` with the active controller
 context. The optional source element supplies the connector’s physical position
 and resolved inner-border color; declarative actions pass it automatically.
-A current global/classic menu uses `window.honeycombNG.openInfo(payload)`.
+A current global/classic menu uses `window.jefferiesNavigation.openInfo(payload)`.
 No active menu or dashboard preview returns null without opening anything.
 
 The shared controller keeps the caller mounted, suspends its idle timer and makes
@@ -34,4 +34,4 @@ child footprint at the selected anchor, then the expanded root anchor, with
 safe fitting when required. Do not implement per-module positioning. Saved
 parents retain independent size/anchor snapshots; Back restores them. Outside
 expanded Collapsible contexts, existing navigation behavior is unchanged. Shared
-Bee descriptors live in `src/core/bee.js`; see [Bee contract](SHARED_BEE.md).
+Compass descriptors live in `src/core/compass.js`; see [Compass contract](NAVIGATION_COMPASS.md).

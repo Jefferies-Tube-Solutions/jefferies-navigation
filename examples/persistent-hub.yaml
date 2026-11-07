@@ -1,5 +1,5 @@
-# Honeycomb v1.7: complete synthetic quick start; see examples/v1.7 for all cards.
-type: custom:honeycomb-persistent-hub
+# Jefferies Navigation v1.7: complete synthetic quick start; see examples/v1.7 for all cards.
+type: custom:navigation-hub
 name: Hub A
 size: 82
 logo: auto

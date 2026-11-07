@@ -3,7 +3,7 @@
   "image": "https://demo.home-assistant.io/stub_config/floorplan.png",
   "elements": [
     {
-      "type": "custom:honeycomb-persistent-hub",
+      "type": "custom:navigation-hub",
       "name": "Room test",
       "size": "auto",
       "auto_reference_width": 1200,

@@ -1,159 +1,64 @@
 <p align="right">
-  <a href="https://github.com/NicolaiTandrup/honeycomb-menu-ng/releases/latest">
-    <img alt="Latest stable version" src="https://img.shields.io/github/v/release/NicolaiTandrup/honeycomb-menu-ng?label=stable&amp;color=2ea44f">
+  <a href="https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/releases/latest">
+    <img alt="Latest stable version" src="https://img.shields.io/github/v/release/Jefferies-Tube-Solutions/jefferies-navigation?label=stable&amp;color=2ea44f">
   </a>
 </p>
 
 <p align="center">
-  <img src="assets/honeycomb-menu-ng-logo.png" width="220" alt="Honeycomb Menu NG">
+  <img src="assets/brand/navigation-lockup-background.png" alt="Jefferies Navigation full logo on Deep Space" width="760">
 </p>
 
-# Honeycomb Menu NG for Home Assistant
+# Jefferies Navigation for Home Assistant
+
+## Mission Directive
 
 Compact hexagonal controls for dashboards, floorplans and wall tablets. A persistent
 **Hub** groups devices; a standalone **Control** exposes one device. Tap for the
 primary action and hold for Light, Media or Sonos controls. Both use the same
 full-cell renderer, with **82 CSS px cube width** by default.
 
-NG originated as a fork of [Sian Croser's honeycomb-menu](https://github.com/Sian-Lee-SA/honeycomb-menu)
-and retains original code and attribution under [GPLv3](LICENSE). NG is maintained
-by Nicolai Tandrup. [Original author support](https://www.buymeacoffee.com/SianLee).
+Jefferies Navigation (JTS-N) continues Honeycomb Menu NG, a fork of
+[Sian Croser's honeycomb-menu](https://github.com/Sian-Lee-SA/honeycomb-menu).
+The project retains its original code and attribution under [GPLv3](LICENSE).
+Nicolai Tandrup maintains the project. [Support the original author](https://www.buymeacoffee.com/SianLee).
 
-> **Stable track: [v1.10.0](https://github.com/NicolaiTandrup/honeycomb-menu-ng/releases/tag/v1.10.0).**
-> Promotes the complete real-Home-Assistant owner-accepted beta.10 runtime, including
-> Climate, Collapsible Hubs, Beam of Origin and XY Pad lifecycle safety, alongside
-> Light, Sonos, Charger and Info. Official HACS validation is a release gate;
-> catalog inclusion remains separate. Use the custom-repository installation below.
-> [Stable promotion evidence and checks](docs/V1_10_STABLE_RELEASE.md).
+> **v2.0.0** introduces the Navigation Compass and its own dashboard
+> identifiers. See [Upgrading from Honeycomb Menu NG](docs/V2_MIGRATION.md) for
+> the resource and YAML changes. The previous stable release is [v1.10.0](https://github.com/Jefferies-Tube-Solutions/honeycomb-menu-ng/releases/tag/v1.10.0).
 
-## v1.10.0: responsive room controls, Beam of Origin and XY Pad safety
+## System Registry
 
-The [architecture audit](docs/ARCHITECTURE_AUDIT_154.md) identified a repeating XY
-Pad that could keep calling services after closing. Owner-accepted beta.10 fixes
-that lifecycle defect; this stable promotion preserves its runtime. Interrupted
-gestures stop without a final release action. Normal XY values and YAML remain
-compatible. No new configuration is required when upgrading from beta.10.
+| Component | Contract |
+| --- | --- |
+| Home Assistant | Dashboard plugin installed through HACS or as a JavaScript module |
+| Navigation Hub | `custom:navigation-hub` groups controls on a dashboard or floorplan |
+| Navigation Control | `custom:navigation-control` exposes a single device |
+| Rendering | Shared hexagonal cells, fixed or responsive sizing and capability-aware controls |
+| Version | The badge shows the latest published stable release. |
 
-Add `collapsible: true` and a primary item in slot 0 to place a compact,
-responsive room control on a floorplan. Tap performs its action; hold expands.
-On phones, tablets and PCs, the Hub opens at a comfortable size. It prefers
-space beside the floorplan, and fits safely in the viewport when there is no room.
-On constrained screens, it places actual visible controls in fitting free canvas,
-preferably below the image, at the already chosen expanded size. Desktop placement
-plans for slots 0–18 and accepts at most 15% initial downscaling in free space,
-and otherwise stays near the original floorplan anchor. Only configured cubes
-render. Tap its center to return. No extra sizing or positioning options are needed.
+## Commissioning
 
-```yaml
-type: custom:honeycomb-persistent-hub
-style: {left: 50%, top: 50%}
-collapsible: true
-items:
-  - type: light
-    entity: light.room_a
-    slot: 0
-  - type: light
-    entity: light.room_b
-    slot: 2
-```
+### Install and update
 
-Optional Beam of Origin keeps the original room cube visible as a live,
-noninteractive reference while the expanded Hub moves away. Enable it with:
-
-```yaml
-collapsible:
-  beam_of_origin: true
-```
-
-Optional custom color:
-
-```yaml
-collapsible:
-  beam_of_origin:
-    color: "#8bdcff"
-```
-
-The soft cyan beam fades toward the active expanded controls and follows nested
-navigation. `collapsible: true` keeps the accepted beta.8 behavior with no beam.
-The source reference cannot toggle or open anything; closing restores the single
-interactive room cube. Near/overlapping or hidden sources suppress the beam.
-
-See [complete picture-elements examples and optional settings](docs/COLLAPSIBLE_HUB.md).
-Auto/omitted Hub size sets an 82px nominal maximum for expanded and nested cubes;
-a responsive collapsed floorplan cube may be smaller. Numeric `size: N` sets the
-maximum to N, including values above 82. Optional `collapsible.expanded_size` can
-lower that target but cannot raise the parent limit. Viewport fitting may shrink
-further. The same ceiling applies throughout navigation and exact Back restoration.
-Selected module cubes stay in place when their submenus fit; constrained views
-fall back to the expanded root center. Back restores the parent layout exactly.
-Explicit numeric sizes are unchanged. Legacy
-`collapsible.mobile` remains an alias for `small_screen`; conflicting values fail
-clearly. Hubs without `collapsible` keep their existing defaults.
-
-Developer diagnostic (optional): add top-level `size_debug: true` to show the
-actual rendered CSS-pixel cube width during the Bee's temporary version reveal.
-Default is false: ordinary version-only display and resting Bee remain unchanged.
-Normal Bee tap inspects; expanded-root Bee tap stays Back, hold/Shift+Enter inspects.
-See [measured diagnostics and YAML](docs/SHARED_BEE.md).
-
-Sonos Join prefers trusted station artwork with room name and individual volume.
-Climate adjustments are ±1.0 and ±0.1 in HA's temperature unit; unsupported
-precision is disabled. Keyboard focus follows the hex, with no pointer rectangle.
-In HACS select v1.10.0 after publication and refresh frontend/resource caches.
-Beta versions are not required for stable. Owner beta.10 real-HA acceptance is
-recorded in #163; synthetic QA does not establish every hardware/browser case.
-
-## Climate controls — v1.10.0 stable
-
-This release adds generic Home Assistant Climate controls to the complete
-v1.9.0 stable feature set. It uses the same shared renderer and navigation.
-See the [Climate guide](docs/CLIMATE_MODULE.md), [Hub example](examples/climate-hub.yaml)
-and [standalone Control](examples/climate-control.yaml). Real HVAC acceptance is pending.
-Use v1.10.0 stable after publication. Device-specific HVAC behavior still requires
-installation-time validation.
-
-## What you can build
-
-- Persistent Hubs and individual Controls with consistent icons, labels and rings.
-- Light brightness, Color/White palettes and reusable numeric presets.
-- Media/Sonos play/pause, group-aware volume, favorites artwork and optional Join.
-- Live Hub item visibility, reserved/preferred/free slots and stable placement.
-- Nested menus, drag-select and classic popup compatibility, templates and XY Pad.
-
-Climate is included in **v1.10.0 stable**, cumulative with v1.9.0 stable.
-See the [Climate guide](docs/CLIMATE_MODULE.md) and [Hub example](examples/climate-hub.yaml).
-Car is not implemented. Charging automation remains external.
-Honeycomb calls configured HA actions; device automation belongs in Home Assistant.
-
-Representative stable Light controls (synthetic HA fixtures; the v1.8.1 runtime
-is unchanged from these verified v1.8.0 captures):
-
-<img src="docs/assets/screenshots/stable-light.png" width="260" alt="Synthetic Light menu with brightness and preset controls">
-<img src="docs/assets/screenshots/stable-kelvin.png" width="260" alt="Synthetic Light White palette with twelve filled Kelvin swatches">
-
-[Capture provenance](docs/assets/screenshots/stable-provenance.json). Charger is not
-part of v1.8.1 stable.
-
-## Install and update
 
 You need current Home Assistant, [custom:button-card](https://github.com/custom-cards/button-card)
 and the entities you want to control. Install button-card and its JavaScript module
 resource first. Sonos features use HA's official Sonos integration.
 
-**HACS:** add `https://github.com/NicolaiTandrup/honeycomb-menu-ng` under Custom
+**HACS:** add `https://github.com/Jefferies-Tube-Solutions/jefferies-navigation` under Custom
 repositories, category **Dashboard**, then install. Select the intended version;
 a beta requires showing prereleases. The normal module resource is
-`/hacsfiles/honeycomb-menu-ng/honeycomb-menu-ng.js`. Check Dashboard resources for
+`/hacsfiles/jefferies-navigation/jefferies-navigation.js`. Check Dashboard resources for
 one entry, type **JavaScript module**; avoid loading HACS and manual copies together.
 
 **Manual:** download the bundle from the intended
-[GitHub release](https://github.com/NicolaiTandrup/honeycomb-menu-ng/releases), place it
-at `/config/www/honeycomb-menu-ng/honeycomb-menu-ng.js`, then register this resource
+[GitHub release](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/releases), place it
+at `/config/www/jefferies-navigation.js`, then register this resource
 (in the Dashboard resources UI, or under `lovelace:` in YAML-managed configuration):
 
 ```yaml
 resources:
-  - url: /local/honeycomb-menu-ng/honeycomb-menu-ng.js
+  - url: /local/jefferies-navigation.js
     type: module
 ```
 
@@ -161,37 +66,14 @@ After updating, reload the browser/app and hard-refresh if cached JavaScript per
 Check the installed release and resource URL before changing YAML. Installing a stable
 release does not make newer beta-only options available.
 
-## Charger beta: complete dashboards
+### Start in 60 seconds
 
-**Included in v1.10.0 stable.** A generic Charger/Easee module shares the same
-82px renderer, gradients, sizing and power-sensitive hexagonal pulse. A Charging
-Hub sums fresh verified power and physically connected cars; named chargers open
-fixed detail menus. Permission and permanent-lock controls require deliberate taps
-on verified HA switches. Opening/Back/state updates never issue charging commands.
-
-- [Complete one-Easee dashboard](examples/charger-easee.yaml), with no vehicle feed.
-- [Complete two-charger dashboard](examples/charger-multi.yaml), with optional
-  external vehicle associations; it also works when that sensor is absent.
-- [Element-only snippet for an existing floorplan](examples/charger-elements.yaml).
-- [Installation, entity checklist, source-backed capabilities and safe HA tests](docs/CHARGER_MODULE.md).
-
-Named chargers show vehicle/connection and fixed charger name in two rows; fresh
-charging power stays visible beside the icon. Sonos launcher, promoted center and Radio favorite artwork share an inset safe
-area that avoids the sloping hex edges, preserves aspect ratio and reserves labels. Dashboard editor previews own their overlays and cannot send actions.
-
-All example IDs and screenshots are synthetic replacement points. Replace them
-with your actual integration entities. HACS prereleases must be enabled and the
-beta selected explicitly; v1.8.1 remains latest stable. No real hardware/Node-RED
-changes were performed by synthetic validation. Car identification, schedules,
-load balancing and optimization remain external; the Car module is future work.
-
-## Start in 60 seconds
 
 Add a Manual card and paste this complete [Hub example](examples/v1.7/hub.yaml).
 Replace the synthetic IDs with entities from HA Developer Tools → States.
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Hub A
 size: 82
 logo: auto
@@ -209,18 +91,21 @@ A dimmable Light has brightness and a capability-aware palette. A Light explicit
 reporting `supported_color_modes: [onoff]` toggles and shows On/Off without a detail
 menu. Missing attributes during unavailability do not establish on/off-only capability.
 
-## Layout model
+## Operational Protocol
+
+### Layout model
+
 
 These are **physical slots**, viewed face-on. The figure is checked against the
 current coordinate tables, not inferred from button order.
 
 <!-- layout-diagram:start -->
-![Honeycomb physical slots: center 0; inner 1 left, 2 upper-left, 3 upper-right, 4 right, 5 lower-right, 6 lower-left; outer 7–18 as verified in the AI slot map](docs/assets/layout-slots.svg)
+![Jefferies Navigation physical slots: center 0; inner 1 left, 2 upper-left, 3 upper-right, 4 right, 5 lower-right, 6 lower-left; outer 7–18 as verified in the AI slot map](docs/assets/layout-slots.svg)
 <!-- layout-diagram:end -->
 
 | Area | Physical slots | Meaning |
 |---|---|---|
-| Center | `0` | Hub item or bee; selected module's locked center |
+| Center | `0` | Hub item or compass; selected module's locked center |
 | Inner ring | `1–6` | Six immediate neighbors |
 | Outer / second ring | `7–18` | Twelve neighbors outside the inner ring |
 | Further Hub rings | `19–36`, `37–60`, `61–90`, `91–126`, `127–168`, `169–216` | Expand on demand |
@@ -228,52 +113,11 @@ current coordinate tables, not inferred from button order.
 Private local testing: [fixed development resource and build instructions](docs/DEVELOPMENT_BUILDS.md).
 [Unpublished beta.6 scope, measured limitations and future-module boundaries](docs/BETA6_REVIEW.md).
 
-### Light Hub names while OFF
-
-In v1.10.0 stable, an OFF Light Hub launcher shows its
-existing item `name` above `OFF`. Without a custom name it uses the HA
-`friendly_name`, then the readable entity ID. A short name such as `A` is valid;
-long names use the existing ellipsis. ON brightness/colors and submenu centers
-keep their existing presentation. Unknown/unavailable lights say `Unavailable`,
-never `OFF`. Existing explicit secondary-label overrides still take precedence.
-
-### Light capability reference (beta.6 candidate)
-
-Honeycomb reads HA `supported_color_modes`, never brands or names. Mode selection
-on cube **3** is UI-only; slot 0 retains its normal name/value/Back presentation.
-
-| Advertised capability | Controls | Palette launcher |
-|---|---|---|
-| `onoff` only | Toggle; no detail menu | None |
-| `brightness` or fixed `white` | Brightness/presets | No Color/Kelvin commands |
-| `color_temp` only | Brightness and White/Kelvin | White only; no Color hold |
-| `hs`, `xy`, `rgb`, `rgbw` or `rgbww` only | Brightness and Color | Color only |
-| Color plus `color_temp` | Brightness, Color and White/Kelvin | Tap current/viewed palette; hold opposite |
-| Missing/inconsistent capabilities | Only verified controls | No invented capabilities |
-
-For dual-mode lights, HA `color_mode` chooses the initial palette. Off/null uses
-reliable same-entity session memory, otherwise a deterministic supported fallback.
-A manual palette selection stays selected while browsing/zooming. White/Kelvin
-requires real min/max bounds. Opening, switching, holding and Back send no light
-command; a deliberate swatch tap applies it. Unknown/unavailable is never OFF.
-[Full Light rules and short-name examples](docs/AI_SETUP.md#light-capability-and-off-name-rules-beta6-candidate).
-
-### Bee version feedback and development updates
-
-Tap the standard Honeycomb Bee to reveal the actual installed version inside its
-hexagon for three seconds. Hold works too. At the expanded Collapsible root,
-short tap is Back/Collapse; hold or Shift+Enter reveals the same version without
-collapsing. Enter/Space remains Back. Alt+V provides keyboard version inspection
-on Bee icons that retain another contextual action. Reduced motion suppresses
-flight while retaining readable version feedback. All use one canonical mascot
-asset and shared rendering/version code. [Shared Bee guide](docs/SHARED_BEE.md).
-[Development installation and cache troubleshooting](docs/DEVELOPMENT_BUILDS.md).
-
-### Canonical visual baseline: Light module
+#### Canonical visual baseline: Light module
 
 **All modules use the existing Light module as their graphical baseline** — Sonos/Media, Climate, Car, Charger and future modules. Keep consistent 82px hex cube geometry, cube fill/inner/outer border layers, icon and label placement, typography, spacing and nested-menu navigation. Module-specific behavior and colors may differ, but modules must not introduce their own competing layout styles. Follow the [shared visual design contract](docs/TERMINOLOGY.md#shared-visual-design-contract--light-is-the-canonical-reference) and compare new module screens side by side against Light on desktop and mobile.
 
-### Naming standard: menu rings vs cube borders
+#### Naming standard: menu rings vs cube borders
 
 ![Menu rings and the visual layers of one cube](docs/assets/menu-rings-vs-cube-borders.svg)
 
@@ -314,7 +158,7 @@ the scene extent; it is not the Hub/Control 82 px cell width. Classic automatic
 layouts use the inner ring for 1–6 buttons, outer for 7–12, and both for 13–18;
 hard targets can activate additional rings. See the [classic reference](docs/CLASSIC_MENU.md).
 
-### Automatic Hub layouts and branding
+#### Automatic Hub layouts and branding
 
 Without explicit dynamic placement, these established layouts remain unchanged.
 Columns list slots in configuration order; count means configured non-null items,
@@ -332,14 +176,14 @@ including currently hidden items.
 | 7 | `0,1,2,3,4,5,6` | logo suppressed; same slots |
 <!-- auto-slots:end -->
 
-`logo: auto` shows the bee for **2–6 configured items**, leaving one item at
+`logo: auto` shows the compass for **2–6 configured items**, leaving one item at
 center and suppressing branding for 7+. `logo: true` also shows it for one item.
 An explicit center-slot request takes precedence over branding. `logo: false`
-removes the bee and makes slot 0 available to ordinary items; it does not force
+removes the compass and makes slot 0 available to ordinary items; it does not force
 every automatic layout to fill the center. Beyond seven, automatic items use
 `0,1,2,…`.
 
-### Placement and live visibility
+#### Placement and live visibility
 
 | Mode | Visible | Hidden | Collision rule |
 |---|---|---|---|
@@ -357,7 +201,7 @@ This complete [dynamic example](examples/v1.7/dynamic-hub.yaml) keeps a Light at
 center, prefers slot 2 for Person A when home, and uses free slots for other items:
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Dynamic Hub A
 size: 82
 logo: false
@@ -409,7 +253,120 @@ can be explicitly matched. Legacy `show` is an additional AND gate.
 These keys belong to **Hub items**, not standalone Control or submenu buttons.
 [Exact conditions, truth tables and collision rules](docs/V1_7_PHASE2.md).
 
-## Choose a module or Control
+### What you can build
+
+
+- Persistent Hubs and individual Controls with consistent icons, labels and rings.
+- Light brightness, Color/White palettes and reusable numeric presets.
+- Media/Sonos play/pause, group-aware volume, favorites artwork and optional Join.
+- Live Hub item visibility, reserved/preferred/free slots and stable placement.
+- Nested menus, drag-select and classic popups, templates and XY Pad.
+
+See the [Climate guide](docs/CLIMATE_MODULE.md), [Hub example](examples/climate-hub.yaml)
+and [standalone Control example](examples/climate-control.yaml).
+Jefferies Navigation calls configured HA actions; device automation belongs in Home Assistant.
+
+See the [Light menu and White palette](#light-menu-and-white-palette) for a worked example.
+
+### Responsive room controls
+
+
+Add `collapsible: true` and a primary item in slot 0 to place a compact,
+responsive room control on a floorplan. Tap performs its action; hold expands.
+On phones, tablets and PCs, the Hub opens at a comfortable size. It prefers
+space beside the floorplan, and fits safely in the viewport when there is no room.
+On constrained screens, it places actual visible controls in fitting free canvas,
+preferably below the image, at the already chosen expanded size. Desktop placement
+plans for slots 0–18 and accepts at most 15% initial downscaling in free space,
+and otherwise stays near the original floorplan anchor. Only configured cubes
+render. Tap its center to return. No extra sizing or positioning options are needed.
+
+```yaml
+type: custom:navigation-hub
+style: {left: 50%, top: 50%}
+collapsible: true
+items:
+  - type: light
+    entity: light.room_a
+    slot: 0
+  - type: light
+    entity: light.room_b
+    slot: 2
+```
+
+Optional Beam of Origin keeps the original room cube visible as a live,
+noninteractive reference while the expanded Hub moves away. Enable it with:
+
+```yaml
+collapsible:
+  beam_of_origin: true
+```
+
+Optional custom color:
+
+```yaml
+collapsible:
+  beam_of_origin:
+    color: "#8bdcff"
+```
+
+The soft cyan beam fades toward the active expanded controls and follows nested
+navigation. `collapsible: true` leaves the beam off.
+The source reference cannot toggle or open anything; closing restores the single
+interactive room cube. Near/overlapping or hidden sources suppress the beam.
+
+See [complete picture-elements examples and optional settings](docs/COLLAPSIBLE_HUB.md).
+Auto/omitted Hub size sets an 82px nominal maximum for expanded and nested cubes;
+a responsive collapsed floorplan cube may be smaller. Numeric `size: N` sets the
+maximum to N, including values above 82. Optional `collapsible.expanded_size` can
+lower that target but cannot raise the parent limit. Viewport fitting may shrink
+further. The same ceiling applies throughout navigation and exact Back restoration.
+Selected module cubes stay in place when their submenus fit; constrained views
+fall back to the expanded root center. Back restores the parent layout exactly.
+Explicit numeric sizes are unchanged. Legacy
+`collapsible.mobile` remains an alias for `small_screen`; conflicting values fail
+clearly. Hubs without `collapsible` keep their existing defaults.
+
+Developer diagnostic (optional): add top-level `size_debug: true` to show the
+actual rendered CSS-pixel cube width during the Compass's temporary version reveal.
+When omitted, inspection shows the version alone.
+Normal Compass tap inspects; expanded-root Compass tap stays Back, hold/Shift+Enter inspects.
+See [measured diagnostics and YAML](docs/NAVIGATION_COMPASS.md).
+
+Sonos Join prefers trusted station artwork with room name and individual volume.
+Climate adjustments are ±1.0 and ±0.1 in HA's temperature unit; unsupported
+precision is disabled. Keyboard focus follows the hex, with no pointer rectangle.
+
+### Actions, appearance and navigation
+
+
+- Tap, hold and optional double tap use HA action objects (`toggle`, `more-info`,
+  `perform-action`, `navigate`, `url`, `fire-dom-event`, `none`). Configured action
+  overrides replace the module's action. Default hold enters its menu.
+- Drag-select and nested back navigation are preserved. Selecting a base item may
+  establish a module center; after entry its physical slot 0 stays fixed until base.
+- Missing/unavailable devices retain their icon and show gray **Unavailable**;
+  recovery updates presentation. Visibility can separately hide them.
+- `colors.center`, `colors.inner_border`, `colors.outer_border` control fill and
+  ring colors; `border.inner_width` / `outer_width` control ring widths. Use shared
+  ring keys rather than rectangular CSS borders. Modules provide live active color.
+- `styles`, labels and templates support advanced customization. See the
+  [AI key reference](docs/AI_SETUP.md#configuration-contract) and
+  [classic popup/template/XY Pad reference](docs/CLASSIC_MENU.md).
+
+#### Compass version feedback and development updates
+
+Tap the standard Jefferies Navigation Compass to reveal the actual installed version inside its
+hexagon for three seconds. Hold works too. At the expanded Collapsible root,
+short tap is Back/Collapse; hold or Shift+Enter reveals the same version without
+collapsing. Enter/Space remains Back. Alt+V provides keyboard version inspection
+on Compass icons that retain another contextual action. Reduced motion suppresses
+animation while retaining readable version feedback. All use one canonical compass
+asset and shared rendering/version code. [Shared Compass guide](docs/NAVIGATION_COMPASS.md).
+[Development installation and cache troubleshooting](docs/DEVELOPMENT_BUILDS.md).
+
+### Choose a module or Control
+
 
 | Hub item | Standalone Control | Features |
 |---|---|---|
@@ -425,7 +382,7 @@ provide behavior. There is no separate Control visual engine.
 For a single device, use this [Control example with presets](examples/v1.7/control-light.yaml):
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.zone_a
 name: Light A
@@ -445,7 +402,48 @@ older standalone examples using inset sizing or `menu_size`; `size: 82` now mean
 cell width. Control has no Hub `items` list or item-level dynamic allocation.
 [Detailed migration and supported keys](docs/AI_SETUP.md#migration-and-limits).
 
-### Light presets
+#### Light menu and White palette
+
+The **Light menu** (left) shows brightness and presets. The **White palette**
+(right) shows the twelve Kelvin swatches for a tunable-white light.
+
+![Jefferies Navigation Light menu and all twelve White palette swatches on Deep Space](docs/assets/screenshots/navigation-light-controls.png)
+
+[Navigation capture provenance](docs/assets/screenshots/navigation-light-provenance.json)
+· [Historical v1.8.1 capture provenance](docs/assets/screenshots/stable-provenance.json).
+The historical v1.8.1 stable release did not include Charger.
+
+#### Light Hub names while OFF
+
+An OFF Light Hub launcher shows its
+existing item `name` above `OFF`. Without a custom name it uses the HA
+`friendly_name`, then the readable entity ID. A short name such as `A` is valid;
+long names use the existing ellipsis. ON brightness/colors and submenu centers
+keep their existing presentation. Unknown/unavailable lights say `Unavailable`,
+never `OFF`. Existing explicit secondary-label overrides still take precedence.
+
+#### Light capability reference
+
+Jefferies Navigation reads HA `supported_color_modes`, never brands or names. Mode selection
+on cube **3** is UI-only; slot 0 retains its normal name/value/Back presentation.
+
+| Advertised capability | Controls | Palette launcher |
+|---|---|---|
+| `onoff` only | Toggle; no detail menu | None |
+| `brightness` or fixed `white` | Brightness/presets | No Color/Kelvin commands |
+| `color_temp` only | Brightness and White/Kelvin | White only; no Color hold |
+| `hs`, `xy`, `rgb`, `rgbw` or `rgbww` only | Brightness and Color | Color only |
+| Color plus `color_temp` | Brightness, Color and White/Kelvin | Tap current/viewed palette; hold opposite |
+| Missing/inconsistent capabilities | Only verified controls | No invented capabilities |
+
+For dual-mode lights, HA `color_mode` chooses the initial palette. Off/null uses
+reliable same-entity session memory, otherwise a deterministic supported fallback.
+A manual palette selection stays selected while browsing/zooming. White/Kelvin
+requires real min/max bounds. Opening, switching, holding and Back send no light
+command; a deliberate swatch tap applies it. Unknown/unavailable is never OFF.
+[Full Light rules and short-name examples](docs/AI_SETUP.md#light-capability-and-off-name-rules-beta6-candidate).
+
+#### Light presets
 
 Light detail slots are: **1** 100%, **2** brightness preset, **3** Color/White
 (or passive Light for brightness-only), **4** standard color/Kelvin,
@@ -468,7 +466,7 @@ Tap applies; hold stores the current value. With no helpers the apply-only
 fallbacks are 60% and 2700 K. On a color-capable Light, configured hue+saturation
 take precedence over Kelvin for slot 4. [Light reference](docs/LIGHT_MODULE.md).
 
-### Sonos and external HA setup
+#### Sonos and external HA setup
 
 Group volume, room discovery/Join and native device Sleep need no helper scripts.
 Radio still needs HA's **official native Sonos favorites entity** enabled; supply
@@ -477,7 +475,7 @@ its actual ID with `favorites_sensor` (default `sensor.sonos_favorites`).
 **Breaking change in v1.8.0-beta.4:** supported read-only HA Browse Media is now
 Sonos's default and only favorite-artwork/metadata provider. Remove
 `favorites_cache_sensor` from dashboard YAML and remove the custom favorites-cache
-template definition/refresh automation previously used only for Honeycomb. Keep
+template definition/refresh automation previously used only for Jefferies Navigation. Keep
 unrelated templates and the **native** favorites entity. No legacy sensor lookup,
 autodetection, fallback or compatibility shim remains, even if the entity exists.
 Browse errors safely show icon/text. No special artwork option or backend install.
@@ -497,40 +495,61 @@ retains its ordering, artwork and playback, with new stable favorite accent ring
 A reliably identified favorite can provide native launcher artwork and playing
 color; pause/stop remains neutral. See [matching limits and styling precedence](docs/SONOS_MODULE.md#v171-beta-station-accents-and-launcher-artwork).
 
-## Actions, appearance and navigation
+### Charger dashboards
 
-- Tap, hold and optional double tap use HA action objects (`toggle`, `more-info`,
-  `perform-action`, `navigate`, `url`, `fire-dom-event`, `none`). Configured action
-  overrides replace the module's action. Default hold enters its menu.
-- Drag-select and nested back navigation are preserved. Selecting a base item may
-  establish a module center; after entry its physical slot 0 stays fixed until base.
-- Missing/unavailable devices retain their icon and show gray **Unavailable**;
-  recovery updates presentation. Visibility can separately hide them.
-- `colors.center`, `colors.inner_border`, `colors.outer_border` control fill and
-  ring colors; `border.inner_width` / `outer_width` control ring widths. Use shared
-  ring keys rather than rectangular CSS borders. Modules provide live active color.
-- `styles`, labels and templates support advanced customization. See the
-  [AI key reference](docs/AI_SETUP.md#configuration-contract) and
-  [classic popup/template/XY Pad reference](docs/CLASSIC_MENU.md).
 
-## Help, reference and development
+The Charger/Easee module shares the same
+82px renderer, gradients, sizing and power-sensitive hexagonal pulse. A Charging
+Hub sums fresh verified power and physically connected cars; named chargers open
+fixed detail menus. Permission and permanent-lock controls require deliberate taps
+on verified HA switches. Opening/Back/state updates never issue charging commands.
 
-If nothing renders, check both module resources, version/cache, browser errors and
-entity IDs. For missing favorites check the official sensor; for missing artwork
-check native Browse Media responses/permissions and browser access to thumbnail URLs. Join needs its
-script and candidate list. A hidden hard item intentionally leaves a hole.
+- [Complete one-Easee dashboard](examples/charger-easee.yaml), with no vehicle feed.
+- [Complete two-charger dashboard](examples/charger-multi.yaml), with optional
+  external vehicle associations; it also works when that sensor is absent.
+- [Element-only snippet for an existing floorplan](examples/charger-elements.yaml).
+- [Installation, entity checklist, source-backed capabilities and safe HA tests](docs/CHARGER_MODULE.md).
 
-- [Versioned AI setup guide and six tested YAML examples](docs/AI_SETUP.md)
-- [Light](docs/LIGHT_MODULE.md) · [Sonos](docs/SONOS_MODULE.md) · [Classic popups](docs/CLASSIC_MENU.md)
-- [Phase 1 / Issue #78](docs/V1_7_PHASE1.md) · [Phase 2 conditions and allocation](docs/V1_7_PHASE2.md)
-- [Architecture and invariants](ARCHITECTURE.md) · [Release notes](RELEASE_NOTES.md)
-- [Documentation audit and validation commands](docs/DOCUMENTATION.md)
+Named chargers show vehicle/connection and fixed charger name in two rows; fresh
+charging power stays visible beside the icon. Sonos launcher, promoted center and Radio favorite artwork share an inset safe
+area that avoids the sloping hex edges, preserves aspect ratio and reserves labels. Dashboard editor previews own their overlays and cannot send actions.
+
+All example IDs and screenshots are synthetic replacement points. Replace them
+with your actual integration entities. Car identification, schedules, load balancing and optimization run in external automation.
+
+## Verification
 
 For local development: `npm ci`, `npm test`, then
 `NODE_OPTIONS=--openssl-legacy-provider npm run build` (webpack 4).
 Browser and docs checks run in CI with pinned test dependencies. Configuration
 examples are checked in synthetic HA on desktop/mobile; real devices still need
 installation-time validation.
+
+## Fault Isolation and Recovery
+
+If Marketplace shows the old Honeycomb README after installing v2, refresh the
+repository information from its Marketplace page. Check the installed version
+separately. The version badge in this README reports the latest stable release.
+
+If nothing renders, check both module resources, version/cache, browser errors and
+entity IDs. For missing favorites check the official sensor; for missing artwork
+check native Browse Media responses/permissions and browser access to thumbnail URLs. Join needs its
+script and candidate list. A hidden hard item intentionally leaves a hole.
+
+## Manuals
+
+- [Versioned AI setup guide and six tested YAML examples](docs/AI_SETUP.md)
+- [Light](docs/LIGHT_MODULE.md) · [Sonos](docs/SONOS_MODULE.md) · [Classic popups](docs/CLASSIC_MENU.md)
+- [Phase 1 / Issue #78](docs/V1_7_PHASE1.md) · [Phase 2 conditions and allocation](docs/V1_7_PHASE2.md)
+- [Architecture and invariants](ARCHITECTURE.md) · [v2 release notice](RELEASE_NOTES.md)
+- [Complete Honeycomb Menu NG v1 release history](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/blob/25291186b07bfee81b8877fe731e00a417d56c12/RELEASE_NOTES.md) · [v1.10.0 stable verification](docs/V1_10_STABLE_RELEASE.md)
+- [Documentation audit and validation commands](docs/DOCUMENTATION.md)
+
+## Operations Log
+
+### Help, reference and development
+
+- [Captain’s Log](docs/CAPTAINS_LOG.md)
 
 Stable releases use the exact tested master commit, matching metadata, tag, bundle,
 checksums and HACS asset. See the [publication and verification guide](docs/RELEASING.md).
@@ -541,60 +560,6 @@ Before any future activation, review a fresh [retention dry-run](docs/RELEASE_RE
 Deleting a Release record removes its uploaded assets; its Git tag and tagged
 source remain. Tags, branches and source history are never cleanup targets.
 
-Candidate reference: [v1.8 runtime namespace and mixed-install routing](docs/NG_RUNTIME.md).
-Stable v1.7.1 remains published and unchanged until separate owner approval.
+## Approved artwork
 
-The v1.8.0 candidate includes [40% active depth and decorative logo gradients](docs/CUBE_PRESENTATION.md), [image-aligned `size: auto`](docs/FLOORPLAN_SIZING.md), and an opt-in [six-sided energy pulse](docs/ENERGY_WAVE.md). Inactive physical cubes remain solid. Numeric sizes and non-collapsible omitted fixed-82 defaults stay unchanged.
-
-### Floorplan sizing in v1.8.0-beta.6
-
-For a persistent Hub or Control inside `picture-elements`, opt in with
-`size: auto`. A floorplan displayed at 50% of its reference design width gets
-41px cubes; 75% gets61.5px. Reference defaults to1536 CSS pixels; set
-`auto_reference_width` to your intended normal display width. Existing numeric sizes stay fixed. No detectable image
-means a harmless 82px fallback. See [complete copy/paste YAML, coordinate-frame
-support and touch-size limits](docs/FLOORPLAN_SIZING.md).
-
-The [synthetic charging-pulse demo](examples/energy-wave.yaml) uses the shared
-renderer without a charger or service call. Charger and Climate are included in v1.10.0 stable; Car remains unimplemented. [HACS listing readiness](docs/HACS_SUBMISSION.md) is
-separate from installing this stable release as a custom repository.
-
-### v1.8.0-beta.6: corrected auto reference and power pulse speed
-
-`size: auto` uses a stable **display/design reference width**, default1536 CSS
-pixels. Use `auto_reference_width: 1500` for82px at a1500px displayed floorplan,
-41px at750px. High-resolution source images no longer make cubes start tiny.
-Current beta.4 caps normal auto sizing at 82px. Explicit numeric sizes remain
-fixed; ordinary omitted size remains 82px, while Collapsible Hubs default to auto.
-Read the
-[complete floorplan YAML and migration](docs/FLOORPLAN_SIZING.md).
-
-The [power-speed demo](examples/energy-wave-power.yaml) keeps true hexagonal
-geometry and adds bounded power/fixed speed with phase-preserving smooth rate
-changes. It requires no charger or service call. Existing energy_wave settings
-retain their three-second cycle. [Rate settings and real sensor mapping](docs/ENERGY_WAVE.md).
-The owner-approved40% and logo gradients, native Sonos and other modules remain.
-
-### v1.8.0-beta.7: energy-wave contour color (#119)
-
-The scoped beta.6 follow-up makes the pulse inherit the cube's resolved inner
-border, including live Light/Sonos colors and user overrides. Optional
-`energy_wave.color: '#00bfff'` changes only the contour. Existing gradients,
-six-sided geometry, power/fixed speed and sizing stay unchanged. Try the
-[complete synthetic green/blue demo](examples/energy-wave-color.yaml) and read
-the [color and template rules](docs/ENERGY_WAVE.md#contour-color--v180-beta7).
-This setting starts in beta.7; published beta.6 remains immutable.
-
-
-### Anchored child menus (v1.9.0-beta.4)
-
-Opening a promoted child keeps the selected cube at its exact physical position;
-it becomes that submenu's slot 0. Back restores the previous anchor and layout.
-This also applies to deeper Charger/generic menus and responsive floorplans.
-Light palettes/zoom and Sonos Radio/Join/Sleep retain their existing navigation.
-In v1.9.0-beta.5, every ordinary submenu depth defaults to the same neutral gray
-fill and inner border as Light controls; the dark outer border remains unchanged.
-Charger details use that shared gray rather than a black fill. Root Hub base
-fill/status styling and meaningful module/center/palette colors are preserved. Explicit
-`colors.inner_border` overrides still win; the promoted center keeps its selected
-appearance. Root status colors and intentional Light/Sonos colors are preserved.
+[JTS artwork and product identity](docs/BRANDING.md)

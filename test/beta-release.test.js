@@ -8,9 +8,9 @@ const {isBetaVersion} = require('../scripts/beta-version');
 const {validateArtifact} = require('../scripts/check-release');
 const {localBetaArtifact} = require('../scripts/check-beta');
 const {context,verify,assertUnused,assertAssets,filesFor,publish,backend,digest} = require('../scripts/beta-release');
-const SHA = 'a'.repeat(40), OTHER = 'b'.repeat(40), REPO = 'example/honeycomb';
-const BUNDLE = Buffer.from(' '.repeat(11000)+'\n"honeycomb-persistent-hub";');
-const ARTIFACT = {version:'1.8.0-beta.1',tag:'v1.8.0-beta.1',sha256:digest(BUNDLE),bytes:BUNDLE.length,filename:'honeycomb-menu-ng.js'};
+const SHA = 'a'.repeat(40), OTHER = 'b'.repeat(40), REPO = 'example/scene';
+const BUNDLE = Buffer.from(' '.repeat(11000)+'\n"navigation-hub";');
+const ARTIFACT = {version:'1.8.0-beta.1',tag:'v1.8.0-beta.1',sha256:digest(BUNDLE),bytes:BUNDLE.length,filename:'jefferies-navigation.js'};
 const HACS = {filename:ARTIFACT.filename,content_in_root:true};
 function environment(branch='fix/synthetic') {
     return {GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_REF:`refs/heads/${branch}`,GITHUB_SHA:SHA,GITHUB_REPOSITORY:REPO,
@@ -26,7 +26,7 @@ function fixture(t,branch='fix/synthetic',withPR=true) {
         prs:withPR?[{number:91,head:{ref:branch,sha:SHA,repo:{full_name:REPO}}}]:[],jobs:[{name:'build',status:'completed',conclusion:'success'},{name:'workflow-lint',status:'completed',conclusion:'success'}],
         old:[{id:1,tag_name:'v1.7.0',draft:false,prerelease:false,published_at:'2026-01-01T00:00:00Z',assets:[]}],hook:()=>{}};
     const read=fs.readFileSync.bind(fs);
-    t.mock.method(fs,'readFileSync',(file,...args)=>file===ARTIFACT.filename?BUNDLE:file==='release.json'?JSON.stringify({title:`Honeycomb NG ${ARTIFACT.tag}`,prerelease:true}):read(file,...args));
+    t.mock.method(fs,'readFileSync',(file,...args)=>file===ARTIFACT.filename?BUNDLE:file==='release.json'?JSON.stringify({title:`Jefferies Navigation ${ARTIFACT.tag}`,prerelease:true}):read(file,...args));
     const io={
         wait:async ms=>{calls.push(['wait',ms]);},
         git:args=>{calls.push(['git',...args]);return args[0]==='rev-parse'?SHA:'';},
@@ -74,16 +74,16 @@ function fixture(t,branch='fix/synthetic',withPR=true) {
 for(const version of ['0.0.0-beta.0','1.7.1-beta.1','1.8.0-beta.1','2.0.0-beta.12','25.10.3-beta.2+build.001'])
     test(`SemVer beta metadata supports ${version}`,()=>{
         assert.ok(isBetaVersion(version));
-        assert.doesNotThrow(()=>validateArtifact({version},{title:`Honeycomb NG v${version}`,prerelease:true},HACS,BUNDLE));
+        assert.doesNotThrow(()=>validateArtifact({version},{title:`Jefferies Navigation v${version}`,prerelease:true},HACS,BUNDLE));
     });
 test('malformed, stable and non-beta versions cannot reach beta publication',()=>{
     for(const version of ['1.7.1','v1.7.1-beta.1','1.7-beta.1','01.8.0-beta.1','1.08.0-beta.1','1.8.00-beta.1','1.8.0-beta.01','1.8.0-beta.-1','1.8.0-beta','1.8.0-rc.1','1.8.0-alpha.1','1.8.0-beta.1\n','1.8.0-beta.1+','1.8.0-beta.1+a..b']) {
         assert.equal(isBetaVersion(version),false,version);
         assert.throws(()=>context({...environment(),EXPECTED_TAG:`v${version}`}));
     }
-    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Honeycomb NG v1.8.0-beta.1',prerelease:false},HACS,BUNDLE));
-    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Honeycomb NG v1.8.0-beta.2',prerelease:true},HACS,BUNDLE));
-    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Honeycomb NG v1.8.0-beta.10',prerelease:true},HACS,BUNDLE));
+    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Jefferies Navigation v1.8.0-beta.1',prerelease:false},HACS,BUNDLE));
+    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Jefferies Navigation v1.8.0-beta.2',prerelease:true},HACS,BUNDLE));
+    assert.throws(()=>validateArtifact({version:'1.8.0-beta.1'},{title:'Jefferies Navigation v1.8.0-beta.10',prerelease:true},HACS,BUNDLE));
 });
 test('manual branch context rejects tags, nonmanual triggers, abbreviated SHAs and workflow/source conflicts',()=>{
     for(const patch of [{GITHUB_EVENT_NAME:'push'},{GITHUB_REF:'refs/tags/v1.8.0-beta.1'},{EXPECTED_COMMIT:'aaaa'},{GITHUB_SHA:OTHER},{EXPECTED_TAG:'v1.8.0'}])
@@ -97,7 +97,11 @@ for(const branch of ['feature/synthetic','fix/synthetic','restart/v1.5.1','maint
         assert.ok(!f.calls.some(c=>String(c[1]).includes('branches/master')));
     });
 test('open PR requires its exact green CI, and download verification precedes public publication',async t=>{
-    const f=fixture(t);await publish(f.io,f.expected,f.output,f.env,ARTIFACT);
+    const f=fixture(t);
+    const notice='Jefferies Navigation 2.0 introduces breaking changes and requires reconfiguration in Home Assistant.';
+    await publish(f.io,f.expected,f.output,{...f.env,APPROVED_NOTES:'  '+notice+'\n'},ARTIFACT);
+    const create=f.calls.find(call=>call[0]==='gh'&&call[2]==='create');
+    assert.equal(fs.readFileSync(create[create.indexOf('--notes-file')+1],'utf8'),notice+'\n');
     assert.equal(f.expected.ci.pullRequests[0].number,91);
     assert.ok(f.calls.findIndex(c=>c[0]==='PATCH')>f.calls.findIndex(c=>c[0]==='gh'&&c[2]==='download'));
     assert.ok(f.calls.some(c=>c[0]==='list'&&c[1].includes('event=pull_request')));
@@ -124,7 +128,7 @@ test('no successful CI, failed/pending latest CI or unsuccessful required jobs f
 });
 test('wrong branch/repository/workflow/SHA/event or missing PR CI is rejected',t=>{
     const f=fixture(t);
-    for(const patch of [{head_sha:OTHER},{head_branch:'other'},{head_repository:{full_name:'other/honeycomb'}},{path:'.github/workflows/other.yml'},{event:'workflow_dispatch'}]){
+    for(const patch of [{head_sha:OTHER},{head_branch:'other'},{head_repository:{full_name:'other/scene'}},{path:'.github/workflows/other.yml'},{event:'workflow_dispatch'}]){
         f.state.runs[0]={...run(11,'push','fix/synthetic'),...patch};assert.throws(()=>verify(f.io,f.env,ARTIFACT),/No matching/);
     }
     f.state.runs=[run(11,'push','fix/synthetic')];assert.throws(()=>verify(f.io,f.env,ARTIFACT),/No matching pull_request/);
@@ -152,7 +156,7 @@ test('verified asset tampering and metadata/tag mismatch stop before tag creatio
     assert.throws(()=>verify(f.io,{...f.env,EXPECTED_TAG:'v1.8.0-beta.2'},ARTIFACT),/metadata mismatch/);
 });
 test('a corrupt downloaded draft stays private with immutable tag retained for inspection',async t=>{
-    const f=fixture(t);f.state.hook=(op,dir)=>{if(op==='downloaded')fs.writeFileSync(path.join(dir,'honeycomb-menu-ng.js'),'wrong');};
+    const f=fixture(t);f.state.hook=(op,dir)=>{if(op==='downloaded')fs.writeFileSync(path.join(dir,'jefferies-navigation.js'),'wrong');};
     await assert.rejects(publish(f.io,f.expected,f.output,f.env,ARTIFACT),/Downloaded/);
     assert.equal(f.state.tag,SHA);assert.equal(f.state.release.draft,true);assert.ok(!f.calls.some(c=>c[0]==='PATCH'));
 });
@@ -192,7 +196,7 @@ test('beta asset validator rejects stable flags, incomplete assets, altered chec
 test('lock metadata must agree with the selected beta version',t=>{
     const read=fs.readFileSync.bind(fs),version='1.8.0-beta.1';
     let lockVersion='1.7.0';
-    const values={'package.json':{version},'release.json':{title:`Honeycomb NG v${version}`,prerelease:true},'hacs.json':HACS};
+    const values={'package.json':{version},'release.json':{title:`Jefferies Navigation v${version}`,prerelease:true},'hacs.json':HACS};
     t.mock.method(fs,'readFileSync',(file,...args)=>file==='package-lock.json'?JSON.stringify({version:lockVersion}):values[file]?JSON.stringify(values[file]):file===ARTIFACT.filename?BUNDLE:read(file,...args));
     assert.throws(()=>localBetaArtifact(),/lock version mismatch/);lockVersion=version;assert.equal(localBetaArtifact().version,version);
 });
@@ -212,7 +216,7 @@ test('workflow is branch-independent, manually authorized, least-privilege and a
     const workflow=fs.readFileSync('.github/workflows/release.yml','utf8'),build=fs.readFileSync('.github/workflows/build.yml','utf8');
     assert.match(workflow,/workflow_dispatch:/);assert.match(workflow,/default: false/);assert.match(workflow,/if: inputs.publish &&/);
     assert.match(workflow,/persist-credentials: false/);assert.match(workflow,/contents: read/);assert.match(workflow,/contents: write/);
-    assert.match(workflow,/git diff --exit-code -- honeycomb-menu-ng.js/);assert.match(workflow,/cmp honeycomb-menu-ng.js/);
+    assert.match(workflow,/git diff --exit-code -- jefferies-navigation.js/);assert.match(workflow,/cmp jefferies-navigation.js/);
     assert.match(workflow,/actions\/download-artifact@v4/);assert.match(build,/- '\*\*'/);
     for(const forbidden of ['feature/','fix/','restart/','697dec','v1.7.0-beta','--force','--clobber','release delete','RELEASE_RETENTION_ENABLED'])assert.ok(!workflow.includes(forbidden));
     assert.ok(!build.includes('paths-ignore:'));

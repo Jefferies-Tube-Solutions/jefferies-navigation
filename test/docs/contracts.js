@@ -10,7 +10,7 @@ const readme=fs.readFileSync('README.md','utf8');
 const visual=readme.split('<!-- layout-diagram:start -->')[1].split('<!-- layout-diagram:end -->')[0];
 assert.ok(visual.includes('](docs/assets/layout-slots.svg)') && !visual.includes('```'));
 const svg=fs.readFileSync('docs/assets/layout-slots.svg','utf8');
-assert.match(svg,/viewBox="0 0 520 490"/);assert.match(svg,/aria-labelledby="title description"/);
+assert.match(svg,/viewBox="0 0 700 640"/);assert.match(svg,/aria-labelledby="title description"/);
 const svgCells=[...svg.matchAll(/data-slot="(\d+)" data-x="([\d.]+)" data-y="([\d.]+)"/g)];
 assert.deepEqual(svgCells.map(match=>Number(match[1])),Array.from({length:19},(_,i)=>i));
 for(const [,slot,x,y] of svgCells){
@@ -72,7 +72,7 @@ let allocation=allocateHubSlots(dynamic.items.map((i,index)=>({id:String(index),
 assert.deepEqual([...allocation.placements],[['0',0],['1',2],['2',1]]);
 const sonos=buildCubeConfig(input.examples['sonos.yaml'].items[0],hass).menu;
 assert.equal(sonos.buttons[2].tap_action.sonos_item.toggle_member_script,'script.player_a_toggle_member');
-assert.equal(sonos.buttons[0].tap_action.honeycomb_nested_menu.buttons[0].tap_action.data.media_content_type,'favorite_item_id');
+assert.equal(sonos.buttons[0].tap_action.jts_n_nested_menu.buttons[0].tap_action.data.media_content_type,'favorite_item_id');
 assert.equal(buildCubeConfig(input.examples['onoff-light.yaml'],hass).menu,null);
 console.log(`Documentation contracts: verified 19-cell diagram, 8 rings, ${compiled} module descriptors, dynamic bounds/placement and external action wiring`);
 
@@ -83,11 +83,11 @@ for(const text of ['sonos.set_sleep_timer','sonos.clear_sleep_timer','7200','Sta
 assert.ok(!fs.existsSync('examples/packages/sonos-sleep-a.yaml'));
 const sleep=sonos.buttons[3];assert.equal(sleep.slot,4);
 assert.deepEqual(sleep._sleep,{player:input.examples['sonos.yaml'].items[0].entity});
-assert.deepEqual(sleep.tap_action.honeycomb_nested_menu.buttons.map(b=>b.tap_action.minutes),[15,30,45,60,90,0]);
+assert.deepEqual(sleep.tap_action.jts_n_nested_menu.buttons.map(b=>b.tap_action.minutes),[15,30,45,60,90,0]);
 const navigationGuide=fs.readFileSync('docs/SONOS_MODULE.md','utf8');
 for(const text of ['sibling submenus','Back once','8000','persistent.menu.idle_timeout','asynchronous room discovery','standalone'])
     assert.ok(navigationGuide.includes(text),`Sonos navigation guide: ${text}`);
-for(const menu of [sonos.buttons[0].tap_action.honeycomb_nested_menu,sleep.tap_action.honeycomb_nested_menu])
+for(const menu of [sonos.buttons[0].tap_action.jts_n_nested_menu,sleep.tap_action.jts_n_nested_menu])
     assert.equal(menu.idle_timeout,undefined,'Sonos siblings inherit the configured timeout');
 
 const kelvinGuide=fs.readFileSync('docs/LIGHT_MODULE.md','utf8');
@@ -116,7 +116,7 @@ assert.ok(readme.includes('Canonical visual baseline: Light module'));
 assert.ok(terms.includes('Shared visual design contract'));
 
 const climateGuide=fs.readFileSync('docs/CLIMATE_MODULE.md','utf8');
-for(const text of ['v1.10.0-beta.1','climate.set_temperature','Low / High','defrost_entity','translation_key','15 seconds','honeycomb-open-nested','°F','no polling'])
+for(const text of ['v1.10.0-beta.1','climate.set_temperature','Low / High','defrost_entity','translation_key','15 seconds','jts-n-open-nested','°F','no polling'])
  assert.ok(climateGuide.toLowerCase().includes(text.toLowerCase()),`Climate documentation: ${text}`);
 const {expandModuleMenu}=require('../../src/core/module-menu');
 let climateExamples=0,nestedModules=0;

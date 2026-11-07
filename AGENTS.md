@@ -1,4 +1,4 @@
-# Honeycomb Menu NG development instructions
+# Jefferies Navigation development instructions
 
 ## Start by reconstructing state
 
@@ -36,6 +36,18 @@
 - Owner real-HA acceptance is separate from synthetic/browser/CI validation.
   Do not close acceptance issues or claim hardware validation from test fixtures.
 
+## JTS branding
+
+- Follow the approved JTS brand system and the local [branding contract](docs/BRANDING.md).
+  Keep publisher and product artwork pinned to reviewed sources. The Home Assistant
+  renderer draws the outer hex around the round Navigation compass.
+- Keep the public product, HACS and runtime identities consistent. Follow the README
+  theme, layout and release-status rules, preserve GPL attribution, and keep the
+  human guides and AI setup reference aligned with the tested release.
+- Run `npm run check:brand`. This check also runs in the core test suite used by CI
+  and guarded releases. Changes to the accepted artwork or identity require owner
+  approval and an updated provenance record.
+
 ## Work and handoff
 
 - Continue autonomously when scope is clear; ask about meaningful architecture,
@@ -68,7 +80,6 @@ mobile views and record the actual evidence in the pull request. If a brand
 requirement cannot be checked or an asset is awaiting approval, record that
 explicitly. Run JTS Brand Compliance before merging.
 
-The current release remains Honeycomb Menu NG. Preserve its published identity,
-legacy logo, GPL attribution and supported HACS installation while the JTS
-migration is pending. The v2 beta already uses the approved Navigation lockup and its own brand
-validator. Keep the stable and beta identities distinct until the reviewed migration.
+Jefferies Navigation v2 uses the approved Navigation lockup and the repository
+brand validator. Preserve the original GPL attribution and follow the
+[upgrade guide](docs/V2_MIGRATION.md) for the supported v2 HACS setup.

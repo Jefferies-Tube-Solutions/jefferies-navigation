@@ -17,7 +17,7 @@ are needed only for aspect ratio/cropping, not the cube-size baseline.
 type: picture-elements
 image: /local/floorplan.png
 elements:
-  - type: custom:honeycomb-persistent-hub
+  - type: custom:navigation-hub
     size: auto
     auto_reference_width: 1500
     logo: auto
@@ -32,7 +32,7 @@ elements:
         entity: media_player.player_a
         favorites_sensor: sensor.favorites_a
         name: Player A
-  - type: custom:honeycomb-persistent-control
+  - type: custom:navigation-control
     module: light
     entity: light.zone_b
     size: auto
@@ -44,7 +44,7 @@ elements:
 
 Copy the image into Home Assistant's `www/floorplan.png` yourself, replace the
 synthetic entities and enable your official Sonos favorites entity. No custom
-Sonos template/cache is supported. Honeycomb does not edit live HA files.
+Sonos template/cache is supported. Jefferies Navigation does not edit live HA files.
 
 ## Fixed mode stays fixed
 
@@ -67,7 +67,7 @@ Explicit numeric border widths and pixel styles remain explicit pixels.
   `left` AND `top` map to the actual image pixels, once, including centered or
   two-value CSS `object-position` offsets for `contain` letterbox and `cover`
   cropping. An anchor may fall outside a cropped visible image; choose visible
-  coordinates. Honeycomb preserves HA's `translate(-50%,-50%)` anchor transform.
+  coordinates. Jefferies Navigation preserves HA's `translate(-50%,-50%)` anchor transform.
 - Standard aspect-preserved image rendering, padding/offsets outside the image
   element, aspect-ratio containers, browser zoom
   are measured from rendered bounds. No viewport-width heuristic is used.

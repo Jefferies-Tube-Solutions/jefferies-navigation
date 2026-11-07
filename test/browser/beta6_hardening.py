@@ -24,7 +24,7 @@ class Hardening(Navigation):
             self.assertEqual(self.model(0)['secondary'],'OFF');self.assert_no_commands()
             self.page.evaluate('window.disposedLoadMenu=hub._hubMenu;hub.remove()')
             self.assertTrue(self.page.evaluate('disposedLoadMenu._disposed && !disposedLoadMenu.parentNode'))
-            self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0)
+            self.assertEqual(self.page.locator('jts-n-menu').count(),0)
             if self.evidence:(self.evidence/f'{self.viewport["width"]}-throttled-performance.json').write_text(json.dumps({**stats,'unrelatedRenders':0,'relevantRenders':1},indent=2))
         finally:session.send('Emulation.setCPUThrottlingRate',{'rate':1});session.detach()
     def test_palette_anchor_and_back_record_existing_viewport_capacity(self):

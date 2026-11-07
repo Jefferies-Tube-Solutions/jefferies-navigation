@@ -11,7 +11,7 @@ Control uses `module: climate`. Opening a view never operates the equipment.
 Replace the synthetic entity with a real `climate.*` entity from HA States:
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 items:
   - type: climate
@@ -22,7 +22,7 @@ items:
 Standalone Control:
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: climate
 entity: climate.room_a
 name: Room A
@@ -118,7 +118,7 @@ semantics or ambiguous candidates means no automatic action. Use an explicit
 mapping only after confirming the real device association:
 
 ```yaml
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: climate
 entity: climate.room_a
 name: Room A
@@ -154,20 +154,20 @@ unrelated HA entities do not rerender Climate faces.
 
 ## Different-entity nested module
 
-Reuse the existing `honeycomb-open-nested` action and descriptor. `module` and
+Reuse the existing `jts-n-open-nested` action and descriptor. `module` and
 `entity` select the child compiler; the shared controller owns its center and Back
 stack. The child's entity explicitly wins over the parent's inherited entity.
 
 ```yaml
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 logo: false
 items:
   - type: generic
     entity: sensor.value_a
     name: Parent A
     tap_action:
-      action: honeycomb-open-nested
-      honeycomb_nested_menu:
+      action: jts-n-open-nested
+      jts_n_nested_menu:
         module: climate
         entity: climate.room_b
         name: Room B

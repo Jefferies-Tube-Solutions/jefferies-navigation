@@ -6,7 +6,7 @@ const os = require('node:os');
 const path = require('node:path');
 const retention = require('../scripts/release-retention');
 const {parseVersion, classify, planRetention, fingerprint, GitHubAPI, inventory, authorizeApply, applyPlan, markdown, main} = retention;
-const REPO = 'example/honeycomb';
+const REPO = 'example/scene';
 const clone = value => JSON.parse(JSON.stringify(value));
 function release(id, tag, extra = {}) {
     return {id, tag_name: tag, name: 'Synthetic release', body: 'Synthetic notes', draft: false,

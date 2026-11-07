@@ -8,7 +8,7 @@ const {execFileSync} = require('node:child_process');
 const {isBetaVersion} = require('./beta-version');
 const {localBetaArtifact} = require('./check-beta');
 const digest = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
-const ASSETS = ['honeycomb-menu-ng.js', 'SHA256SUMS.txt', 'release-provenance.json'];
+const ASSETS = ['jefferies-navigation.js', 'SHA256SUMS.txt', 'release-provenance.json'];
 const encodeRef = branch => branch.split('/').map(encodeURIComponent).join('/');
 
 function context(env) {
@@ -86,7 +86,7 @@ function inventoryUnchanged(before, after, id) {
     assert.ok(after.some(r => r.id === id));
 }
 function filesFor(expected, bundle) {
-    return {'honeycomb-menu-ng.js':bundle, 'SHA256SUMS.txt':Buffer.from(`${expected.sha256}  honeycomb-menu-ng.js\n`),
+    return {'jefferies-navigation.js':bundle, 'SHA256SUMS.txt':Buffer.from(`${expected.sha256}  jefferies-navigation.js\n`),
         'release-provenance.json':Buffer.from(JSON.stringify(expected,null,2)+'\n')};
 }
 function assertAssets(release, expected, files) {
@@ -100,9 +100,9 @@ function assertAssets(release, expected, files) {
         assert.equal(asset.size, files[name].length, `Wrong size ${name}`);
         if (asset.digest) assert.equal(asset.digest, `sha256:${digest(files[name])}`, `Wrong digest ${name}`);
     }
-    assert.equal(digest(files['honeycomb-menu-ng.js']), expected.sha256);
-    assert.equal(files['honeycomb-menu-ng.js'].length, expected.bytes);
-    assert.equal(files['SHA256SUMS.txt'].toString(), `${expected.sha256}  honeycomb-menu-ng.js\n`);
+    assert.equal(digest(files['jefferies-navigation.js']), expected.sha256);
+    assert.equal(files['jefferies-navigation.js'].length, expected.bytes);
+    assert.equal(files['SHA256SUMS.txt'].toString(), `${expected.sha256}  jefferies-navigation.js\n`);
     assert.deepEqual(JSON.parse(files['release-provenance.json']), expected);
 }
 function verifyTag(io, expected) {
@@ -150,7 +150,7 @@ async function publish(io, expected, output, env, artifact) {
     branchHead(io, expected);
     io.api('git/refs','POST',{ref:`refs/tags/${expected.tag}`,sha:expected.commit});
     verifyTag(io, expected);
-    const notes = `${env.APPROVED_NOTES.trim()}\n\nTested branch: \`${expected.branch}\`; commit: \`${expected.commit}\`.\nBundle SHA-256: \`${expected.sha256}\` (${expected.bytes} bytes).\n\nThis is a beta. An unmerged branch does not require promotion to master. Owner real Home Assistant testing and explicit approval are required before merge or stable publication.\n`;
+    const notes = env.APPROVED_NOTES.trim() + "\n";
     const notesFile = path.join(output,'release-notes.md');fs.writeFileSync(notesFile,notes);
     io.gh(['release','create',expected.tag,'--verify-tag','--target',expected.commit,'--draft','--prerelease','--latest=false',
         '--title',JSON.parse(fs.readFileSync('release.json')).title,'--notes-file',notesFile,...ASSETS.map(name=>path.join(output,name))]);

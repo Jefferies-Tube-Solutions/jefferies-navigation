@@ -184,16 +184,16 @@ function handlePreset(mode, context)
 
 function registerActions(registry)
 {
-    registry.register('honeycomb-light-color-apply',applyColor);
-    registry.register('honeycomb-light-color-zoom',zoomColor);
+    registry.register('jts-n-light-color-apply',applyColor);
+    registry.register('jts-n-light-color-zoom',zoomColor);
     kelvinActions.registerActions(registry);
     registry.register(
-        'honeycomb-preset-apply',
+        'jts-n-preset-apply',
         context => handlePreset('apply', context)
     );
 
     registry.register(
-        'honeycomb-preset-store',
+        'jts-n-preset-store',
         context => handlePreset('store', context)
     );
 }

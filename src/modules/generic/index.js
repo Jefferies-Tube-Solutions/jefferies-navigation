@@ -8,7 +8,7 @@ module.exports = {
     buildLauncher({item, index, slot, submenu}) {
         return {
             slot: physicalSlot(item, index, slot), slot_mode: item.slot_mode || 'hard',
-            entity: item.entity, mode: 'generic', icon: requestedIcon(item, 'honeycomb:bee'),
+            entity: item.entity, mode: 'generic', icon: requestedIcon(item, 'jts-n:compass'),
             name: item.name || '', label: item.label || '', show_name: true,
             show_label: !!item.label, autoclose: false,
             background: item.background || 'rgba(52, 66, 78, 0.92)',

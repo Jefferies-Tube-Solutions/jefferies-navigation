@@ -1,4 +1,4 @@
-type: custom:honeycomb-persistent-control
+type: custom:navigation-control
 module: light
 entity: light.zone_a
 name: Light A

@@ -47,5 +47,5 @@ async function command({hass,actionConfig,itemConfig,getHass=()=>hass,isCurrent=
         notify('Charger command failed or timed out. Check Home Assistant and the charger before retrying; no command is retried automatically.');return false;
     } finally {clearTimeout(record.requestTimeout);}
 }
-function registerActions(actions) { actions.register('honeycomb-charger-toggle',context=>{void command(context);return true;}); }
+function registerActions(actions) { actions.register('jts-n-charger-toggle',context=>{void command(context);return true;}); }
 module.exports={ACK_MS,recordFor,command,registerActions};

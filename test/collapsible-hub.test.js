@@ -4,13 +4,13 @@ const {settings,expandedAllocation,mobileGeometry}=require('../src/core/collapsi
 const entry=(id,slot,mode='hard',visible=true)=>({id,slot,mode,visible});
 test('collapse is opt-in and rejects ambiguous options',()=>{
  assert.equal(settings(undefined),null);assert.equal(settings(false),null);assert.equal(settings(true).idle_timeout,30000);
- for(const value of [null,[],{idle_timeout:0},{expanded_center:'other'},{expanded_center:'bee'},{expanded_size:0},{mobile:'yes'},{unknown:true}])assert.throws(()=>settings(value),/collapsible|Invalid/);
+ for(const value of [null,[],{idle_timeout:0},{expanded_center:'other'},{expanded_center:'compass'},{expanded_size:0},{mobile:'yes'},{unknown:true}])assert.throws(()=>settings(value),/collapsible|Invalid/);
 });
-test('bee reserves center, rejects hard collisions even hidden, preserves priority/soft allocation',()=>{
+test('compass reserves center, rejects hard collisions even hidden, preserves priority/soft allocation',()=>{
  const primary=entry('primary',0),entries=[primary,entry('hard',2),entry('priority',1,'priority'),entry('soft',0,'soft')];
- const result=expandedAllocation(entries,primary,settings({expanded_center:'bee',primary_slot:1}));
+ const result=expandedAllocation(entries,primary,settings({expanded_center:'compass',primary_slot:1}));
  assert.equal(result.placements.get('primary'),1);assert.equal(result.placements.get('hard'),2);assert.equal(result.placements.get('priority'),3);assert.equal(result.placements.get('soft'),4);
- for(const visible of [true,false])assert.throws(()=>expandedAllocation([primary,entry('occupied',1,'hard',visible)],primary,settings({expanded_center:'bee',primary_slot:1})),/conflict/);
+ for(const visible of [true,false])assert.throws(()=>expandedAllocation([primary,entry('occupied',1,'hard',visible)],primary,settings({expanded_center:'compass',primary_slot:1})),/conflict/);
  assert.equal(expandedAllocation(entries,primary,settings(true)).placements.get('primary'),0);
 });
 test('phone geometry fits both orientations without changing configured source size',()=>{
@@ -42,7 +42,7 @@ test('one canonical original Hub ceiling bounds every requested expanded target'
  owner._hubExpanded=false;assert.equal(boundedCubeSize(context,100),100);assert.equal(boundedCubeSize({},200),200);
 });
 test('optional size_debug validates booleans and shared pixel label never guesses a size',()=>{
- const {validateCubeConfig}=require('../src/core/cube-config'),{pixelLabel}=require('../src/core/bee');
+ const {validateCubeConfig}=require('../src/core/cube-config'),{pixelLabel}=require('../src/core/compass');
  for(const value of [undefined,false,true])assert.doesNotThrow(()=>validateCubeConfig({size_debug:value}));
  for(const value of [null,0,1,'true',{},[]])assert.throws(()=>validateCubeConfig({size_debug:value}),/size_debug/);
  for(const [width,label]of [[82,'82 px'],[79.4,'79.4 px'],[79.44,'79.4 px'],[0,'N/A'],[NaN,'N/A'],[null,'N/A']])assert.equal(pixelLabel(width),label);

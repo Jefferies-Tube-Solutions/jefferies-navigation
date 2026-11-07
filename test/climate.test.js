@@ -83,7 +83,7 @@ test('presentation preserves live temps/active status, skips unrelated snapshots
  h.states[entity].state='unavailable';p=presentation.resolve({hass:h,config:c});assert.equal(p.name,'Unavailable');assert.equal(p.active,false);
 });
 test('generic nested module expansion binds child entity, leaves ordinary menus untouched, and rejects invalid identity',()=>{
- const h=fixture();const menu=expandModuleMenu({module:'climate',entity,name:'Room A'},h);assert.equal(menu.entity,entity);assert.equal(menu.promoted_center._climate.entity,entity);assert.equal(menu.nested_expand,true);assert.equal(menu.persistent_center.mode,'climate');assert.equal(menu.persistent_center.tap_action.action,'honeycomb-back');assert.equal(h.calls.length,0);
+ const h=fixture();const menu=expandModuleMenu({module:'climate',entity,name:'Room A'},h);assert.equal(menu.entity,entity);assert.equal(menu.promoted_center._climate.entity,entity);assert.equal(menu.nested_expand,true);assert.equal(menu.persistent_center.mode,'climate');assert.equal(menu.persistent_center.tap_action.action,'jts-n-back');assert.equal(h.calls.length,0);
  const ordinary={entity:'sensor.parent_a',buttons:[]};assert.equal(expandModuleMenu(ordinary,h),ordinary);assert.throws(()=>expandModuleMenu({module:'unknown',entity},h));assert.throws(()=>buildCubeConfig({type:'climate',entity:'sensor.wrong'},h));assert.throws(()=>buildCubeConfig({type:'climate',entity,defrost_entity:'light.wrong'},h));
 });
 
@@ -99,7 +99,7 @@ test('missing temperature cannot acknowledge a pending zero-degree target; real 
 test('nested child presentation reuses compiled overrides without inheriting the parent or a recursive menu',()=>{
  const h=fixture(),menu=expandModuleMenu({module:'climate',entity,icon:'mdi:fan',colors:{inner_border:'#e040fb'},border:{inner_width:4}},h);
  for(const face of [menu.promoted_center,menu.persistent_center]){assert.equal(face.icon,'mdi:fan');assert.equal(face.colors.inner_border,'#e040fb');assert.equal(face.border.inner_width,4);assert.equal(face.entity,entity);assert.equal(face.menu,undefined);assert.equal(face.hold_action.view,'targets');}
- assert.equal(menu.persistent_center.tap_action.action,'honeycomb-back');assert.equal(h.calls.length,0);
+ assert.equal(menu.persistent_center.tap_action.action,'jts-n-back');assert.equal(h.calls.length,0);
 });
 for(const unit of ['°C','°F'])for(const step of [.1,.5,1])test('absolute delta labels, representability and exact service '+unit+step,async()=>{
  for(const [slot,delta] of [[1,1],[4,-1],[6,.1],[5,-.1]]){

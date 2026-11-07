@@ -22,7 +22,7 @@ function applyEntityToAction(action, entity)
         }
     }
 
-    const nested = action.honeycomb_menu || action.honeycomb_nested_menu;
+    const nested = action.jts_n_menu || action.jts_n_nested_menu;
 
     if( nested )
         applyEntityInheritance(nested, entity);

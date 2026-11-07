@@ -125,6 +125,6 @@ test('presentation snapshots detect same-object changes; arbitrary JS stays cons
     const hass={states:{'light.zone_a':state('on',{brightness:10})}};
     const a=presentationSnapshot(hass,dependency); hass.states['light.zone_a'].attributes.brightness=20;
     assert.notEqual(presentationSnapshot(hass,dependency),a);
-    for (const value of ['[[[ return states[variables.id].state ]]]','${hass.user.name}','HCJS:return entity.state'])
+    for (const value of ['[[[ return states[variables.id].state ]]]','${hass.user.name}','JTSJS:return entity.state'])
         assert.equal(presentationDependencies({label:value}).wildcard,true);
 });

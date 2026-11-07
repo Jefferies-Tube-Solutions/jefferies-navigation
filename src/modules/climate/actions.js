@@ -30,13 +30,13 @@ function open(context) {
 }
 async function command(context) {
     const {itemConfig,actionConfig,isCurrent=()=>true,getHass=()=>context.hass,notify=notifyUser}=context;
-    const options=itemConfig&&itemConfig._climate;if(!['honeycomb-climate-adjust','honeycomb-climate-set'].includes(actionConfig.action))return false;
+    const options=itemConfig&&itemConfig._climate;if(!['jts-n-climate-adjust','jts-n-climate-set'].includes(actionConfig.action))return false;
     if(!options||!options.interactive||itemConfig.interactive===false||!isCurrent())return false;
     const hass=getHass(),value=model.state(hass,options),store=registry.session(hass);
     if(!store||!value.available)return false;
     const prior=recordFor(hass,value);if(prior&&['sending','pending'].includes(prior.phase))return false;
     let domain='climate',service,data={},target=options.entity,expected={};
-    if(actionConfig.action==='honeycomb-climate-adjust') {
+    if(actionConfig.action==='jts-n-climate-adjust') {
         if(itemConfig._climate_role!=='adjust'||actionConfig.delta!==itemConfig._climate_delta||actionConfig.bound!==itemConfig._climate_bound)return false;
         if(value.range&&!actionConfig.bound)return open({...context,actionConfig:{view:'targets'}});
         if(!value.range&&actionConfig.bound)return false;
@@ -68,5 +68,5 @@ async function command(context) {
     } catch(_){if(record.confirmed)return true;record.phase='failed';clearTimeout(record.timer);registry.notify(store);notify('Climate command failed or timed out. Check Home Assistant before retrying; no automatic retry.');return false;}
     finally{clearTimeout(requestTimer);}
 }
-function registerActions(actions){actions.register('honeycomb-climate-open',open);for(const name of ['honeycomb-climate-adjust','honeycomb-climate-set'])actions.register(name,c=>{void command(c);return true;});}
+function registerActions(actions){actions.register('jts-n-climate-open',open);for(const name of ['jts-n-climate-adjust','jts-n-climate-set'])actions.register(name,c=>{void command(c);return true;});}
 module.exports={ACK_MS,recordFor,open,command,registerActions};

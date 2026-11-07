@@ -52,8 +52,8 @@ class Cubes(unittest.TestCase):
         self.page.on('console',lambda e:self.errors.append(e.text) if e.type=='error' else None)
         self.page.goto(self.url); self.page.wait_for_function('window.ready')
         self.native_only=self.page.evaluate('window.nativeFavoritesOnly')
-        self.page.evaluate("window.ng=window.honeycombNG || {createContext:window.honeycomb_menu_create_context,openInContext:window.honeycomb_menu_in_context,updateBase:window.honeycomb_menu_context_update_base,disposeContext:window.honeycomb_menu_context_dispose,closeInContext:window.honeycomb_menu_context_close,backInContext:window.honeycomb_menu_context_back,close:window.honeycomb_menu_close,back:window.honeycomb_menu_back,templates:window.honeycomb_menu_templates,open:window.honeycomb_menu}")
-        self.assertEqual(self.page.title(),'Honeycomb shared cube test')
+        self.page.evaluate("window.ng=window.jefferiesNavigation")
+        self.assertEqual(self.page.title(),'Jefferies Navigation shared cube test')
         self.assertTrue(self.page.locator('h1').is_visible())
     def tearDown(self):
         try:
@@ -73,15 +73,15 @@ class Cubes(unittest.TestCase):
                     for child in value:historical(child)
             historical(config)
         self.page.evaluate('config=>makeHub(config)',config)
-        self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#honeycombs")')
+        self.page.wait_for_function('hub._hubMenu?.shadowRoot.querySelector("#navigation-cells")')
     def settle(self):
-        self.page.evaluate('''async()=>{await new Promise(r=>requestAnimationFrame(r));for(const menu of view.querySelectorAll(':is(honeycomb-menu-ng,honeycomb-menu)')){await menu.updateComplete;await Promise.all(menu.shadowRoot.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))}}''')
+        self.page.evaluate('''async()=>{await new Promise(r=>requestAnimationFrame(r));for(const menu of view.querySelectorAll('jts-n-menu')){await menu.updateComplete;await Promise.all(menu.shadowRoot.getAnimations({subtree:true}).map(a=>a.finished.catch(()=>{})))}}''')
     def capture(self, name):
         self.settle()
         if self.evidence:
             self.page.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-{name}.png'))
     def controls(self):
-        return self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) :is(honeycomb-menu-ng-item,honeycomb-menu-item), :is(honeycomb-menu-ng,honeycomb-menu) honeycomb-persistent-control')
+        return self.page.locator('jts-n-menu jts-n-menu-item, jts-n-menu navigation-control')
     def hold(self, locator):
         box=locator.bounding_box();self.page.mouse.move(box['x']+box['width']/2,box['y']+box['height']/2)
         self.page.mouse.down();self.page.wait_for_timeout(600);self.page.mouse.up()
@@ -122,19 +122,19 @@ class Cubes(unittest.TestCase):
         cells=self.controls()
         self.assertEqual(cells.count(),count)
         for cell in cells.all():
-            self.assertTrue(cell.is_visible(),cell.get_attribute('data-honeycomb-slot'))
+            self.assertTrue(cell.is_visible(),cell.get_attribute('data-jts-n-slot'))
             self.assertEqual(cell.evaluate('(el)=>getComputedStyle(el).visibility'),'visible')
             self.assertEqual(cell.evaluate('(el)=>parseFloat(getComputedStyle(el).width)'),82)
         positions=cells.evaluate_all('(els)=>els.map(el=>{const r=el.getBoundingClientRect();return [Math.round(r.x),Math.round(r.y)].join(",")})')
         self.assertEqual(len(set(positions)),count)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
+        self.assertEqual(self.page.locator('jts-n-menu').count(),1)
     def test_issue78_hub_launchers_survive_repeated_light_navigation(self):
         self.issue78_hub()
         root_geometry=self.controls().evaluate_all('(els)=>els.map(el=>[el.offsetLeft,el.offsetTop,el.offsetWidth,el.offsetHeight])')
-        self.page.evaluate('''()=>{window.rootMenu=hub._hubMenu;window.rootCubes=[...rootMenu.shadowRoot.querySelectorAll(':is(honeycomb-menu-ng-item,honeycomb-menu-item),honeycomb-persistent-control')]}''')
+        self.page.evaluate('''()=>{window.rootMenu=hub._hubMenu;window.rootCubes=[...rootMenu.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control')]}''')
         for cycle in range(2):
             for slot,entity in [(1,'light.zone_a'),(3,'light.zone_b')]:
-                launcher=self.page.locator(f':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="{slot}"] .interaction-surface')
+                launcher=self.page.locator(f'jts-n-menu [data-jts-n-slot="{slot}"] .interaction-surface')
                 calls_before=self.page.evaluate('calls.length')
                 self.activate(launcher)
                 self.assertEqual(self.page.evaluate('calls.length'),calls_before+1)
@@ -142,40 +142,40 @@ class Cubes(unittest.TestCase):
                 self.hold_input(launcher)
                 self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
                 self.assert_visible_unique_cells(7)
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Color"]'))
+                self.activate(self.page.locator('jts-n-menu [aria-label="Color"]'))
                 self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===18')
                 self.assert_visible_unique_cells(19)
                 # Return through the visible center controls, using real touch on mobile.
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.page.wait_for_function('hub._menuContext.stack.length===1')
                 self.assert_visible_unique_cells(7)
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.page.wait_for_function('hub._menuContext.stack.length===0')
                 self.assert_visible_unique_cells(4)
                 self.assertEqual(self.controls().evaluate_all('(els)=>els.map(el=>[el.offsetLeft,el.offsetTop,el.offsetWidth,el.offsetHeight])'),root_geometry)
                 self.assertTrue(self.page.evaluate('hub._hubMenu===rootMenu && rootCubes.every(el=>el.isConnected && el.style.visibility!=="hidden")'))
         self.capture('issue78-restored-hub')
         # Full close from a nested palette must produce exactly one clean base overlay.
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="1"] .interaction-surface'))
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Color"]'))
+        self.hold_input(self.page.locator('jts-n-menu [data-jts-n-slot="1"] .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu [aria-label="Color"]'))
         self.page.evaluate('ng.closeInContext(hub._menuContext)')
         self.page.wait_for_function('hub._hubMenu && hub._hubMenu!==rootMenu && hub._menuContext.stack.length===0')
         self.assert_visible_unique_cells(4)
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="3"] .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu [data-jts-n-slot="3"] .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
         self.assert_visible_unique_cells(7)
     def test_issue78_light_slot_mapping_presets_and_capabilities(self):
         self.issue78_hub()
         for slot,labels,preset in [(1,['100%','60%','Color','2700K','5%','5%'],'kelvin'),(3,['100%','70%','Color','210° · 65%','5%','5%'],'color')]:
-            self.hold_input(self.page.locator(f':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="{slot}"] .interaction-surface'))
+            self.hold_input(self.page.locator(f'jts-n-menu [data-jts-n-slot="{slot}"] .interaction-surface'))
             self.assert_visible_unique_cells(7)
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item) .interaction-surface').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))'),labels)
+            self.assertEqual(self.page.locator('jts-n-menu-item .interaction-surface').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))'),labels)
             mapping=self.page.evaluate('hub._hubMenu.buttons.map(b=>({slot:b.slot,action:b.tap_action.action,preset:b.tap_action.preset_type||null}))')
             self.assertEqual([b['slot'] for b in mapping],list(range(1,7)))
             self.assertEqual([b['preset'] for b in mapping],[None,'brightness',None,preset,None,None])
-            self.assertEqual(mapping[2]['action'],'honeycomb-open-nested')
+            self.assertEqual(mapping[2]['action'],'jts-n-open-nested')
             self.capture(f'issue78-light-{preset}')
-            target=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="3"] .interaction-surface')
+            target=self.page.locator('jts-n-menu [data-jts-n-slot="3"] .interaction-surface')
             self.activate(target)
             self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),'turn_on')
             self.hold_input(target)
@@ -185,29 +185,29 @@ class Cubes(unittest.TestCase):
         # lights and a passive Light action for brightness-only lights.
         for modes,label in [(['color_temp'],'White'),(['brightness'],'Light')]:
             self.page.evaluate('modes=>pushState("light.zone_a","on",{brightness:128,min_color_temp_kelvin:2200,max_color_temp_kelvin:6500,supported_color_modes:modes})',modes)
-            self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="1"] .interaction-surface'))
+            self.hold_input(self.page.locator('jts-n-menu [data-jts-n-slot="1"] .interaction-surface'))
             self.assert_visible_unique_cells(7)
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="2"] .interaction-surface').get_attribute('aria-label'),label)
+            self.assertEqual(self.page.locator('jts-n-menu [data-jts-n-slot="2"] .interaction-surface').get_attribute('aria-label'),label)
             if label=='White':
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="White"]'))
+                self.activate(self.page.locator('jts-n-menu [aria-label="White"]'))
                 self.assert_visible_unique_cells(19)
                 self.assertTrue(self.page.evaluate('hub._hubMenu.buttons.slice(6).every(b=>b.tap_action.data.color_temp_kelvin>0)'))
                 self.back()
             self.back()
     def test_standalone_launcher_restores_after_close(self):
         self.page.evaluate('makeControl({module:"light",entity:"light.zone_a"})')
-        target=self.page.locator('body > honeycomb-persistent-control .interaction-surface')
+        target=self.page.locator('body > navigation-control .interaction-surface')
         for cycle in range(2):
             self.hold_input(target)
-            self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
-            self.assertEqual(self.page.locator('body > honeycomb-persistent-control').evaluate('(el)=>getComputedStyle(el).visibility'),'hidden')
+            self.page.wait_for_function('view.querySelector("jts-n-menu")')
+            self.assertEqual(self.page.locator('body > navigation-control').evaluate('(el)=>getComputedStyle(el).visibility'),'hidden')
             self.page.evaluate('ng.close()')
-            self.page.wait_for_function('!view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
+            self.page.wait_for_function('!view.querySelector("jts-n-menu")')
             self.assertTrue(target.is_visible())
     def placements(self, hub='hub'):
         return self.page.evaluate(f'Object.fromEntries({hub}._placements)')
     def hub_item(self, index):
-        return self.page.locator(f':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[{index}]"]')
+        return self.page.locator(f'jts-n-menu [data-jts-n-id="items[{index}]"]')
     def test_phase2_priority_center_hidden_hard_and_stable_soft_positions(self):
         self.page.evaluate("pushState('device_tracker.vehicle_a','away')")
         self.hub({'logo':False,'items':[
@@ -217,7 +217,7 @@ class Cubes(unittest.TestCase):
             {'type':'generic','name':'Item A','slot_mode':'soft'},
             {'type':'generic','name':'Item B','slot_mode':'soft'}]})
         self.assertEqual(self.placements(),{'items[0]':0,'items[3]':1,'items[4]':3})
-        self.page.evaluate('window.stableCube=hub._hubMenu.shadowRoot.querySelector(\'[data-honeycomb-id="items[4]"]\')')
+        self.page.evaluate('window.stableCube=hub._hubMenu.shadowRoot.querySelector(\'[data-jts-n-id="items[4]"]\')')
         stable_box=self.hub_item(4).bounding_box()
         self.page.evaluate("pushState('device_tracker.vehicle_a','home')")
         self.page.wait_for_function('hub._placements.has("items[2]")')
@@ -230,7 +230,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.placements(),{'items[0]':0,'items[3]':4,'items[4]':3})
         self.page.evaluate('hub.setConfig({...hub.config})')
         self.settle()
-        actual=self.page.evaluate('''()=>Object.fromEntries([...hub._hubMenu.shadowRoot.querySelectorAll('[data-honeycomb-id]')].filter(el=>el.dataset.honeycombId).map(el=>[el.dataset.honeycombId,el.classList.contains('center-item')?0:Number(el.dataset.honeycombSlot)+1]))''')
+        actual=self.page.evaluate('''()=>Object.fromEntries([...hub._hubMenu.shadowRoot.querySelectorAll('[data-jts-n-id]')].filter(el=>el.dataset.jtsNId).map(el=>[el.dataset.jtsNId,el.classList.contains('center-item')?0:Number(el.dataset.jtsNSlot)+1]))''')
         self.assertEqual(actual,self.placements())
         self.assertEqual(self.placements()['items[3]'],4)
         self.page.evaluate("pushState('device_tracker.vehicle_a','home')")
@@ -252,13 +252,13 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.placements(),initial)
         self.assertEqual(self.page.evaluate('hub._hubMetrics.allocations'),allocations)
         self.assertEqual(self.controls().evaluate_all('(els)=>els.map(el=>[el.offsetLeft,el.offsetTop])'),menu_box)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .secondary').inner_text(),'90%')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Color"]'))
+        self.assertEqual(self.page.locator('jts-n-menu .center-item .secondary').inner_text(),'90%')
+        self.activate(self.page.locator('jts-n-menu [aria-label="Color"]'))
         self.assert_visible_unique_cells(19)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.assert_visible_unique_cells(7)
         self.assertEqual(self.placements(),initial)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('!hub._placements.has("items[0]")')
         self.assert_visible_unique_cells(3) # branding + the other Light and Media
         self.assertEqual([self.hub_item(i).bounding_box() for i in [1,2]],other_boxes)
@@ -266,7 +266,7 @@ class Cubes(unittest.TestCase):
         self.page.wait_for_function('hub._placements.has("items[0]")')
         self.assert_visible_unique_cells(4)
         self.hold_input(self.hub_item(0).locator('.interaction-surface'))
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Color"]'))
+        self.activate(self.page.locator('jts-n-menu [aria-label="Color"]'))
         self.page.evaluate("window.oldMenu=hub._hubMenu;pushState('device_tracker.vehicle_a','away');ng.closeInContext(hub._menuContext)")
         self.page.wait_for_function('hub._hubMenu && hub._hubMenu!==oldMenu && !hub._placements.has("items[0]")')
         self.assert_visible_unique_cells(3)
@@ -329,9 +329,9 @@ class Cubes(unittest.TestCase):
              'visibility':[{'condition':'state','entity':'device_tracker.vehicle_a','state':'home'}]}]
         self.hub({'logo':False,'items':items})
         self.page.evaluate('''()=>{window.firstHub=hub;makeHub({logo:false,items:[{type:'generic',name:'Other Hub',slot_mode:'soft',visibility:[{condition:'state',entity:'device_tracker.vehicle_b',state:'home'}]}]});window.secondHub=hub;secondHub.id='second-hub';secondHub.style.top='550px';window.hub=firstHub}''')
-        self.page.wait_for_function('secondHub._hubMenu?.shadowRoot.querySelector("#honeycombs")')
+        self.page.wait_for_function('secondHub._hubMenu?.shadowRoot.querySelector("#navigation-cells")')
         self.settle()
-        targets=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[1]"] .interaction-surface');target=targets.first
+        targets=self.page.locator('jts-n-menu [data-jts-n-id="items[1]"] .interaction-surface');target=targets.first
         box=target.bounding_box();self.page.mouse.move(box['x']+20,box['y']+40);self.page.mouse.down()
         self.page.evaluate("pushStates([['device_tracker.vehicle_a','away'],['device_tracker.vehicle_b','away']])")
         self.page.wait_for_function('secondHub._placements.size===0')
@@ -340,7 +340,7 @@ class Cubes(unittest.TestCase):
         self.page.wait_for_function('!firstHub._placements.has("items[1]")')
         self.assertEqual(self.page.evaluate('calls.map(c=>c[1])'),['item_b'])
         self.page.evaluate('''()=>{ng.disposeContext(secondHub._menuContext);secondHub.remove()}''')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
+        self.assertEqual(self.page.locator('jts-n-menu').count(),1)
     def test_phase2_availability_show_invalid_inputs_and_live_dependency_reconfiguration(self):
         self.page.evaluate("pushStates([['device_tracker.vehicle_a','home'],['binary_sensor.permission_a','off'],['light.zone_a','unavailable']])")
         self.hub({'logo':False,'items':[
@@ -361,7 +361,7 @@ class Cubes(unittest.TestCase):
         self.page.evaluate("pushState('device_tracker.vehicle_a','home')")
         self.settle();self.assertEqual(self.page.evaluate('hub._visibilityIndex.metrics.evaluations'),before)
         for condition in [{'condition':'xor'},{'condition':'state','entity':'device_tracker.vehicle_a'}]:
-            message=self.page.evaluate('''condition=>{try {const el=document.createElement('honeycomb-persistent-hub');el.setConfig({items:[{type:'generic',visibility:[condition]}]});return null}catch(e){return e.message}}''',condition)
+            message=self.page.evaluate('''condition=>{try {const el=document.createElement('navigation-hub');el.setConfig({items:[{type:'generic',visibility:[condition]}]});return null}catch(e){return e.message}}''',condition)
             self.assertIn('items[0].visibility',message)
     def test_phase2_overflow_keeps_all_dependencies_and_all_hidden_hub_is_valid(self):
         self.page.evaluate('''()=>pushStates(Array.from({length:250},(_,i)=>['binary_sensor.item_'+i,'off']))''')
@@ -392,7 +392,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.placements(),{'items[3]':1,'items[2]':2,'items[4]':3,'items[6]':4})
         self.assertEqual(self.page.evaluate('hub.diagnostics.map(d=>d.code).sort()'),['hard-collision','invalid-slot'])
         self.assert_visible_unique_cells(4)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item').count(),0)
+        self.assertEqual(self.page.locator('jts-n-menu .center-item').count(),0)
     def test_phase2_performance_relevant_unrelated_updates_and_dom_listeners(self):
         rows=[]
         for count in [5,20,50]:
@@ -408,7 +408,7 @@ class Cubes(unittest.TestCase):
                 dom_before=session.send('Memory.getDOMCounters')
                 heap_before=session.send('Runtime.getHeapUsage')['usedSize']
                 result=self.page.evaluate('''async count=>{
-                    const proto=Object.getPrototypeOf((customElements.get('honeycomb-menu-ng-item') || customElements.get('honeycomb-menu-item')).prototype);
+                    const proto=Object.getPrototypeOf((customElements.get('jts-n-menu-item') || customElements.get('navigation-menu-item')).prototype);
                     const render=proto.render;window.itemRenders={};
                     proto.render=function(){const id=this.config && this.config._hub_item_id;if(id)itemRenders[id]=(itemRenders[id]||0)+1;return render.call(this)};
                     const start={evaluations:hub._visibilityIndex.metrics.evaluations,allocations:hub._hubMetrics.allocations};
@@ -448,7 +448,7 @@ class Cubes(unittest.TestCase):
             finally:
                 self.page.evaluate('window.restoreRender && window.restoreRender()')
                 session.detach()
-                self.page.evaluate('''()=>{const scene=hub._menuContext.honeycomb;ng.disposeContext(hub._menuContext);hub.remove();providedClients.delete(hub);providedClients.delete(scene)}''')
+                self.page.evaluate('''()=>{const scene=hub._menuContext.scene;ng.disposeContext(hub._menuContext);hub.remove();providedClients.delete(hub);providedClients.delete(scene)}''')
         if self.evidence:
             (self.evidence/f'{self.viewport["width"]}-hub-performance.json').write_text(json.dumps({'viewport':self.viewport,'rows':rows,
                 'caveat':'Current Chromium fixture; frame-paced relevant times include frame waits. Heap values include browser/framework caches; no historical speedup or leak claim.'},indent=2)+'\n')
@@ -466,10 +466,10 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('hub._hubMetrics.allocations'),allocations)
         self.assertEqual(self.page.evaluate('calls.map(c=>c[1])'),['item_a'])
         self.hold_input(target)
-        self.page.wait_for_function('hub._menuContext.stack.length===1 && hub._hubMenu===hub._menuContext.honeycomb')
+        self.page.wait_for_function('hub._menuContext.stack.length===1 && hub._hubMenu===hub._menuContext.scene')
         self.page.evaluate("pushState('device_tracker.vehicle_a','away')");self.settle()
         self.assertEqual(self.placements(),{'items[0]':0})
-        self.assertTrue(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Details"]').is_visible())
+        self.assertTrue(self.page.locator('jts-n-menu [aria-label="Details"]').is_visible())
         self.back();self.page.wait_for_function('hub._placements.size===0')
         self.assertEqual(self.controls().count(),0)
         self.page.evaluate("pushState('device_tracker.vehicle_a','home')")
@@ -485,7 +485,7 @@ class Cubes(unittest.TestCase):
         item={'type':'light','entity':'light.zone_a','show_name':True,'name':'Light A','label':'Status','show_label':True,
               'colors':{'center':'#20262d','inner_border':'#2196f3','outer_border':'#34383d'},'border':{'inner_width':4,'outer_width':2}}
         self.hub({'logo':False,'items':[item]})
-        self.page.evaluate('item=>{makeControl({...item,type:"custom:honeycomb-persistent-control",module:"light"});control.id="second";control.style.top="500px"}',item)
+        self.page.evaluate('item=>{makeControl({...item,type:"custom:navigation-control",module:"light"});control.id="second";control.style.top="500px"}',item)
         self.settle()
         values=self.page.evaluate('''()=>[hub._hubMenu.shadowRoot.querySelector('.center-item'),control].map(el=>({
             width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,
@@ -504,8 +504,8 @@ class Cubes(unittest.TestCase):
             # Compare equal physical cells on the same device-pixel phase;
             # fractional scene origins otherwise add a screenshot edge row.
             self.page.evaluate("""()=>{const menu=hub._hubMenu;const r=menu.shadowRoot.querySelector('.center-item').getBoundingClientRect();menu.style.left=(parseFloat(menu.style.left)+Math.round(r.x)-r.x)+'px';menu.style.top=(parseFloat(menu.style.top)+Math.round(r.y)-r.y)+'px'}""")
-            a=Image.open(io.BytesIO(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item').screenshot())).convert('RGB')
-            b=Image.open(io.BytesIO(self.page.locator('body > honeycomb-persistent-control').screenshot())).convert('RGB')
+            a=Image.open(io.BytesIO(self.page.locator('jts-n-menu .center-item').screenshot())).convert('RGB')
+            b=Image.open(io.BytesIO(self.page.locator('body > navigation-control').screenshot())).convert('RGB')
             self.assertEqual(a.size,b.size)
             box=(10,10,a.width-10,a.height-10)
             difference=ImageChops.difference(a.crop(box),b.crop(box))
@@ -515,27 +515,27 @@ class Cubes(unittest.TestCase):
         self.hub({'logo':'auto','items':[{'type':'light','entity':'light.zone_a'},{'type':'sonos','entity':'media_player.player_a'}]})
         self.settle()
         self.assertEqual(self.controls().count(),3)
-        faces=self.page.evaluate('''()=>[...hub._hubMenu.shadowRoot.querySelectorAll(':is(honeycomb-menu-ng-item,honeycomb-menu-item),honeycomb-persistent-control')].map(el=>({
+        faces=self.page.evaluate('''()=>[...hub._hubMenu.shadowRoot.querySelectorAll('jts-n-menu-item,navigation-control')].map(el=>({
             width:el.getBoundingClientRect().width,points:el.shadowRoot.querySelector('.hex-outer').getAttribute('points'),
             fill:el.shadowRoot.querySelector('.hex-fill').getAttribute('fill'),outer:el.shadowRoot.querySelector('.hex-outer').getAttribute('fill')}))''')
         self.assertTrue(all(f['width']==82 and f['points'].startswith('50,0 ') and f['outer']=='#34383d' for f in faces))
         self.assertIn('rgb(255, 128, 0)',[f['fill'] for f in faces])
-        self.assertTrue(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .bee-icon').is_visible())
+        self.assertTrue(self.page.locator('jts-n-menu .compass-icon').is_visible())
         self.capture('hub-reference')
     def test_logo_false_allows_functional_center_and_zero_items(self):
         self.hub({'logo':False,'items':[{'type':'generic','entity':'sensor.value_a','name':'Value A','slot':0}]})
-        self.assertTrue(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .primary').is_visible())
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .bee-icon').count(),1) # generic default icon, not branding
+        self.assertTrue(self.page.locator('jts-n-menu .primary').is_visible())
+        self.assertEqual(self.page.locator('jts-n-menu .compass-icon').count(),1) # generic default icon, not branding
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.hub({'logo':False,'items':[]})
         self.assertEqual(self.controls().count(),0)
         self.capture('empty-hub')
     def zoom_menu(self):
-        return self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)')
+        return self.page.locator('jts-n-menu')
     def zoom_palette(self):
-        return self.page.evaluate("""()=>view.querySelector(':is(honeycomb-menu-ng,honeycomb-menu)').buttons.filter(b=>b && b.slot>=7).map(b=>b.tap_action.data.hs_color)""")
+        return self.page.evaluate("""()=>view.querySelector('jts-n-menu').buttons.filter(b=>b && b.slot>=7).map(b=>b.tap_action.data.hs_color)""")
     def zoom_cell(self, slot):
-        return self.page.locator(f':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="{slot-1}"] .interaction-surface')
+        return self.page.locator(f'jts-n-menu [data-jts-n-slot="{slot-1}"] .interaction-surface')
     def zoom_tap(self, slot):
         target=self.zoom_cell(slot)
         if self.viewport['width']<500:target.tap()
@@ -543,24 +543,24 @@ class Cubes(unittest.TestCase):
     def zoom_open(self, standalone=False):
         if standalone:
             self.page.evaluate("makeControl({module:'light',entity:'light.zone_a'})")
-            target=self.page.locator('body > honeycomb-persistent-control .interaction-surface')
+            target=self.page.locator('body > navigation-control .interaction-surface')
         else:
             self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]})
-            target=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface')
+            target=self.page.locator('jts-n-menu .interaction-surface')
         self.hold_input(target)
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===6')
+        self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===6')
         self.zoom_tap(3)
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===18')
+        self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===18')
         self.settle()
     def test_issue85_zoom_fixed_slots_recursion_and_live_updates(self):
         self.zoom_open();original=self.zoom_palette();self.capture('issue85-original-palette')
-        geometry=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.honeycombSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])')
+        geometry=self.page.locator('jts-n-menu [data-jts-n-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.jtsNSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])')
         for slot in [7,8,10,18]:
             self.hold_input(self.zoom_cell(slot))
             self.page.wait_for_function('hub._menuContext.stack.length===3')
             current=self.zoom_palette();self.assertEqual(current[slot-7],original[slot-7])
             self.assertEqual(self.page.evaluate('calls.length'),0,'Hold must not tap on release')
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.honeycombSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])'),geometry)
+            self.assertEqual(self.page.locator('jts-n-menu [data-jts-n-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.jtsNSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])'),geometry)
             self.page.evaluate("pushState('light.zone_a','on',{brightness:200,hs_color:[210,85],supported_color_modes:['hs','color_temp']})")
             self.settle();self.assertEqual(self.zoom_palette(),current)
             if slot==8:self.capture('issue85-orange-zoom')
@@ -580,9 +580,9 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.zoom_palette()[3],original[3]);self.assertEqual(self.page.evaluate('calls.length'),0)
         self.assertIn('zoom',self.zoom_cell(10).get_attribute('aria-label'))
         self.zoom_cell(10).press('Enter');self.assertEqual(self.page.evaluate('calls.length'),1)
-        self.zoom_cell(10).press('Escape');self.page.wait_for_function('!view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
-        self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'))
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===6')
+        self.zoom_cell(10).press('Escape');self.page.wait_for_function('!view.querySelector("jts-n-menu")')
+        self.hold_input(self.page.locator('body > navigation-control .interaction-surface'))
+        self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===6')
         self.zoom_tap(3);self.settle();self.assertEqual(self.zoom_palette(),original)
         target=self.zoom_cell(8)
         target.dispatch_event('pointerdown',{'pointerId':77,'pointerType':'touch','clientX':30,'clientY':30,'button':0})
@@ -593,16 +593,16 @@ class Cubes(unittest.TestCase):
         self.page.evaluate("([min,max])=>pushState('light.zone_a','on',{brightness:128,supported_color_modes:['color_temp'],min_color_temp_kelvin:min,max_color_temp_kelvin:max,color_temp_kelvin:3000})",[min_k,max_k])
         if standalone:
             self.page.evaluate("makeControl({module:'light',entity:'light.zone_a'})")
-            self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'))
+            self.hold_input(self.page.locator('body > navigation-control .interaction-surface'))
         else:
             self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]})
-            self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===6')
-        self.zoom_tap(3);self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===18');self.settle()
+            self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
+        self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===6')
+        self.zoom_tap(3);self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===18');self.settle()
     def kelvin_palette(self):
-        return self.page.evaluate('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(b=>b&&b.slot>=7).map(b=>b.tap_action.data.color_temp_kelvin)')
+        return self.page.evaluate('view.querySelector("jts-n-menu").buttons.filter(b=>b&&b.slot>=7).map(b=>b.tap_action.data.color_temp_kelvin)')
     def kelvin_snapshot(self):
-        return self.page.evaluate('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(b=>b&&b.slot>=7).map(b=>({slot:b.slot,tap:b.tap_action,hold:b.hold_action,name:b.name,styles:b.styles}))')
+        return self.page.evaluate('view.querySelector("jts-n-menu").buttons.filter(b=>b&&b.slot>=7).map(b=>({slot:b.slot,tap:b.tap_action,hold:b.hold_action,name:b.name,styles:b.styles}))')
     def test_issue99_solid_white_swatches_accessible_exact_kelvin_and_keyboard_tap(self):
         self.kelvin_open();values=self.kelvin_palette()
         self.assertEqual((values[0],values[-1]),(2000,6535));self.assertEqual(len(set(values)),12)
@@ -628,13 +628,13 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('calls.length'),5)
     def test_issue99_kelvin_endpoints_recursive_anchor_back_live_state_and_zoom_limit(self):
         self.kelvin_open();original=self.kelvin_snapshot();initial=self.kelvin_palette()
-        geometry=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.honeycombSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])')
+        geometry=self.page.locator('jts-n-menu [data-jts-n-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.jtsNSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])')
         for physical in [7,8,10,18]:
             self.hold_input(self.zoom_cell(physical));self.page.wait_for_function('hub._menuContext.stack.length===3')
             current=self.kelvin_palette();self.assertEqual(current[physical-7],initial[physical-7]);self.assertEqual(len(set(current)),12)
             self.assertEqual(current,sorted(current));self.assertGreaterEqual(current[0],2000);self.assertLessEqual(current[-1],6535)
             self.assertEqual(self.page.evaluate('calls.length'),0)
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.honeycombSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])'),geometry)
+            self.assertEqual(self.page.locator('jts-n-menu [data-jts-n-slot]').evaluate_all('(els)=>els.map(el=>[el.dataset.jtsNSlot,el.offsetLeft,el.offsetTop,el.offsetWidth])'),geometry)
             self.page.evaluate("pushState('light.zone_a','on',{brightness:200,supported_color_modes:['color_temp'],min_color_temp_kelvin:2000,max_color_temp_kelvin:6535,color_temp_kelvin:4500})")
             self.settle();self.assertEqual(self.kelvin_palette(),current)
             self.back();self.page.wait_for_function('hub._menuContext.stack.length===2');self.assertEqual(self.kelvin_snapshot(),original)
@@ -657,20 +657,20 @@ class Cubes(unittest.TestCase):
         self.zoom_cell(10).press('Shift+Enter');self.settle();self.assertEqual(self.kelvin_palette()[3],anchor)
         self.zoom_cell(10).press('Shift+Space');self.settle();self.assertEqual(self.kelvin_palette()[3],anchor)
         self.assertEqual(self.page.evaluate('calls.length'),0)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle();self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle();self.assertEqual(self.kelvin_snapshot(),original)
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle();self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle();self.assertEqual(self.kelvin_snapshot(),original)
         self.zoom_cell(8).dispatch_event('pointerdown',{'pointerId':77,'pointerType':'touch','clientX':30,'clientY':30,'button':0})
         self.zoom_cell(8).dispatch_event('pointercancel',{'pointerId':77,'pointerType':'touch'})
         self.page.wait_for_timeout(550);self.assertEqual(self.kelvin_snapshot(),original);self.assertEqual(self.page.evaluate('calls.length'),0)
-        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
+        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector("jts-n-menu")')
         self.page.evaluate("pushState('light.zone_a','on',{supported_color_modes:['color_temp'],min_color_temp_kelvin:1800,max_color_temp_kelvin:7200})")
-        self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'));self.settle();self.zoom_tap(3);self.settle()
+        self.hold_input(self.page.locator('body > navigation-control .interaction-surface'));self.settle();self.zoom_tap(3);self.settle()
         self.assertEqual((self.kelvin_palette()[0],self.kelvin_palette()[-1]),(1800,7200));self.capture('beta7-kelvin-reset-native-range')
         self.page.evaluate("pushState('light.zone_a','on',{supported_color_modes:['color_temp'],min_color_temp_kelvin:2990,max_color_temp_kelvin:3001})")
-        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
-        self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'));self.settle();self.zoom_tap(3);self.settle()
+        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector("jts-n-menu")')
+        self.hold_input(self.page.locator('body > navigation-control .interaction-surface'));self.settle();self.zoom_tap(3);self.settle()
         self.assertIn('zoom limit',self.zoom_cell(8).get_attribute('aria-label'))
         self.zoom_cell(8).press('Shift+Enter');self.assertEqual(self.page.evaluate('calls.length'),0)
-        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")')
+        self.zoom_cell(8).press('Escape');self.page.wait_for_function('!view.querySelector("jts-n-menu")')
 
     def test_issue99_kelvin_small_fixed_missing_and_invalid_native_ranges(self):
         self.kelvin_open(min_k=2990,max_k=2991)
@@ -681,7 +681,7 @@ class Cubes(unittest.TestCase):
         for min_k,max_k in [(2990,2990),(6500,2200),(None,6500)]:
             self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()');self.page.evaluate('calls=[]')
             self.page.evaluate("([min,max])=>pushState('light.zone_a','on',{supported_color_modes:['color_temp'],min_color_temp_kelvin:min,max_color_temp_kelvin:max})",[min_k,max_k])
-            self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]});self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle()
+            self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]});self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle()
             if min_k==max_k:
                 self.zoom_tap(3);self.settle();self.assertEqual(set(self.kelvin_palette()),{2990})
                 self.zoom_tap(7);self.assertEqual(self.page.evaluate('calls.at(-1)[2]'),{'color_temp_kelvin':2990})
@@ -700,19 +700,19 @@ class Cubes(unittest.TestCase):
         self.back();self.page.wait_for_function('hub._menuContext.stack.length===1');self.capture('beta7-kelvin-stale-range-safe-back')
     def test_light_presets_palette_swatches_and_back_keep_anchor(self):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a','presets':{'brightness':{'entity':'input_number.brightness_a'}}}]})
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.hold(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
         origin=self.page.evaluate('[hub._hubMenu._anchorX,hub._hubMenu._anchorY,hub._hubMenu.sizes.item]')
-        fills=self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item) .hex-fill').evaluate_all('(nodes)=>nodes.map(n=>n.getAttribute("fill"))')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Color"]').click()
+        fills=self.page.locator('jts-n-menu-item .hex-fill').evaluate_all('(nodes)=>nodes.map(n=>n.getAttribute("fill"))')
+        self.page.locator('jts-n-menu [aria-label="Color"]').click()
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===18')
         self.assertEqual(self.page.evaluate('[hub._hubMenu._anchorX,hub._hubMenu._anchorY,hub._hubMenu.sizes.item]'),origin)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item) .hex-fill').evaluate_all('(nodes)=>nodes.slice(0,6).map(n=>n.getAttribute("fill"))'),fills)
-        swatches=self.page.evaluate('''()=>[...hub._hubMenu.shadowRoot.querySelectorAll(':is(honeycomb-menu-ng-item,honeycomb-menu-item)')].slice(-12).map(el=>el.shadowRoot.querySelector('.hex-fill').getAttribute('fill'))''')
+        self.assertEqual(self.page.locator('jts-n-menu-item .hex-fill').evaluate_all('(nodes)=>nodes.slice(0,6).map(n=>n.getAttribute("fill"))'),fills)
+        swatches=self.page.evaluate('''()=>[...hub._hubMenu.shadowRoot.querySelectorAll('jts-n-menu-item')].slice(-12).map(el=>el.shadowRoot.querySelector('.hex-fill').getAttribute('fill'))''')
         self.assertEqual(len(set(swatches)),12);self.assertTrue(all(c.startswith('hsl(') for c in swatches))
         self.capture('light-palette')
         self.back();self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
-        preset=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="1"] .interaction-surface')
+        preset=self.page.locator('jts-n-menu [data-jts-n-slot="1"] .interaction-surface')
         preset.click();self.assertEqual(self.page.evaluate('calls.at(-1).slice(0,2)'),['light','turn_on'])
         self.hold(preset);self.assertEqual(self.page.evaluate('calls.at(-1).slice(0,2)'),['input_number','set_value'])
     def sonos_setup(self):
@@ -734,16 +734,16 @@ class Cubes(unittest.TestCase):
     def sonos_open(self, item=None):
         self.sonos_setup()
         self.hub({'logo':False,'items':[item or self.sonos_item()]})
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu .interaction-surface'))
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
         self.settle()
     def sonos_slot(self, physical):
         # DOM ring indices start at zero; documented/configured slots start at 1.
-        return self.page.locator(f':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="{physical-1}"]')
+        return self.page.locator(f'jts-n-menu [data-jts-n-slot="{physical-1}"]')
     def sonos_radio_state(self):
         return self.page.evaluate('''()=>({
-            outer:[...hub._hubMenu.shadowRoot.querySelectorAll('[data-honeycomb-slot]')].filter(el=>Number(el.dataset.honeycombSlot)>=6).map(el=>({
-                index:Number(el.dataset.honeycombSlot),x:el.offsetLeft,y:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight,model:el._model,
+            outer:[...hub._hubMenu.shadowRoot.querySelectorAll('[data-jts-n-slot]')].filter(el=>Number(el.dataset.jtsNSlot)>=6).map(el=>({
+                index:Number(el.dataset.jtsNSlot),x:el.offsetLeft,y:el.offsetTop,width:el.offsetWidth,height:el.offsetHeight,model:el._model,
                 artwork:(()=>{const image=el.shadowRoot.querySelector('.station-artwork');const value=image?image.getAttribute('src'):getComputedStyle(el.shadowRoot.querySelector('.artwork')).backgroundImage;return value.includes('/station-a.svg')?'station-a.svg':value})()})),
             center:hub._hubMenu.shadowRoot.querySelector('.center-item')._model
         })''')
@@ -756,14 +756,14 @@ class Cubes(unittest.TestCase):
     def test_issue90_slots_handlers_and_light_alignment(self):
         self.sonos_open()
         self.assert_visible_unique_cells(7)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item) .interaction-surface').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))'),['Radio','Pause','Join','Sleep','Vol','Vol'])
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .secondary').inner_text(),'42%')
+        self.assertEqual(self.page.locator('jts-n-menu-item .interaction-surface').evaluate_all('(els)=>els.map(el=>el.getAttribute("aria-label"))'),['Radio','Pause','Join','Sleep','Vol','Vol'])
+        self.assertEqual(self.page.locator('jts-n-menu .center-item .secondary').inner_text(),'42%')
         for physical,service in [(2,'media_play_pause'),(5,'volume_down'),(6,'volume_up')]:
             self.activate(self.sonos_slot(physical).locator('.interaction-surface'))
             self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),service)
             if physical>2:self.assertEqual(self.page.evaluate('calls.at(-1)[3].entity_id'),['media_player.player_a','media_player.player_b'])
         # Track and status strings stay centered/truncated inside the same cells.
-        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-honeycomb-slot=\\"1\\"]")._model.secondary.includes("synthetic")')
+        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-jts-n-slot=\\"1\\"]")._model.secondary.includes("synthetic")')
         metrics=self.sonos_slot(2).evaluate('''el=>{const root=el.shadowRoot,content=root.querySelector('.content'),r=content.getBoundingClientRect();return {
             grid:getComputedStyle(content).gridTemplateRows,
             items:['ha-icon','.primary','.secondary'].map(s=>{const n=root.querySelector(s),b=n.getBoundingClientRect(),c=getComputedStyle(n);return {x:b.x+b.width/2-r.x,width:b.width,y:b.y-r.y,height:b.height,font:c.fontSize,align:c.alignSelf,padding:c.paddingTop}})
@@ -774,7 +774,7 @@ class Cubes(unittest.TestCase):
         self.capture('issue90-controls')
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]})
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu .interaction-surface'))
         self.settle()
         light=self.sonos_slot(1).evaluate('''el=>{const r=el.shadowRoot.querySelector('.content').getBoundingClientRect();return ['ha-icon','.primary'].map(s=>{const n=el.shadowRoot.querySelector(s),b=n.getBoundingClientRect(),c=getComputedStyle(n);return {x:b.x+b.width/2-r.x,width:b.width,y:b.y-r.y,height:b.height,font:c.fontSize,align:c.alignSelf,padding:c.paddingTop}})}''')
         # Sonos optional secondary text uses the same inherited hierarchy; its
@@ -799,13 +799,13 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('calls.at(-1)'),['script','toggle_member_a',{'member':'media_player.player_b'},{}])
         self.assertEqual(self.sonos_slot(7).locator('.secondary').inner_text(),'20%','HA remains authoritative until updated')
         self.page.evaluate("pushStates([['media_player.player_a','playing',{volume_level:.42,group_members:['media_player.player_a']}],['media_player.player_b','idle',{group_members:['media_player.player_b']} ]])")
-        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-honeycomb-slot=\\"6\\"]")._model.secondary==="—"')
+        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-jts-n-slot=\\"6\\"]")._model.secondary==="—"')
         self.assertIn('Idle',self.sonos_slot(7).locator('.interaction-surface').get_attribute('aria-label'))
         self.assertEqual(self.sonos_slot(7).locator('.hex-fill').get_attribute('fill'),solo)
         self.activate(self.sonos_slot(7).locator('.interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.at(-1)[2].member'),'media_player.player_b')
         self.page.evaluate("pushStates([['media_player.player_a','playing',{volume_level:.42,group_members:['media_player.player_a','media_player.player_b']}],['media_player.player_b','idle',{group_members:['media_player.player_a','media_player.player_b']} ]])")
-        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-honeycomb-slot=\\"6\\"]")._model.secondary==="—"')
+        self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector("[data-jts-n-slot=\\"6\\"]")._model.secondary==="—"')
         self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),2)
         # Rejected promises produce user feedback and no optimistic membership.
         self.page.evaluate("()=>{hass.callService=(...args)=>{calls.push(args);return Promise.reject(new Error('synthetic grouping failure'))}}")
@@ -818,10 +818,10 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('calls.at(-1)[2].member'),'media_player.player_c')
         # Real center/back navigation returns to primary controls without playback.
         count=self.page.evaluate('calls.length')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
         self.assertEqual(self.page.evaluate('calls.length'),count)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item)').count(),6)
+        self.assertEqual(self.page.locator('jts-n-menu-item').count(),6)
     def test_issue90_empty_setup_single_room_and_script_errors(self):
         self.sonos_open({'type':'sonos','entity':'media_player.player_a'})
         self.activate(self.sonos_slot(3).locator('.interaction-surface'))
@@ -833,7 +833,7 @@ class Cubes(unittest.TestCase):
         item=self.sonos_item();item['members']=[{'entity':'media_player.player_a'},{'entity':'media_player.player_b','name':'Room B'},{'entity':'media_player.player_b'}]
         item.pop('toggle_member_script')
         self.sonos_open(item);self.activate(self.sonos_slot(3).locator('.interaction-surface'))
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item)').count(),7)
+        self.assertEqual(self.page.locator('jts-n-menu-item').count(),7)
         self.assertIn('Grouping unsupported',self.sonos_slot(7).locator('.interaction-surface').get_attribute('aria-label'))
         self.activate(self.sonos_slot(7).locator('.interaction-surface'))
         self.assertEqual(self.page.evaluate('calls.length'),0)
@@ -861,7 +861,7 @@ class Cubes(unittest.TestCase):
             ('media_player.player_a','playing',{'group_members':['media_player.player_d','media_player.player_a']},'Use group leader')]
         for entity,state,attrs,label in cases:
             self.page.evaluate('([id,s,a])=>pushState(id,s,a)',[entity,state,attrs])
-            self.page.wait_for_function('(label)=>hub._hubMenu.shadowRoot.querySelector("[data-honeycomb-slot=\\"7\\"]")._model.ariaLabel.includes(label)',arg=label)
+            self.page.wait_for_function('(label)=>hub._hubMenu.shadowRoot.querySelector("[data-jts-n-slot=\\"7\\"]")._model.ariaLabel.includes(label)',arg=label)
             if label!='Not joined':
                 count=self.page.evaluate('calls.length');self.activate(self.sonos_slot(8).locator('.interaction-surface'))
                 self.assertEqual(self.page.evaluate('calls.length'),count)
@@ -893,8 +893,8 @@ class Cubes(unittest.TestCase):
             for actual,old in zip(snapshot['outer'],reference['outer']):
                 for group,key,design in [('iconStyle','width',17),('nameStyle','font-size',9)]:
                     value=actual['model'][group].get(key)
-                    if isinstance(value,str) and value.startswith('calc(var(--honeycomb-persistent-size,82px)'):
-                        self.assertEqual(value,f'calc(var(--honeycomb-persistent-size,82px) / 82 * {design})')
+                    if isinstance(value,str) and value.startswith('calc(var(--jts-n-persistent-size,82px)'):
+                        self.assertEqual(value,f'calc(var(--jts-n-persistent-size,82px) / 82 * {design})')
                         self.assertEqual(old['model'][group][key],f'{design}px')
                         actual['model'][group][key]=old['model'][group][key]
             for scene in [snapshot,reference]:
@@ -915,7 +915,7 @@ class Cubes(unittest.TestCase):
             if index:
                 self.page.wait_for_function('hub._menuContext.currentConfig?._persistent_hub_root===true && !hub._hubMenu?.closing')
                 self.settle()
-                self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.page.wait_for_function('hub._menuContext.stack.length===1')
                 self.activate(self.sonos_slot(1).locator('.interaction-surface'))
             self.activate(self.sonos_slot(index+7).locator('.interaction-surface'))
@@ -926,13 +926,13 @@ class Cubes(unittest.TestCase):
             item=self.sonos_item()
             if adapter=='legacy':
                 item['type']='media';self.hub({'logo':False,'items':[item]})
-                target=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface')
+                target=self.page.locator('jts-n-menu .interaction-surface')
             else:
                 item.pop('type');item['module']='sonos'
                 self.page.evaluate('config=>makeControl(config)',item)
-                target=self.page.locator('body > honeycomb-persistent-control .interaction-surface')
+                target=self.page.locator('body > navigation-control .interaction-surface')
             self.hold_input(target)
-            self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===6')
+            self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===6')
             self.activate(self.sonos_slot(5).locator('.interaction-surface'))
             self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),'volume_down')
             self.activate(self.sonos_slot(3).locator('.interaction-surface'))
@@ -950,7 +950,7 @@ class Cubes(unittest.TestCase):
             ]);
         }""")
         self.hub({'logo':False,'items':[{'type':'media','entity':'media_player.player_a','active_color':'#00bcd4','favorites_sensor':'sensor.favorites'}]})
-        cube=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item');cube.locator('.station-artwork').wait_for(state='visible')
+        cube=self.page.locator('jts-n-menu .center-item');cube.locator('.station-artwork').wait_for(state='visible')
         color=cube.locator('.hex-fill').get_attribute('fill');self.assertNotEqual(color,'#00bcd4')
         self.assertEqual(cube.locator('.hex-inner').get_attribute('fill'),color)
         self.capture('beta2-real-shaped-playing')
@@ -987,7 +987,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('moreInfo'),[]);self.assertEqual(self.page.evaluate('browseEvents'),0)
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.page.evaluate("makeControl({module:'generic',entity:'media_player.player_a',name:'Optional Browse',tap_action:{action:'navigate',navigation_path:'/media-browser/media_player.player_a'}})")
-        self.activate(self.page.locator('body > honeycomb-persistent-control .interaction-surface'))
+        self.activate(self.page.locator('body > navigation-control .interaction-surface'))
         self.assertTrue(self.page.url.endswith('/media-browser/media_player/player_a') or self.page.url.endswith('/media-browser/media_player.player_a'))
         self.assertEqual(self.page.evaluate('browseEvents'),1)
     def test_beta2_registry_ws_failure_and_empty_discovery_are_distinct(self):
@@ -1021,7 +1021,7 @@ class Cubes(unittest.TestCase):
         return data
     def test_beta4_parent_and_promoted_center_real_shaped_live_radio(self):
         data=self.beta4_radio_hub()
-        launcher=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[1]"]')
+        launcher=self.page.locator('jts-n-menu [data-jts-n-id="items[1]"]')
         launcher.locator('.station-artwork').wait_for(state='visible')
         color=launcher.locator('.hex-inner').get_attribute('fill')
         self.assertNotEqual(color,'#00bcd4')
@@ -1029,7 +1029,7 @@ class Cubes(unittest.TestCase):
         self.capture('beta4-parent-playing')
         self.hold_input(launcher.locator('.interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
-        center=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item')
+        center=self.page.locator('jts-n-menu .center-item')
         center.locator('.station-artwork').wait_for(state='visible')
         self.assertEqual(center.locator('.hex-fill').get_attribute('fill'),color)
         self.capture('beta4-promoted-playing')
@@ -1055,7 +1055,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(launcher.locator('.station-artwork').get_attribute('src'),'/station-c.svg')
         self.capture('beta4-parent-paused')
         self.page.evaluate("attrs=>pushState('media_player.player_a','playing',attrs)",data['unverified'])
-        self.page.wait_for_function('''!hub._hubMenu.shadowRoot.querySelector('[data-honeycomb-id="items[1]"]')._model.artwork''')
+        self.page.wait_for_function('''!hub._hubMenu.shadowRoot.querySelector('[data-jts-n-id="items[1]"]')._model.artwork''')
         self.assertEqual(launcher.locator('.hex-fill').get_attribute('fill'),'#00bcd4')
         report=launcher.evaluate('(el)=>el.getPresentationDiagnostics()')
         self.assertEqual(report['reason'],'channel_or_mapping_missing')
@@ -1066,7 +1066,7 @@ class Cubes(unittest.TestCase):
     def test_beta4_select_favorites_preserves_payload_and_updates_both_surfaces(self):
         data=self.beta4_radio_hub()
         self.page.evaluate("attrs=>pushState('media_player.player_a','playing',attrs)",data['unverified'])
-        launcher=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[1]"]')
+        launcher=self.page.locator('jts-n-menu [data-jts-n-id="items[1]"]')
         for physical,key,expected,logo in [(7,'playing_a','FV:2/57','/station-a.svg'),(8,'playing_b','FV:2/58','/station-c.svg')]:
             self.hold_input(launcher.locator('.interaction-surface'))
             self.page.wait_for_function('hub._menuContext.stack.length===1')
@@ -1078,12 +1078,12 @@ class Cubes(unittest.TestCase):
             # Simulate HA's distinct stream response, never an optimistic FV ID.
             self.page.evaluate("attrs=>pushState('media_player.player_a','playing',attrs)",data[key])
             self.page.wait_for_function('hub._menuContext.stack.length===0 && hub._hubMenu && !hub._hubMenu.closing')
-            self.page.wait_for_function("logo=>hub._hubMenu?.shadowRoot?.querySelector('[data-honeycomb-id=\"items[1]\"]')?._model.artwork?.url===logo",arg=logo)
+            self.page.wait_for_function("logo=>hub._hubMenu?.shadowRoot?.querySelector('[data-jts-n-id=\"items[1]\"]')?._model.artwork?.url===logo",arg=logo)
             self.assertEqual(launcher.locator('.station-artwork').get_attribute('src'),logo)
             self.capture(f'beta4-selected-{physical}-parent')
             self.hold_input(launcher.locator('.interaction-surface'))
             self.page.wait_for_function('hub._menuContext.stack.length===1')
-            center=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item')
+            center=self.page.locator('jts-n-menu .center-item')
             self.assertEqual(center.locator('.station-artwork').get_attribute('src'),logo)
             self.capture(f'beta4-selected-{physical}-center')
             self.back();self.page.wait_for_function('hub._menuContext.stack.length===0')
@@ -1120,12 +1120,12 @@ class Cubes(unittest.TestCase):
         self.hub({'logo':False,'items':[{'type':'sonos','entity':'media_player.player_'+player,
             **({'persistent':{'menu':{'idle_timeout':idle_timeout}}} if idle_timeout is not None else {}),
             'favorites_sensor':'sensor.favorites'}]})
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1');self.settle()
     def sleep_sync(self):
         self.page.evaluate('states=>pushStates(Object.entries(states).map(([id,s])=>[id,s.state,s.attributes]))',self.sleep_backend.states)
     def sleep_label(self,label):
-        self.page.wait_for_function('label=>hub._hubMenu.shadowRoot.querySelector("[data-honeycomb-slot=\\"3\\"]")._model.secondary===label',arg=label)
+        self.page.wait_for_function('label=>hub._hubMenu.shadowRoot.querySelector("[data-jts-n-slot=\\"3\\"]")._model.secondary===label',arg=label)
     def test_beta6_native_choices_cancel_reload_and_ha_restart_expectation(self):
         backend=self.sleep_backend_setup();self.sleep_hub('b')
         self.assertEqual(self.sonos_slot(4).locator('.secondary').inner_text(),'Status unknown')
@@ -1218,7 +1218,7 @@ class Cubes(unittest.TestCase):
             self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),2,'No duplicate Join view')
             self.activate(self.sonos_slot(7).locator('.interaction-surface'))
             self.page.evaluate("pushState('media_player.player_b','idle',{group_members:['media_player.player_b'],volume_level:.2})")
-            center=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface')
+            center=self.page.locator('jts-n-menu .center-item .interaction-surface')
             self.assertEqual(center.get_attribute('aria-label'),'Back');center.press('Enter') if iteration==2 else self.activate(center)
             self.page.wait_for_function('hub._menuContext.stack.length===1');self.settle()
         self.capture('beta5-join-back-repeated')
@@ -1228,17 +1228,17 @@ class Cubes(unittest.TestCase):
         self.activate(self.sonos_slot(3).locator('.interaction-surface'))
         self.activate(self.sonos_slot(3).locator('.interaction-surface'))
         self.assertEqual(self.page.evaluate('discovery.length'),1)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===0')
         self.page.evaluate("discovery[0]({entities:[{ei:'media_player.player_a',pl:'sonos'},{ei:'media_player.player_b',pl:'sonos'}]})")
         self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0,'Late discovery never reopens a closed view')
         self.page.clock.install()
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
         self.activate(self.sonos_slot(3).locator('.interaction-surface'));self.page.clock.fast_forward(5100)
         self.page.wait_for_function('hub._menuContext.stack.length===2');self.settle()
         self.assertEqual(self.sonos_slot(7).locator('.secondary').inner_text(),'Metadata unavailable')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
     def navigation_id(self):
         return self.page.evaluate('hub._menuContext.currentConfig?._navigation_sibling?.id || "main"')
@@ -1257,8 +1257,8 @@ class Cubes(unittest.TestCase):
                     self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),2)
                     self.assertEqual(self.page.evaluate('hub._menuContext.navigation.depth'),2)
                     self.assertEqual(self.page.evaluate('[hub._hubMenu._anchorX,hub._hubMenu._anchorY,hub._hubMenu.sizes.item]'),origin)
-                    self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                    self.assertEqual(self.page.locator('jts-n-menu').count(),1)
+                self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.assertEqual(self.navigation_id(),'main');self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
                 self.assertEqual(self.page.evaluate('hub._hubMenu.buttons.filter(Boolean).length'),6)
         self.capture('beta8-siblings-one-back-main')
@@ -1278,10 +1278,10 @@ class Cubes(unittest.TestCase):
             self.idle_before(250);self.capture('beta8-'+name+'-before-idle')
             self.page.clock.fast_forward(400)
             self.page.wait_for_function('hub._menuContext.stack.length===0 && hub._menuContext.currentConfig._persistent_hub_root')
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1);self.assertEqual(self.page.evaluate('calls.length'),0)
+            self.assertEqual(self.page.locator('jts-n-menu').count(),1);self.assertEqual(self.page.evaluate('calls.length'),0)
             self.capture('beta8-'+name+'-idle-returned-hub')
             if name!='sleep':
-                self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.page.wait_for_function('hub._menuContext.stack.length===1')
     def test_beta8_idle_configured_zero_and_custom_timeout_are_inherited(self):
         self.page.clock.install()
@@ -1294,7 +1294,7 @@ class Cubes(unittest.TestCase):
                 self.assertEqual(self.page.evaluate('hub._hubMenu.config.idle_timeout'),timeout)
             self.page.clock.fast_forward(3000 if timeout else 60000)
             self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0 if timeout else 2)
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
+            self.assertEqual(self.page.locator('jts-n-menu').count(),1)
             self.capture('beta8-idle-config-'+str(timeout))
             self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
     def test_beta8_only_real_interaction_resets_idle_native_sleep_command_and_group_updates(self):
@@ -1334,7 +1334,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('discovery.length'),1)
         self.activate(self.sonos_slot(1).locator('.interaction-surface'))
         self.activate(self.sonos_slot(4).locator('.interaction-surface'))
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
         self.page.evaluate("discovery[0]({entities:[{ei:'media_player.player_a',pl:'sonos'},{ei:'media_player.player_b',pl:'sonos'}]})")
         self.settle();self.assertEqual(self.navigation_id(),'main');self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
@@ -1354,29 +1354,29 @@ class Cubes(unittest.TestCase):
         self.page.wait_for_function('hub._menuContext.stack.length===0')
         self.page.evaluate("discovery[3]({entities:[{ei:'media_player.player_a',pl:'sonos'},{ei:'media_player.player_b',pl:'sonos'}]})")
         self.settle();self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1);self.assertEqual(self.page.evaluate('calls.length'),0)
+        self.assertEqual(self.page.locator('jts-n-menu').count(),1);self.assertEqual(self.page.evaluate('calls.length'),0)
         self.capture('beta8-late-discovery-no-ghost')
     def test_beta8_standalone_siblings_back_idle_and_late_discovery_restore_launcher(self):
         self.page.clock.install();self.sonos_setup()
         self.page.evaluate("()=>makeControl({module:'sonos',entity:'media_player.player_a',members:[{entity:'media_player.player_b'}]})")
-        self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'))
-        self.page.evaluate('window.sonosContext=view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)")._menuContext')
+        self.hold_input(self.page.locator('body > navigation-control .interaction-surface'))
+        self.page.evaluate('window.sonosContext=view.querySelector("jts-n-menu")._menuContext')
         for slot in [3,1,4,3,4,1]:
             self.activate(self.sonos_slot(slot).locator('.interaction-surface'))
             self.page.wait_for_function('sonosContext.stack.length===1')
-            self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+            self.assertEqual(self.page.locator('jts-n-menu').count(),1)
+        self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.assertEqual(self.page.evaluate('sonosContext.stack.length'),0)
         self.activate(self.sonos_slot(4).locator('.interaction-surface'))
         self.page.clock.fast_forward(8200);self.page.clock.run_for(200)
-        self.page.wait_for_function('view.querySelectorAll(":is(honeycomb-menu-ng,honeycomb-menu)").length===0')
-        self.assertEqual(self.page.locator('body > honeycomb-persistent-control').evaluate('el=>getComputedStyle(el).visibility'),'visible')
+        self.page.wait_for_function('view.querySelectorAll("jts-n-menu").length===0')
+        self.assertEqual(self.page.locator('body > navigation-control').evaluate('el=>getComputedStyle(el).visibility'),'visible')
         self.page.evaluate("()=>{control.setConfig({module:'sonos',entity:'media_player.player_a'});window.discovery=[];hass.callWS=()=>new Promise(resolve=>discovery.push(resolve))}")
-        self.hold_input(self.page.locator('body > honeycomb-persistent-control .interaction-surface'))
+        self.hold_input(self.page.locator('body > navigation-control .interaction-surface'))
         self.activate(self.sonos_slot(3).locator('.interaction-surface'))
         self.page.clock.fast_forward(8200);self.page.clock.run_for(200)
         self.page.evaluate("discovery[0]({entities:[{ei:'media_player.player_a',pl:'sonos'}]})")
-        self.settle();self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),0)
+        self.settle();self.assertEqual(self.page.locator('jts-n-menu').count(),0)
         self.assertEqual(self.page.evaluate('calls.length'),0)
         self.capture('beta8-standalone-idle-launcher-restored')
     def test_beta8_real_children_and_recursive_hue_kelvin_keep_exact_back_levels(self):
@@ -1390,7 +1390,7 @@ class Cubes(unittest.TestCase):
         for mode in ['hs','color_temp']:
             self.page.evaluate("mode=>pushState('light.zoom_a','on',{brightness:128,supported_color_modes:[mode],min_color_temp_kelvin:1800,max_color_temp_kelvin:6535})",mode)
             self.hub({'logo':False,'items':[{'type':'light','entity':'light.zoom_a'}]})
-            self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+            self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
             self.activate(self.sonos_slot(3).locator('.interaction-surface'))
             snapshot="()=>hub._hubMenu.buttons.slice(6).map(stack=>JSON.stringify(stack))"
             palettes=[self.page.evaluate(snapshot)]
@@ -1399,7 +1399,7 @@ class Cubes(unittest.TestCase):
                 self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),depth)
                 palettes.append(self.page.evaluate(snapshot))
             for previous in reversed(palettes[:-1]):
-                self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+                self.activate(self.page.locator('jts-n-menu .center-item .interaction-surface'))
                 self.assertEqual(self.page.evaluate(snapshot),previous)
             self.assertEqual(self.page.evaluate('calls.length'),0)
             self.capture('beta8-'+mode+'-exact-back-history')
@@ -1408,13 +1408,13 @@ class Cubes(unittest.TestCase):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a','menu':{
             'entity':'light.zone_a','nested_expand':True,'promote_to_center':True,
             'promoted_center':{'entity':'light.zone_a','mode':'persistent','name':'Light A','show_name':True},
-            'buttons':[{'name':'Details','show_name':True,'tap_action':{'action':'honeycomb-open-nested','honeycomb_nested_menu':{
+            'buttons':[{'name':'Details','show_name':True,'tap_action':{'action':'jts-n-open-nested','jts_n_nested_menu':{
                 'entity':'light.zone_a','nested_expand':True,'buttons':[{'name':'Value A','show_name':True,'tap_action':{'action':'none'}}]}}}]}}]})
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle()
-        center=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item')
+        self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle()
+        center=self.page.locator('jts-n-menu .center-item')
         self.assertEqual(center.locator('.primary').inner_text(),'Light A')
         self.assertEqual(center.locator('.interaction-surface').get_attribute('aria-label'),'Back')
-        self.activate(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Details"]'));self.settle()
+        self.activate(self.page.locator('jts-n-menu [aria-label="Details"]'));self.settle()
         self.assertEqual(center.locator('.primary').inner_text(),'Light A')
         center.locator('.interaction-surface').press('Enter');self.page.wait_for_function('hub._menuContext.stack.length===1');self.settle()
         self.assertEqual(center.locator('.primary').inner_text(),'Light A')
@@ -1422,7 +1422,7 @@ class Cubes(unittest.TestCase):
 
     def test_beta7_sonos_functions_match_light_hierarchy_with_real_icon_boxes(self):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]})
-        self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'));self.settle()
+        self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'));self.settle()
         reference=self.sonos_slot(1).evaluate('''el=>{const r=el.getBoundingClientRect(),root=el.shadowRoot;return {
             config:el.config,items:['ha-svg-icon','.primary'].map(s=>{const b=(s==='ha-svg-icon'?root.querySelector('ha-icon').shadowRoot.querySelector(s):root.querySelector(s)).getBoundingClientRect();return {x:b.x-r.x,y:b.y-r.y,w:b.width,h:b.height}}),
             font:getComputedStyle(root.querySelector('.primary')).fontSize}}''')
@@ -1448,24 +1448,24 @@ class Cubes(unittest.TestCase):
         # Render actual compiled Light/Sonos descriptors together for side-by-side evidence.
         self.page.evaluate('''reference=>{
           const panel=document.createElement('div');panel.style.cssText='position:absolute;top:520px;left:20px;display:grid;grid-template-columns:120px 120px;gap:8px';
-          for(const [title,config] of [['Light function',reference],['Sonos function',hub._hubMenu.shadowRoot.querySelector('[data-honeycomb-slot="0"]').config]]){
-            const box=document.createElement('div');box.textContent=title;const cube=document.createElement('honeycomb-persistent-control');cube.setConfig({...config,interactive:false});box.append(cube);panel.append(box);
+          for(const [title,config] of [['Light function',reference],['Sonos function',hub._hubMenu.shadowRoot.querySelector('[data-jts-n-slot="0"]').config]]){
+            const box=document.createElement('div');box.textContent=title;const cube=document.createElement('navigation-control');cube.setConfig({...config,interactive:false});box.append(cube);panel.append(box);
           }document.body.append(panel);
         }''',reference['config']);self.settle();self.capture('beta7-light-sonos-side-by-side')
 
     def test_beta7_full_bleed_station_artwork_spacing_compact_gray_and_radio_preservation(self):
         self.beta4_radio_hub()
         self.page.evaluate("pushState('sensor.favorites_cache','2',{items:[{title:'Station Alpha',media_content_id:'FV:2/57',media_content_type:'favorite_item_id',thumbnail:'/station-full-bleed.svg'}]})")
-        launcher=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[1]"]')
+        launcher=self.page.locator('jts-n-menu [data-jts-n-id="items[1]"]')
         launcher.locator('.station-artwork').wait_for(state='visible')
         for promoted in [False,True]:
             if promoted:self.hold_input(launcher.locator('.interaction-surface'));self.settle()
-            cube=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item') if promoted else launcher
+            cube=self.page.locator('jts-n-menu .center-item') if promoted else launcher
             for state in ['playing','paused','idle']:
                 for volume in ([0,.02,.42,1] if state=='playing' else [.42]):
                     self.page.evaluate("([state,volume])=>pushState('media_player.player_a',state,{...hass.states['media_player.player_a'].attributes,volume_level:volume})",[state,volume]);self.settle()
                     img=cube.locator('.station-artwork');img.wait_for(state='visible')
-                    self.page.wait_for_function('()=>[...document.querySelectorAll("honeycomb-persistent-hub")].every(h=>!!h)')
+                    self.page.wait_for_function('()=>[...document.querySelectorAll("navigation-hub")].every(h=>!!h)')
                     details=img.evaluate('el=>({fit:getComputedStyle(el).objectFit,width:el.style.width,top:el.style.top,natural:[el.naturalWidth,el.naturalHeight],opacity:getComputedStyle(el).opacity})')
                     self.assertEqual(details['fit'],'contain');self.assertEqual(details['width'],'48%');self.assertEqual(details['opacity'],'1')
                     self.assertEqual(details['natural'],[160,80])
@@ -1480,16 +1480,16 @@ class Cubes(unittest.TestCase):
                 self.capture(f'beta7-full-bleed-{ "promoted" if promoted else "module" }-{state}')
         self.activate(self.sonos_slot(1).locator('.interaction-surface'));self.settle()
         favorite=self.sonos_slot(7)
-        self.assertEqual(favorite.locator('.artwork').evaluate('el=>getComputedStyle(el).backgroundSize'),'56% auto')
+        self.assertIn(favorite.locator('.artwork').evaluate('el=>getComputedStyle(el).backgroundSize'),('56%','56% auto'))
         self.assertEqual(favorite.locator('.artwork').evaluate('el=>getComputedStyle(el).opacity'),'1')
         self.activate(favorite.locator('.interaction-surface'));self.assertEqual(self.page.evaluate('calls.at(-1)[2].media_content_id'),'FV:2/57')
         self.capture('beta7-full-bleed-radio-unchanged')
     def test_beta5_artwork_responsive_state_and_volume_labels(self):
-        self.beta4_radio_hub();launcher=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-id="items[1]"]')
+        self.beta4_radio_hub();launcher=self.page.locator('jts-n-menu [data-jts-n-id="items[1]"]')
         for promoted in [False,True]:
             if promoted:
                 self.hold_input(launcher.locator('.interaction-surface'));self.page.wait_for_function('hub._menuContext.stack.length===1')
-            cube=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item') if promoted else launcher
+            cube=self.page.locator('jts-n-menu .center-item') if promoted else launcher
             sizes=[]
             for state in ['playing','paused']:
                 for volume in ([0,.02,.42,1] if state=='playing' else [.02]):
@@ -1521,7 +1521,7 @@ class Cubes(unittest.TestCase):
         if self.native_only:self.page.wait_for_function("hub._hubMenu.shadowRoot.querySelector('.center-item')._model.artwork?.url==='/station-a.svg'")
     def test_issue90_station_launcher_transitions_and_browse_updates(self):
         self.station_hub()
-        cube=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item')
+        cube=self.page.locator('jts-n-menu .center-item')
         image=cube.locator('.station-artwork')
         image.wait_for(state='visible')
         self.assertEqual(image.get_attribute('src'),'/station-a.svg')
@@ -1555,7 +1555,7 @@ class Cubes(unittest.TestCase):
         self.assertEqual(image.count(),0)
     def test_issue90_station_group_override_selected_center_and_standalone(self):
         self.station_hub({'colors':{'center':'#112233','inner_border':'#445566'},'off':{'center_color':'#303030'}})
-        cube=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item')
+        cube=self.page.locator('jts-n-menu .center-item')
         self.assertEqual(cube.locator('.hex-fill').get_attribute('fill'),'#112233')
         self.assertEqual(cube.locator('.hex-inner').get_attribute('fill'),'#445566')
         self.hold_input(cube.locator('.interaction-surface'))
@@ -1573,7 +1573,7 @@ class Cubes(unittest.TestCase):
         self.page.wait_for_function('!hub._hubMenu.shadowRoot.querySelector(".center-item")._model.artwork')
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.page.evaluate("stationUpdate('playing',{group_members:['media_player.player_a'],media_content_id:'favorite_a'});makeControl({module:'sonos',entity:'media_player.player_a',favorites_sensor:'sensor.favorites'})")
-        self.page.locator('body > honeycomb-persistent-control .station-artwork').wait_for(state='visible')
+        self.page.locator('body > navigation-control .station-artwork').wait_for(state='visible')
     def test_issue90_station_failed_image_and_unrelated_update(self):
         self.station_hub()
         self.page.evaluate('''()=>{window.stationRenders=0;const el=hub._hubMenu.shadowRoot.querySelector('.center-item');const original=el.render;el.render=function(){stationRenders++;return original.call(this)}}''')
@@ -1581,13 +1581,13 @@ class Cubes(unittest.TestCase):
         self.page.wait_for_timeout(100);self.assertEqual(self.page.evaluate('stationRenders'),0)
         self.page.evaluate("pushState('sensor.favorites_cache','1',{items:[{media_content_id:'favorite_a',thumbnail:'/missing-station.png'}]})")
         self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector(".center-item")._failedArtworkKey && !hub._hubMenu.shadowRoot.querySelector(".center-item")._model.artwork')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .hex-fill').get_attribute('fill'),'#00bcd4')
+        self.assertEqual(self.page.locator('jts-n-menu .center-item .hex-fill').get_attribute('fill'),'#00bcd4')
         self.assertTrue(all('404' in error and 'Failed to load resource' in error for error in self.errors),self.errors)
         self.errors.clear() # Only the deliberately failing thumbnail resource was expected.
         self.page.evaluate("pushState('sensor.favorites_cache','1',{items:[{media_content_id:'favorite_a',thumbnail:'/station-a.svg'}]})")
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .station-artwork').wait_for(state='visible')
+        self.page.locator('jts-n-menu .center-item .station-artwork').wait_for(state='visible')
     def test_issue90_station_radio_accents_survive_reorder(self):
-        self.station_hub();self.hold_input(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item .interaction-surface'))
+        self.station_hub();self.hold_input(self.page.locator('jts-n-menu .center-item .interaction-surface'))
         self.activate(self.sonos_slot(1).locator('.interaction-surface'));self.settle()
         colors=[self.sonos_slot(i).locator('.hex-inner').get_attribute('fill') for i in [7,8,9]]
         self.assertEqual(len(set(colors)),3)
@@ -1599,42 +1599,42 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('calls.at(-1)[2].media_content_id'),'favorite_c')
     def test_issue90_readme_diagram_responsive_light_dark(self):
         for theme,background in [('light','#ffffff'),('dark','#0d1117')]:
-            self.page.evaluate('''([theme,background])=>{document.title='Honeycomb layout model preview';document.body.innerHTML='<main><h1>Layout model</h1><img alt="Honeycomb physical slots 0–18: center, inner and outer rings" src="/layout.svg"></main>';document.body.style.cssText='margin:0;background:'+background+';color:'+(theme==='dark'?'white':'#14202b');const main=document.querySelector('main');main.style.cssText='padding:16px;max-width:1012px;margin:auto';document.querySelector('img').style.cssText='max-width:100%;height:auto;display:block'}''',[theme,background])
-            self.page.wait_for_function('document.querySelector("img").complete && document.querySelector("img").naturalWidth===520')
+            self.page.evaluate('''([theme,background])=>{document.title='Jefferies Navigation layout model preview';document.body.innerHTML='<main><h1>Layout model</h1><img alt="Jefferies Navigation physical slots 0–18: center, inner and outer rings" src="/layout.svg"></main>';document.body.style.cssText='margin:0;background:'+background+';color:'+(theme==='dark'?'white':'#14202b');const main=document.querySelector('main');main.style.cssText='padding:16px;max-width:1012px;margin:auto';document.querySelector('img').style.cssText='max-width:100%;height:auto;display:block'}''',[theme,background])
+            self.page.wait_for_function('document.querySelector("img").complete && document.querySelector("img").naturalWidth===700')
             image=self.page.locator('img');bounds=image.bounding_box()
             self.assertLessEqual(bounds['width'],self.viewport['width']-32)
-            self.assertGreaterEqual(25*bounds['width']/520,14,'Slot numbers remain readable on mobile')
-            self.assertEqual(self.page.title(),'Honeycomb layout model preview')
+            self.assertGreaterEqual(30*bounds['width']/700,14,'Slot numbers remain readable on mobile')
+            self.assertEqual(self.page.title(),'Jefferies Navigation layout model preview')
             self.capture('issue90-layout-'+theme)
 
     def test_sonos_native_favorites_volume_and_grouping(self):
         self.sonos_setup()
         self.hub({'logo':False,'items':[{'type':'sonos','entity':'media_player.player_a','favorites_sensor':'sensor.favorites','members':[{'entity':'media_player.player_b','name':'Player B'}],'toggle_member_script':'script.toggle_member_a'}]})
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface').click()
+        self.page.locator('jts-n-menu .interaction-surface').click()
         self.assertEqual(self.page.evaluate('calls.at(-1).slice(0,2)'),['media_player','media_play_pause'])
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
+        self.hold(self.page.locator('jts-n-menu .interaction-surface'))
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="4"] .interaction-surface').click()
+        self.page.locator('jts-n-menu [data-jts-n-slot="4"] .interaction-surface').click()
         self.assertEqual(self.page.evaluate('calls.at(-1)[3].entity_id'),['media_player.player_a','media_player.player_b'])
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Join"]').click()
+        self.page.locator('jts-n-menu [aria-label="Join"]').click()
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===7')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="6"] .interaction-surface').click()
+        self.page.locator('jts-n-menu [data-jts-n-slot="6"] .interaction-surface').click()
         self.assertEqual(self.page.evaluate('calls.at(-1)[2].member'),'media_player.player_b')
         self.back();self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Radio"]').click()
+        self.page.locator('jts-n-menu [aria-label="Radio"]').click()
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===7')
-        self.assertTrue(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .primary').filter(has_text='Station A').is_visible())
+        self.assertTrue(self.page.locator('jts-n-menu .primary').filter(has_text='Station A').is_visible())
         thumbnail='/station-a.svg'
         self.page.evaluate("thumbnail=>pushState('sensor.favorites_cache','1',{items:[{media_content_id:'favorite_a',thumbnail}]})",thumbnail)
         artwork=self.sonos_slot(7).locator('.station-artwork');artwork.wait_for(state='visible')
         self.assertEqual(artwork.get_attribute('src'),thumbnail)
         self.assertEqual(self.sonos_slot(7).locator('.primary').count(),0)
         self.capture('favorite-artwork')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="6"] .interaction-surface').click()
+        self.page.locator('jts-n-menu [data-jts-n-slot="6"] .interaction-surface').click()
         self.assertEqual(self.page.evaluate('calls.at(-1)[2].media_content_id'),'favorite_a')
     def test_standalone_media_menu_and_touch_cancel(self):
         self.page.evaluate('makeControl({module:"media",entity:"media_player.player_a"})')
-        target=self.page.locator('body > honeycomb-persistent-control .interaction-surface')
+        target=self.page.locator('body > navigation-control .interaction-surface')
         target.dispatch_event('pointerdown',{'pointerId':55,'pointerType':'touch','clientX':190,'clientY':300,'button':0})
         target.dispatch_event('pointercancel',{'pointerId':55,'pointerType':'touch'})
         self.page.wait_for_timeout(550);self.assertEqual(self.page.evaluate('calls.length'),0)
@@ -1642,8 +1642,8 @@ class Cubes(unittest.TestCase):
             box=target.bounding_box();self.page.touchscreen.tap(box['x']+40,box['y']+40)
             self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),'media_play_pause')
         self.hold(target)
-        self.page.wait_for_function('view.querySelector(":is(honeycomb-menu-ng,honeycomb-menu)").buttons.filter(Boolean).length===4')
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [data-honeycomb-slot="3"] .interaction-surface').click()
+        self.page.wait_for_function('view.querySelector("jts-n-menu").buttons.filter(Boolean).length===4')
+        self.page.locator('jts-n-menu [data-jts-n-slot="3"] .interaction-surface').click()
         self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),'volume_up')
         self.assertEqual(self.page.evaluate('calls.at(-1)[3].entity_id'),['media_player.player_a','media_player.player_b'])
     def test_state_updates_same_hass_identity_and_unrelated_no_render(self):
@@ -1656,45 +1656,45 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('renders'),1)
         self.page.evaluate("pushState('light.zone_a','unavailable')")
         self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector(".center-item").shadowRoot.querySelector(".secondary").textContent === "Unavailable"')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .hex-outer').get_attribute('fill'),'#34383d')
+        self.assertEqual(self.page.locator('jts-n-menu .hex-outer').get_attribute('fill'),'#34383d')
     def test_centerless_light_menu_and_replacement_keep_one_owned_overlay(self):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'},{'type':'light','entity':'light.zone_a'}]})
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item').count(),0)
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface').first)
+        self.assertEqual(self.page.locator('jts-n-menu .center-item').count(),0)
+        self.hold(self.page.locator('jts-n-menu .interaction-surface').first)
         self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===6')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item').count(),1)
+        self.assertEqual(self.page.locator('jts-n-menu .center-item').count(),1)
         self.back();self.page.wait_for_function('hub._hubMenu.buttons.filter(Boolean).length===2')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .center-item').count(),0)
+        self.assertEqual(self.page.locator('jts-n-menu .center-item').count(),0)
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.hub({'logo':False,'items':[{'module':'generic','entity':'sensor.value_a','name':'Item A','menu':{
             'nested_expand':False,'animate':False,'buttons':[{'name':'Replacement','show_name':True,'tap_action':{'action':'none'}}]}}]})
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
-        self.page.wait_for_function('hub._hubMenu===hub._menuContext.honeycomb && hub._menuContext.stack.length===1')
-        self.assertTrue(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Replacement"]').is_visible())
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
-        self.back();self.page.wait_for_function('hub._hubMenu===hub._menuContext.honeycomb && hub._menuContext.stack.length===0')
-        self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),1)
+        self.hold(self.page.locator('jts-n-menu .interaction-surface'))
+        self.page.wait_for_function('hub._hubMenu===hub._menuContext.scene && hub._menuContext.stack.length===1')
+        self.assertTrue(self.page.locator('jts-n-menu [aria-label="Replacement"]').is_visible())
+        self.assertEqual(self.page.locator('jts-n-menu').count(),1)
+        self.back();self.page.wait_for_function('hub._hubMenu===hub._menuContext.scene && hub._menuContext.stack.length===0')
+        self.assertEqual(self.page.locator('jts-n-menu').count(),1)
     def test_nested_menu_keeps_its_own_defaults(self):
         child={'nested_expand':True,'animate':False,'buttons':[{'name':'Child','show_name':True,'tap_action':{'action':'none'}}]}
         self.hub({'logo':False,'items':[{'module':'generic','entity':'sensor.value_a','name':'Item A','menu':{
             'animate':False,'button_defaults':{'styles':{'card':[{'background':'#174b32'}]}},'buttons':[
-                {'name':'Details','show_name':True,'tap_action':{'action':'honeycomb-open-nested','honeycomb_nested_menu':child}}]}}]})
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
-        self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Details"]').click()
-        target=self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item)').filter(has=self.page.locator('.primary',has_text='Child'))
+                {'name':'Details','show_name':True,'tap_action':{'action':'jts-n-open-nested','jts_n_nested_menu':child}}]}}]})
+        self.hold(self.page.locator('jts-n-menu .interaction-surface'))
+        self.page.locator('jts-n-menu [aria-label="Details"]').click()
+        target=self.page.locator('jts-n-menu-item').filter(has=self.page.locator('.primary',has_text='Child'))
         # Beta.5 shares the existing Light fill opacity at every submenu depth.
         # The parent explicitly uses green; it must not leak into this child.
         self.assertEqual(target.locator('.hex-fill').get_attribute('fill'),'rgba(52, 66, 78, 0.94)')
         self.assertEqual(target.locator('.hex-inner').evaluate('(e)=>getComputedStyle(e).fill'),'rgb(52, 66, 78)')
         self.assertEqual(target.locator('.hex-outer').evaluate('(e)=>getComputedStyle(e).fill'),'rgb(52, 56, 61)')
         self.back()
-        parent=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) [aria-label="Details"]')
+        parent=self.page.locator('jts-n-menu [aria-label="Details"]')
         parent.wait_for()
         self.assertEqual(parent.evaluate('(e)=>e.getRootNode().host.shadowRoot.querySelector(".hex-fill").getAttribute("fill")'),'#174b32')
     def test_empty_placeholders_are_passive(self):
         self.page.evaluate("window.menu=ng.open({entity:'light.zone_a',animate:false,position_mode:'anchored',anchor_x:innerWidth/2,anchor_y:300,buttons:[{slot:1,slot_mode:'hard',name:'Action A',show_name:true,tap_action:{action:'none'}}]})")
-        self.page.wait_for_function('window.menu.shadowRoot.querySelectorAll(":is(honeycomb-menu-ng-item,honeycomb-menu-item)").length===7')
-        passive=self.page.locator(':is(honeycomb-menu-ng-item,honeycomb-menu-item)').filter(has=self.page.locator('.interaction-surface')).count()
+        self.page.wait_for_function('window.menu.shadowRoot.querySelectorAll("jts-n-menu-item").length===7')
+        passive=self.page.locator('jts-n-menu-item').filter(has=self.page.locator('.interaction-surface')).count()
         self.assertEqual(passive,2) # ordinary center + one action; holes have no hit surface
     def test_fifty_items_render_without_fixed_ring_limit(self):
         self.hub({'size':30,'logo':False,'items':[{'type':'generic','name':f'Item {i}','icon':'mdi:plus'} for i in range(50)]})
@@ -1704,7 +1704,7 @@ class Cubes(unittest.TestCase):
         self.assertTrue(all(b[2]==30 for b in boxes));self.capture('fifty-items')
     def test_double_tap_keyboard_and_cancel_do_not_duplicate_actions(self):
         self.page.evaluate('makeControl({module:"generic",entity:"sensor.value_a",name:"Value A",tap_action:{action:"perform-action",perform_action:"test.tap"},double_tap_action:{action:"perform-action",perform_action:"test.double"}})')
-        target=self.page.locator('body > honeycomb-persistent-control .interaction-surface')
+        target=self.page.locator('body > navigation-control .interaction-surface')
         target.dblclick();self.page.wait_for_timeout(350)
         self.assertEqual(self.page.evaluate('calls.map(c=>c[1])'),['double'])
         target.press('Enter');self.assertEqual(self.page.evaluate('calls.at(-1)[1]'),'tap')
@@ -1713,36 +1713,55 @@ class Cubes(unittest.TestCase):
         self.assertEqual(self.page.evaluate('calls.length'),2)
     def test_drag_select_native_cube_executes_one_action(self):
         self.hub({'logo':False,'items':[{'type':'generic','entity':'sensor.value_a','name':'Value A','icon':'mdi:plus','tap_action':{'action':'perform-action','perform_action':'test.tap'}}]})
-        target=self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface');box=target.bounding_box()
+        target=self.page.locator('jts-n-menu .interaction-surface');box=target.bounding_box()
         self.page.mouse.move(box['x']+25,box['y']+40);self.page.mouse.down();self.page.mouse.move(box['x']+50,box['y']+40,steps=4);self.page.mouse.up()
         self.assertEqual(self.page.evaluate('calls.length'),1)
     def test_lifecycle_resize_and_reconnect_leave_one_overlay(self):
         self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a'}]})
         self.page.evaluate("hub.style.left='100px'")
         self.page.wait_for_function('Math.abs(hub._hubMenu._anchorX-141)<.1')
-        self.hold(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .interaction-surface'))
+        self.hold(self.page.locator('jts-n-menu .interaction-surface'))
         self.page.wait_for_function('hub._menuContext.stack.length===1')
         origin=self.page.evaluate('[hub._hubMenu._anchorX,hub._hubMenu._anchorY]')
         self.page.evaluate("hub.style.left='150px'")
         self.page.wait_for_timeout(100)
         self.assertEqual(self.page.evaluate('[hub._hubMenu._anchorX,hub._hubMenu._anchorY]'),origin)
         self.back();self.page.wait_for_function('Math.abs(hub._hubMenu._anchorX-191)<.1')
-        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu)').count(),0)
-        self.page.evaluate('document.body.append(hub)');self.page.wait_for_function('view.querySelectorAll(":is(honeycomb-menu-ng,honeycomb-menu)").length===1')
+        self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('jts-n-menu').count(),0)
+        self.page.evaluate('document.body.append(hub)');self.page.wait_for_function('view.querySelectorAll("jts-n-menu").length===1')
 
     def test_baseline(self):
-        self.page.evaluate("document.body.style.setProperty('--honeycomb-persistent-size','82px')")
+        self.page.evaluate("document.body.style.setProperty('--jts-n-persistent-size','82px')")
         self.hub({'size':82,'logo':True,'items':[{'type':'light','entity':'light.zone_a'},{'type':'sonos','entity':'media_player.player_a'}]})
         # Fix the host CSS width to the reference cell size. v1.5.1 applies size
         # inside its host, otherwise the bootstrap falls back to 72 px.
-        self.page.evaluate("hub.style.setProperty('--honeycomb-persistent-size','82px')")
-        self.page.evaluate('hub._menuContext.honeycomb.reanchor(innerWidth/2,310)')
+        self.page.evaluate("hub.style.setProperty('--jts-n-persistent-size','82px')")
+        self.page.evaluate('hub._menuContext.scene.reanchor(innerWidth/2,310)')
         self.capture('hub-reference')
         if self.evidence:
-            self.page.locator(':is(honeycomb-menu-ng,honeycomb-menu) .ring-item').first.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-light-cell.png'))
+            self.page.locator('jts-n-menu .ring-item').first.screenshot(path=str(self.evidence/f'{self.viewport["width"]}-light-cell.png'))
         self.page.evaluate('ng.disposeContext(hub._menuContext);hub.remove()')
         self.hub({'size':82,'logo':False,'items':[{'type':'generic','entity':'sensor.value_a','name':'Value A','label':'24'}]})
         self.capture('generic-reference')
+
+def capture_v1_reference(button_card, evidence_dir):
+    import subprocess
+    import sys
+    from legacy_fixture import legacy_fixture
+    with legacy_fixture() as legacy:
+        subprocess.run([sys.executable,'-B','-c', '''
+import os, shutil, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from run import Cubes, Handler
+from sonos_reference import capture_reference
+from playwright.sync_api import sync_playwright
+Cubes.url, Cubes.evidence = None, None
+with sync_playwright() as playwright:
+    Cubes.browser=playwright.chromium.launch(executable_path=os.getenv('CHROMIUM_PATH') or shutil.which('chromium'),args=['--no-sandbox'])
+    capture_reference(Cubes, Handler, Path(sys.argv[2]), Path(sys.argv[3]))
+''',str(legacy),str(button_card.resolve()),str(evidence_dir.resolve())],check=True)
+
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
@@ -1752,6 +1771,12 @@ def main():
     parser.add_argument('--test-filter',help='Run only matching test names; CI always runs the complete suite')
     parser.add_argument('--evidence-dir',type=Path)
     args=parser.parse_args()
+    if args.baseline:
+        import subprocess
+        import sys
+        from legacy_fixture import legacy_fixture
+        with legacy_fixture() as legacy:
+            return subprocess.call([sys.executable,'-B',str(legacy/'run.py'),*sys.argv[1:]])
     assert hashlib.sha256(args.button_card.read_bytes()).hexdigest()==BUTTON_SHA
     if args.evidence_dir: args.evidence_dir.mkdir(parents=True,exist_ok=True)
     server=ThreadingHTTPServer(('127.0.0.1',0),Handler);server.bundle=args.bundle.resolve();server.button=args.button_card.resolve()
@@ -1762,8 +1787,7 @@ def main():
             Cubes.browser=p.chromium.launch(executable_path=os.getenv('CHROMIUM_PATH') or shutil.which('chromium'),args=['--no-sandbox'])
             Cubes.url=f'http://127.0.0.1:{server.server_port}';Cubes.evidence=args.evidence_dir
             if args.evidence_dir and not args.baseline and not args.test_filter:
-                from sonos_reference import capture_reference
-                capture_reference(Cubes,Handler,args.button_card.resolve(),args.evidence_dir)
+                capture_v1_reference(args.button_card,args.evidence_dir)
             for width,height in [(1100,900),(390,844)]:
                 Cubes.viewport={'width':width,'height':height}
                 names=['test_baseline'] if args.baseline else [n for n in unittest.defaultTestLoader.getTestCaseNames(Cubes) if n!='test_baseline' and (not args.test_filter or args.test_filter in n)]

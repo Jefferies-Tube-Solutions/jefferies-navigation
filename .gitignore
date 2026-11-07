@@ -1,7 +1,7 @@
 @eaDir
 node_modules
 package-lock.json
-src/brand/bee.generated.js
+src/brand/compass.generated.js
 
 __pycache__/
 *.pyc

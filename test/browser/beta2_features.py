@@ -13,7 +13,7 @@ class Beta2(Cubes):
  def assert_visible_unique_cells(self,count):
   self.settle();self.assertEqual(self.controls().count(),count)
   for cell in self.controls().all():self.assertTrue(cell.is_visible())
- def cell(self,slot=0):return self.page.locator('honeycomb-menu-ng .center-item' if slot==0 else f'honeycomb-menu-ng [data-honeycomb-slot="{slot-1}"]')
+ def cell(self,slot=0):return self.page.locator('jts-n-menu .center-item' if slot==0 else f'jts-n-menu [data-jts-n-slot="{slot-1}"]')
  def config(self,**options):
   self.page.evaluate("pushState('light.zone_b','on',{brightness:180,rgb_color:[70,150,240],supported_color_modes:['hs']})")
   return {'logo':False,'size':41,'collapsible':options or True,'items':[{'type':'light','entity':'light.zone_a','slot':0},{'type':'light','entity':'light.zone_b','slot':2}]}
@@ -23,18 +23,18 @@ class Beta2(Cubes):
   self.activate(self.cell().locator('.interaction-surface'));self.assertEqual(self.page.evaluate('calls.length'),1)
   self.expand();self.assertEqual(self.page.evaluate('calls.length'),1);self.assert_visible_unique_cells(2);self.capture('hub-expanded')
   if self.viewport['width']<500:
-   self.assertTrue(self.page.locator('honeycomb-menu-ng').evaluate("e=>e.matches(':popover-open')"))
+   self.assertTrue(self.page.locator('jts-n-menu').evaluate("e=>e.matches(':popover-open')"))
   # A fixed parent ceiling is authoritative even in the phone top layer.
   self.assertAlmostEqual(self.cell().bounding_box()['width'],41,delta=.15)
   self.cell().locator('.interaction-surface').click();self.settle();self.assert_visible_unique_cells(1);self.assertFalse(self.page.evaluate('hub._hubExpanded'))
   self.assertAlmostEqual(self.cell().bounding_box()['width'],41,delta=.2)
   self.page.evaluate("pushState('light.zone_a','off',{brightness:0})");self.settle();self.assertEqual(self.cell().locator('.secondary').inner_text(),'OFF')
- def test_bee_allocation_nested_back_timeout_and_cleanup(self):
-  self.hub(self.config(expanded_center='bee',primary_slot=1,idle_timeout=2200));self.expand();self.assert_visible_unique_cells(3)
+ def test_compass_allocation_nested_back_timeout_and_cleanup(self):
+  self.hub(self.config(expanded_center='compass',primary_slot=1,idle_timeout=2200));self.expand();self.assert_visible_unique_cells(3)
   self.hold_input(self.cell(1).locator('.interaction-surface'));self.settle();self.assertGreater(self.page.evaluate('hub._menuContext.stack.length'),0)
   self.back();self.settle();self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.assert_visible_unique_cells(3)
   self.page.wait_for_timeout(2400);self.settle();self.assertFalse(self.page.evaluate('hub._hubExpanded'));self.assert_visible_unique_cells(1)
-  self.expand();self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('honeycomb-menu-ng').count(),0)
+  self.expand();self.page.evaluate('hub.remove()');self.assertEqual(self.page.locator('jts-n-menu').count(),0)
  def test_floorplan_clipping_resize_rotation_and_backdrop(self):
   self.page.evaluate(FLOORPLAN,{**self.config(),'size':'auto','auto_reference_width':640});self.page.wait_for_function('hub._hubMenu?.isConnected')
   self.page.evaluate("floor.style.width='240px';floor.style.overflow='hidden';floor.style.transform='scale(.9)';imageHost.style.height='120px'");self.settle();self.expand()
@@ -47,7 +47,7 @@ class Beta2(Cubes):
   else:self.back();self.settle()
   self.assert_visible_unique_cells(1)
  def test_configuration_conflicts_are_explicit(self):
-  self.assertIn('conflict',self.page.evaluate('''config=>{try{makeHub(config);return ''}catch(e){return e.message}}''',self.config(expanded_center='bee',primary_slot=2)))
+  self.assertIn('conflict',self.page.evaluate('''config=>{try{makeHub(config);return ''}catch(e){return e.message}}''',self.config(expanded_center='compass',primary_slot=2)))
  def test_climate_neutral_functions_center_and_overrides(self):
   self.page.evaluate(SEED);self.hub({'logo':False,'items':[{'type':'climate','entity':'climate.room_a','slot':0}]});self.activate(self.cell().locator('.interaction-surface'));self.settle()
   for slot in range(1,7):
@@ -64,11 +64,11 @@ class Beta2(Cubes):
 
  def test_multiple_hubs_keyboard_preview_and_reconfiguration(self):
   config=self.config();self.hub(config)
-  self.page.evaluate("config=>{window.hubA=hub;makeHub({...config,collapsible:{expanded_center:'bee',primary_slot:1}});window.hubB=hub;window.hub=hubA}",config);self.settle()
+  self.page.evaluate("config=>{window.hubA=hub;makeHub({...config,collapsible:{expanded_center:'compass',primary_slot:1}});window.hubB=hub;window.hub=hubA}",config);self.settle()
   self.page.evaluate('hubA._expandHub()');self.settle();self.assertTrue(self.page.evaluate('hubA._hubExpanded'));self.assertFalse(self.page.evaluate('!!hubB._hubExpanded'))
   self.page.evaluate('hubA._collapseHub();hubB.remove()');self.settle()
   surface=self.cell().locator('.interaction-surface');surface.focus();surface.press('Shift+Enter');self.settle();self.assertTrue(self.page.evaluate('hubA._hubExpanded'))
-  self.page.locator('honeycomb-menu-ng .center-item .interaction-surface').focus();self.page.locator('honeycomb-menu-ng .center-item .interaction-surface').press('Enter');self.settle();self.assertFalse(self.page.evaluate('hubA._hubExpanded'));surface.focus();surface.press('Shift+Enter');self.settle()
+  self.page.locator('jts-n-menu .center-item .interaction-surface').focus();self.page.locator('jts-n-menu .center-item .interaction-surface').press('Enter');self.settle();self.assertFalse(self.page.evaluate('hubA._hubExpanded'));surface.focus();surface.press('Shift+Enter');self.settle()
   self.page.evaluate('hubA.setConfig({...hubA.config,collapsible:false})');self.settle();self.assertFalse(self.page.evaluate('hubA._hubExpanded'));self.assertEqual(self.page.locator('[popover]').count(),0);self.assert_visible_unique_cells(2)
   self.page.evaluate('hubA.preview=true');self.hold_input(surface);self.settle();self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_join_artwork_gradient_alpha_border_and_live_source_changes(self):
@@ -79,14 +79,14 @@ class Beta2(Cubes):
   self.assertEqual(room.evaluate('e=>e._model.fill'),source.evaluate('e=>e._model.fill'));self.assertEqual(room.evaluate('e=>[e._model.inner,e._model.outer]'),source.evaluate('e=>[e._model.inner,e._model.outer]'))
   self.capture('sonos-artwork-after')
   self.page.evaluate("stationUpdate('playing',{media_content_id:'favorite_c'});pushState('media_player.player_b','idle',{volume_level:.07,group_members:['media_player.player_a','media_player.player_b']})");self.settle()
-  self.page.wait_for_function("hub._hubMenu.shadowRoot.querySelector('[data-honeycomb-slot=\"6\"]')._model.artwork?.url==='/station-c.svg'")
+  self.page.wait_for_function("hub._hubMenu.shadowRoot.querySelector('[data-jts-n-slot=\"6\"]')._model.artwork?.url==='/station-c.svg'")
   self.assertEqual(room.locator('.secondary').inner_text(),'7%')
 
  def test_mobile_expanded_Info_stays_above_overlay_and_returns_to_same_scene(self):
   self.hub(self.config());self.expand();self.page.evaluate("ng.openInfoInContext(hub._menuContext,{title:'Room information',text:'Synthetic room details',colors:{center:'source'}})")
-  dialog=self.page.locator('honeycomb-ng-info .surface');dialog.wait_for()
-  if self.viewport['width']<500:self.assertTrue(self.page.locator('honeycomb-ng-info').evaluate("e=>e.matches(':popover-open')"))
-  self.activate(dialog);self.settle();self.assertEqual(self.page.locator('honeycomb-ng-info').count(),0);self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.assert_visible_unique_cells(2)
+  dialog=self.page.locator('jts-n-info-cube .surface');dialog.wait_for()
+  if self.viewport['width']<500:self.assertTrue(self.page.locator('jts-n-info-cube').evaluate("e=>e.matches(':popover-open')"))
+  self.activate(dialog);self.settle();self.assertEqual(self.page.locator('jts-n-info-cube').count(),0);self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.assert_visible_unique_cells(2)
   self.back();self.settle();self.assert_visible_unique_cells(1)
 
  def test_join_honors_source_hidden_icon_policy(self):

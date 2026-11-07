@@ -20,7 +20,7 @@ for(const [version,text] of [
     ['1.9.0-beta.6','v1.9.0 beta 6'],['2.12.3-beta.17+build.2','v2.12.3 beta 17'],
     ['2.0.0','v2.0.0'],['v1.8.1','v1.8.1'],['1.9.0-dev+123456789abc.dirty','v1.9.0'],
     [null,'Version unavailable'],['unexpected','Version unavailable'],['1.9.0-beta.06','Version unavailable']
-])test(`readable bee label ${version} keeps technical metadata out of visual text`,()=>{
+])test(`readable compass label ${version} keeps technical metadata out of visual text`,()=>{
     assert.equal(versionLabel(version).text,text);
     assert.ok(!versionLabel(version).text.includes('+'));assert.ok(!versionLabel(version).text.includes('-dev'));
 });

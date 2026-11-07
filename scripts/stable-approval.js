@@ -6,7 +6,7 @@ const crypto=require('node:crypto');
 const {isStableVersion}=require('./check-release');
 const {isBetaVersion}=require('./beta-version');
 const digest=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
-const banner=version=>`/*! Honeycomb Menu NG v${version} */`;
+const banner=version=>`/*! Jefferies Navigation v${version} */`;
 function validateApproval(value,version,repository) {
     assert.ok(value && isStableVersion(version) && value.version===version,'Approved stable version mismatch');
     assert.equal(value.issue.startsWith(`https://github.com/${repository}/issues/`),true,'Approval issue repository mismatch');
@@ -19,13 +19,13 @@ function validateApproval(value,version,repository) {
     return value;
 }
 function withBanner(source) {
-    const plugin="    plugins: [new webpack.BannerPlugin({banner: `Honeycomb Menu NG v${require('./package.json').version}`})],";
+    const plugin="    plugins: [new webpack.BannerPlugin({banner: `Jefferies Navigation v${require('./package.json').version}`})],";
     if (source.includes(plugin)) return source;
-    const modern="new webpack.BannerPlugin({banner: `Honeycomb Menu NG v${build.version}`})";
-    if(source.includes(modern) && source.includes("new webpack.DefinePlugin({HONEYCOMB_BUILD_VERSION:JSON.stringify(build.version),HONEYCOMB_BUILD_COMMIT:JSON.stringify(build.commit)})"))return source;
-    assert.ok(source.includes("const path = require('path');") && source.includes("    entry: './src/honeycomb-menu.js',"),'Unknown approved build configuration');
+    const modern="new webpack.BannerPlugin({banner: `Jefferies Navigation v${build.version}`})";
+    if(source.includes(modern) && source.includes("new webpack.DefinePlugin({JTS_N_BUILD_VERSION:JSON.stringify(build.version),JTS_N_BUILD_COMMIT:JSON.stringify(build.commit)})"))return source;
+    assert.ok(source.includes("const path = require('path');") && source.includes("    entry: './src/navigation-menu.js',"),'Unknown approved build configuration');
     return source.replace("const path = require('path');","const path = require('path');\nconst webpack = require('webpack');")
-        .replace("    entry: './src/honeycomb-menu.js',","    entry: './src/honeycomb-menu.js',\n"+plugin);
+        .replace("    entry: './src/navigation-menu.js',","    entry: './src/navigation-menu.js',\n"+plugin);
 }
 // Exactly one known build-info module and its two version literals. Never
 // replace arbitrary version-looking strings elsewhere in executable code.
@@ -43,7 +43,7 @@ function verifyApprovedSource(io,artifact,approval,read=file=>fs.readFileSync(fi
     io.git(['merge-base','--is-ancestor',beta.commit,'HEAD']);
     assert.equal(io.git(['rev-parse',`${beta.commit}:src`]),beta.src_tree,'Approved source tree mismatch');
     assert.equal(io.git(['rev-parse','HEAD:src']),beta.src_tree,'Runtime differs from approved beta');
-    for (const paths of [['src','assets','hacs.json','scripts/generate-bee-asset.js','scripts/build-version.js']]) {
+    for (const paths of [['src','assets','hacs.json','scripts/generate-compass-asset.js','scripts/build-version.js']]) {
         assert.equal(io.git(['diff',beta.commit,'HEAD','--',...paths]),'','Unapproved runtime/build input changes');
         assert.equal(io.git(['status','--porcelain','--untracked-files=all','--',...paths]),'','Uncommitted runtime/build inputs');
     }
@@ -60,7 +60,7 @@ function verifyApprovedSource(io,artifact,approval,read=file=>fs.readFileSync(fi
     for (const value of [lock,baseLock]) {delete value.version;if(value.packages && value.packages[''])delete value.packages[''].version;}
     assert.deepEqual(lock,baseLock,'Dependency lock changed after beta testing');
     assert.equal(read('webpack.config.js').toString(),withBanner(old('webpack.config.js').toString()),'Only the version banner may change build configuration');
-    const original=old('honeycomb-menu-ng.js');
+    const original=old('jefferies-navigation.js');
     assert.equal(original.length,beta.bytes);assert.equal(digest(original),beta.sha256,'Approved beta bundle mismatch');
     const originalVersion=beta.tag.slice(1),originalText=original.toString();
     const body=originalText.startsWith(banner(originalVersion)) ? originalText.slice(banner(originalVersion).length) : originalText;

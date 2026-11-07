@@ -9,7 +9,7 @@ from run import Handler,Cubes,CheckResult
 
 WAVE={'active':True,'available':True,'fault':False,'power_w':7000,'speed_mode':'power','max_power_w':19400}
 class WaveColor(Cubes):
- def cube(self):return self.page.locator('honeycomb-menu-ng .center-item')
+ def cube(self):return self.page.locator('jts-n-menu .center-item')
  def stroke(self,cube=None):return (cube or self.cube()).locator('.energy-contour').evaluate('(el)=>getComputedStyle(el).stroke')
  def running(self):self.page.wait_for_function('hub._hubMenu.shadowRoot.querySelector(".center-item")?.hasAttribute("energy-wave-running")')
  def remember(self):
@@ -37,7 +37,7 @@ class WaveColor(Cubes):
   before=self.stroke();self.page.evaluate("pushState('light.zone_a','on',{brightness:180,rgb_color:[22,204,88],supported_color_modes:['hs']})");self.settle()
   self.assertNotEqual(self.stroke(),before);self.assertEqual(self.stroke(),'rgb(22, 204, 88)');self.continuity()
   fill=self.cube().evaluate('(el)=>el._model.fill');self.assertEqual(fill,{'type':'radial','center':'rgb(22, 204, 88)','edge':'rgb(13, 122, 53)'})
-  self.page.evaluate("hub.setConfig({logo:false,items:[{type:'light',entity:'light.zone_a',colors:{inner_border:'HCJS: return entity.attributes.accent;'},energy_wave:hub.config.items[0].energy_wave}]});pushState('light.zone_a','on',{brightness:180,rgb_color:[255,128,0],supported_color_modes:['hs'],accent:'#00bfff'})")
+  self.page.evaluate("hub.setConfig({logo:false,items:[{type:'light',entity:'light.zone_a',colors:{inner_border:'JTSJS: return entity.attributes.accent;'},energy_wave:hub.config.items[0].energy_wave}]});pushState('light.zone_a','on',{brightness:180,rgb_color:[255,128,0],supported_color_modes:['hs'],accent:'#00bfff'})")
   self.settle();self.assertEqual(self.stroke(),'rgb(0, 191, 255)');self.assertEqual(self.cube().locator('.hex-inner').get_attribute('fill'),'#00bfff');self.continuity();self.screenshot_wave('issue119-light-resolved-user-border')
  def test_sonos_station_accent_updates_resolved_wave(self):
   self.station_hub({'energy_wave':WAVE});self.remember();first=self.stroke()
@@ -46,7 +46,7 @@ class WaveColor(Cubes):
   self.assertNotEqual(self.stroke(),first);self.assertEqual(self.cube().evaluate('(el)=>el._model.energyWaveColor'),self.cube().locator('.hex-inner').get_attribute('fill'));self.continuity();self.screenshot_wave('issue119-sonos-station-accent')
  def test_dynamic_override_alpha_and_invalid_results_fail_static_then_recover(self):
   self.page.evaluate("pushState('sensor.accent_a','#00bfff')")
-  wave={**WAVE,'color':'HCJS: return states["sensor.accent_a"].state;'}
+  wave={**WAVE,'color':'JTSJS: return states["sensor.accent_a"].state;'}
   self.hub({'logo':False,'items':[{'type':'light','entity':'light.zone_a','energy_wave':wave}]});self.remember()
   self.assertEqual(self.stroke(),'rgb(0, 191, 255)')
   self.page.evaluate("pushState('light.zone_a','on',{brightness:200,rgb_color:[22,204,88],supported_color_modes:['hs']})");self.settle();self.continuity();self.assertEqual(self.stroke(),'rgb(0, 191, 255)')
@@ -63,14 +63,14 @@ class WaveColor(Cubes):
   self.page.evaluate("document.body.style.setProperty('--wave-accent','#00bfff')")
   for color,expected in [('blue','rgb(0, 0, 255)'),('var(--wave-accent, #22cc88)','rgb(0, 191, 255)'),('#00bfff80','rgba(0, 191, 255, 0.5)')]:
    self.page.evaluate('config=>makeControl(config)',{'module':'generic','name':'Synthetic wave','colors':{'inner_border':'#22cc88'},'energy_wave':{**WAVE,'color':color},'tap_action':{'action':'none'}})
-   c=self.page.locator('body > honeycomb-persistent-control');self.page.wait_for_function('control.hasAttribute("energy-wave-running")');self.assertEqual(self.stroke(c),expected);self.page.evaluate('control.remove()')
+   c=self.page.locator('body > navigation-control');self.page.wait_for_function('control.hasAttribute("energy-wave-running")');self.assertEqual(self.stroke(c),expected);self.page.evaluate('control.remove()')
   # A CSS custom property cannot turn the color property into SVG paint.
   self.page.evaluate("document.body.style.setProperty('--wave-accent','url(https://example.org/paint.svg)')")
   self.page.evaluate('config=>makeControl(config)',{'module':'generic','energy_wave':{**WAVE,'color':'var(--wave-accent, #22cc88)'}});self.page.wait_for_timeout(50)
-  c=self.page.locator('body > honeycomb-persistent-control');self.assertNotIn('url(',self.stroke(c));self.assertFalse(any('paint.svg' in url for url in requests));self.assertEqual(self.page.evaluate('calls.length'),0)
+  c=self.page.locator('body > navigation-control');self.assertNotIn('url(',self.stroke(c));self.assertFalse(any('paint.svg' in url for url in requests));self.assertEqual(self.page.evaluate('calls.length'),0)
  def test_invalid_literal_configuration_rejected_without_style_injection(self):
   for color in ['not-a-color','rgb(999, x, 2)','url(#paint)','#fff;opacity:1',None,True,{},'inherit']:
-   result=self.page.evaluate('config=>{const el=document.createElement("honeycomb-persistent-control");try{el.setConfig(config);return "accepted"}catch(e){return e.message}}',{'module':'generic','energy_wave':{**WAVE,'color':color}})
+   result=self.page.evaluate('config=>{const el=document.createElement("navigation-control");try{el.setConfig(config);return "accepted"}catch(e){return e.message}}',{'module':'generic','energy_wave':{**WAVE,'color':color}})
    self.assertIn('energy_wave.color',result)
 
 def main():

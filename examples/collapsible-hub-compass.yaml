@@ -1,7 +1,7 @@
-type: custom:honeycomb-persistent-hub
+type: custom:navigation-hub
 name: Room A
 collapsible:
-  expanded_center: bee
+  expanded_center: compass
   primary_slot: 1
 items:
   - type: light

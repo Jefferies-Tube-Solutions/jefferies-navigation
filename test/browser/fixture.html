@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Honeycomb shared cube test</title>
+<title>Jefferies Navigation shared cube test</title>
 <style>
 body{margin:0;background:#18212b;color:#f6f7f9;font:16px Arial;--primary-text-color:#f6f7f9;--ha-card-background:#34424e;--card-background-color:#34424e}
 h1{font-size:18px;margin:18px} #anchor{position:absolute;left:160px;top:260px}
 </style>
-<h1>Honeycomb shared cube test</h1><home-assistant></home-assistant>
+<h1>Jefferies Navigation shared cube test</h1><home-assistant></home-assistant>
 <script src="/mdi-icons.js"></script>
 <script>
 window.nativeFavoritesOnly=false;
@@ -61,8 +61,8 @@ customElements.define('ha-icon',class extends HTMLElement{
 customElements.define('hui-error-card',class extends HTMLElement{setConfig(c){this.textContent=c.error}});
 document.addEventListener('hass-more-info',e=>moreInfo.push(e.detail.entityId));
 document.body.addEventListener('hass-action',e=>{const source=e.composedPath().find(n=>n.tagName==='BUTTON-CARD');const c=e.detail.config;const a=c[e.detail.action+'_action']||c.tap_action;if(!source||!a)return;if(a.action==='fire-dom-event')source.dispatchEvent(new CustomEvent('ll-custom',{detail:a,bubbles:true,composed:true}));else if(a.action==='perform-action'){const [d,s]=a.perform_action.split('.');hass.callService(d,s,a.data||{},a.target||{})}});
-window.makeHub=(config={})=>{const el=document.createElement('honeycomb-persistent-hub');el.id='anchor';el.style.position='absolute';el.setConfig(config);el.style.left=(innerWidth/2-41)+'px';document.body.append(el);return window.hub=el};
-window.makeControl=(config={})=>{const el=document.createElement('honeycomb-persistent-control');el.id='anchor';el.style.position='absolute';el.setConfig(config);el.style.left=(innerWidth/2-41)+'px';document.body.append(el);return window.control=el};
+window.makeHub=(config={})=>{const el=document.createElement('navigation-hub');el.id='anchor';el.style.position='absolute';el.setConfig(config);el.style.left=(innerWidth/2-41)+'px';document.body.append(el);return window.hub=el};
+window.makeControl=(config={})=>{const el=document.createElement('navigation-control');el.id='anchor';el.style.position='absolute';el.setConfig(config);el.style.left=(innerWidth/2-41)+'px';document.body.append(el);return window.control=el};
 </script>
 <script type="module">
 await import('/button-card.js');await customElements.whenDefined('button-card');await import('/bundle.js');window.ready=true;

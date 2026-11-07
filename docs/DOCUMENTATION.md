@@ -12,9 +12,9 @@ Old installation-specific examples were not carried into the new guide.
 
 | README source | Useful material retained | Correction / modernization |
 |---|---|---|
-| [v1.2.11](https://github.com/NicolaiTandrup/honeycomb-menu-ng/blob/v1.2.11/README.md) | Physical Layout model, center and ring diagram, automatic layouts, classic slots/sizing | Rechecked diagram against current coordinates; distinguish classic center and scene size from Hub cell width. Keep per-patch chronology out of onboarding. |
-| [v1.5.1](https://github.com/NicolaiTandrup/honeycomb-menu-ng/blob/v1.5.1/README.md) | Modular guide, focused references, writable Light values and external Sonos recipes | Explain values on separate integrations, precise favorites/cache shapes, include boundaries and script setup. |
-| [v1.7.0-beta.3](https://github.com/NicolaiTandrup/honeycomb-menu-ng/blob/v1.7.0-beta.3/README.md) | Shared full-cell 82 px engine, visibility, placement, deferred interaction, expanded slots | Correct post-merge status; restore diagram/tables; specify current limits and rewrite Control onboarding. |
+| [v1.2.11](https://github.com/NicolaiTandrup/jts-n-menu/blob/v1.2.11/README.md) | Physical Layout model, center and ring diagram, automatic layouts, classic slots/sizing | Rechecked diagram against current coordinates; distinguish classic center and scene size from Hub cell width. Keep per-patch chronology out of onboarding. |
+| [v1.5.1](https://github.com/NicolaiTandrup/jts-n-menu/blob/v1.5.1/README.md) | Modular guide, focused references, writable Light values and external Sonos recipes | Explain values on separate integrations, precise favorites/cache shapes, include boundaries and script setup. |
+| [v1.7.0-beta.3](https://github.com/NicolaiTandrup/jts-n-menu/blob/v1.7.0-beta.3/README.md) | Shared full-cell 82 px engine, visibility, placement, deferred interaction, expanded slots | Correct post-merge status; restore diagram/tables; specify current limits and rewrite Control onboarding. |
 
 The figure's **19 unique labels, relative x/y coordinates and all eight Hub ring
 boundaries** are checked against `src/core/layout.js`. Automatic slot-table rows
@@ -63,9 +63,9 @@ NODE_OPTIONS=--openssl-legacy-provider npm run build
 python -m pip install -r test/browser/requirements.txt
 python -m playwright install chromium
 curl --fail --location https://github.com/custom-cards/button-card/releases/download/v7.0.1/button-card.js --output /tmp/button-card.js
-node test/performance/hub-benchmark.js --output /tmp/honeycomb-evidence/core-performance.json
-python test/browser/run.py --bundle honeycomb-menu-ng.js --button-card /tmp/button-card.js --evidence-dir /tmp/honeycomb-evidence
-python test/docs/run.py --bundle honeycomb-menu-ng.js --button-card /tmp/button-card.js --evidence-dir /tmp/honeycomb-evidence/docs
+node test/performance/hub-benchmark.js --output /tmp/jts-n-evidence/core-performance.json
+python test/browser/run.py --bundle jefferies-navigation.js --button-card /tmp/button-card.js --evidence-dir /tmp/jts-n-evidence
+python test/docs/run.py --bundle jefferies-navigation.js --button-card /tmp/button-card.js --evidence-dir /tmp/jts-n-evidence/docs
 ```
 
 Use `CHROMIUM_PATH` if your Chromium is not found automatically. The harness checks

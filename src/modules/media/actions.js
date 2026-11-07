@@ -41,7 +41,7 @@ function handleGroupVolume({ hass, actionConfig, entity })
 
 function registerActions(registry)
 {
-    registry.register('honeycomb-media-volume', handleGroupVolume);
+    registry.register('jts-n-media-volume', handleGroupVolume);
 }
 
 module.exports = {

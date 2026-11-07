@@ -1,6 +1,6 @@
 # Prerequisite: the real HA entity explicitly reports supported_color_modes: [onoff].
-# This is an HA state attribute, not a Honeycomb configuration key.
-type: custom:honeycomb-persistent-control
+# This is an HA state attribute, not a Jefferies Navigation configuration key.
+type: custom:navigation-control
 module: light
 entity: light.switch_a
 name: Switch A

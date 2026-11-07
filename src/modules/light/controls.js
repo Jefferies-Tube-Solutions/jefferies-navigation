@@ -152,11 +152,11 @@ function buildColorPaletteButtons(palette = INITIAL)
             ]
         },
         tap_action: {
-            action: 'honeycomb-light-color-apply',
+            action: 'jts-n-light-color-apply',
             data: { hs_color: [hue, saturation] }
         },
         hold_action: {
-            action: 'honeycomb-light-color-zoom',
+            action: 'jts-n-light-color-zoom',
             palette: palette.map(color=>[...color]),
             selected: index
         }
@@ -175,8 +175,8 @@ function buildWhitePaletteButtons(capabilities,palette)
             name:`${kelvin} K; ${zoom ? 'hold or Shift+Enter to zoom' : 'zoom limit at integer Kelvin precision'}`,
             autoclose:false,
             styles:{card:[{background:kelvinToCssRgb(kelvin)},{border:'1px solid rgba(35,45,55,0.28)'}]},
-            tap_action:{action:'honeycomb-light-kelvin-apply',data:{color_temp_kelvin:kelvin}},
-            hold_action:zoom ? {action:'honeycomb-light-kelvin-zoom',palette:[...values],selected:index} : {action:'none'}
+            tap_action:{action:'jts-n-light-kelvin-apply',data:{color_temp_kelvin:kelvin}},
+            hold_action:zoom ? {action:'jts-n-light-kelvin-zoom',palette:[...values],selected:index} : {action:'none'}
         };
     });
 }
@@ -219,7 +219,7 @@ function expandLightPaletteControl(button, inheritedEntity)
                 show_name:true,show_label:true,autoclose:false,tap_action:{action:'none'},hold_action:{action:'none'}});
             return;
         }
-        const request=kind=>({action:'honeycomb-open-nested',honeycomb_nested_menu:{
+        const request=kind=>({action:'jts-n-open-nested',jts_n_nested_menu:{
             ...paletteMenu(lightEntity,palette,caps),_light_palette_request:kind}});
         _defaults(button,{entity:lightEntity,_light_palette_launcher:true,...paletteIndicator(lightEntity,currentHass(),palette),autoclose:false,
             tap_action:request('current'),hold_action:caps.colorCapable && caps.temperatureCapable ? request('opposite') : {action:'none'}});
@@ -338,12 +338,12 @@ function expandPresetControl(button, presets, inheritedEntity)
             label: presetCurrentBrightnessTemplate(),
             styles: presetControlStyles(),
             tap_action: {
-                action: 'honeycomb-preset-apply',
+                action: 'jts-n-preset-apply',
                 preset_type: 'brightness',
                 helper_entity: helper
             },
             hold_action: {
-                action: 'honeycomb-preset-store',
+                action: 'jts-n-preset-store',
                 preset_type: 'brightness',
                 helper_entity: helper
             }
@@ -389,12 +389,12 @@ function expandPresetControl(button, presets, inheritedEntity)
             label: presetCurrentKelvinTemplate(),
             styles: presetControlStyles(),
             tap_action: {
-                action: 'honeycomb-preset-apply',
+                action: 'jts-n-preset-apply',
                 preset_type: 'kelvin',
                 helper_entity: helper
             },
             hold_action: {
-                action: 'honeycomb-preset-store',
+                action: 'jts-n-preset-store',
                 preset_type: 'kelvin',
                 helper_entity: helper
             }
@@ -421,13 +421,13 @@ function expandPresetControl(button, presets, inheritedEntity)
             label: presetHsTemplate(hueEntity, saturationEntity, true),
             styles: presetControlStyles(),
             tap_action: {
-                action: 'honeycomb-preset-apply',
+                action: 'jts-n-preset-apply',
                 preset_type: 'color',
                 hue_entity: hueEntity,
                 saturation_entity: saturationEntity
             },
             hold_action: {
-                action: 'honeycomb-preset-store',
+                action: 'jts-n-preset-store',
                 preset_type: 'color',
                 hue_entity: hueEntity,
                 saturation_entity: saturationEntity
@@ -456,7 +456,7 @@ function applyPresetControls(config, inheritedPresets, inheritedEntity)
 
         ['tap_action', 'hold_action', 'double_tap_action', 'press_action'].forEach(key => {
             const action = button[key];
-            const nested = action && (action.honeycomb_menu || action.honeycomb_nested_menu);
+            const nested = action && (action.jts_n_menu || action.jts_n_nested_menu);
 
             if( nested )
             {

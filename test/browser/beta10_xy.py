@@ -18,14 +18,14 @@ TRACK=r'''(()=>{
 
 class XY(Cubes):
  def setUp(self):
-  super().setUp();self.page.add_init_script(TRACK);self.page.reload();self.page.wait_for_function('window.ready');self.page.evaluate('window.ng=window.honeycombNG');self.baseline=self.page.evaluate('xyListenerCount()')
+  super().setUp();self.page.add_init_script(TRACK);self.page.reload();self.page.wait_for_function('window.ready');self.page.evaluate('window.ng=window.jefferiesNavigation');self.baseline=self.page.evaluate('xyListenerCount()')
  def open_xy(self,options=None,animate=False):
   config={'entity':'light.zone_a','anchor_x':self.viewport['width']/2,'anchor_y':self.viewport['height']/2,'animate':animate,'center_button':False,'empty_slots':'hidden','buttons':[{'slot':1,'icon':'mdi:circle','tap_action':{'action':'none'}}],
-   'xy_pad':{'x':{'service':'light.turn_on','data':{'brightness_step':'HCJS: return variables.x;'}},**(options or {})}}
-  self.page.evaluate('config=>{window.xyMenu=ng.open(config)}',config);self.page.wait_for_function('xyMenu.shadowRoot.querySelector("honeycomb-ng-xy-pad")?.joystick');self.settle();self.page.evaluate("window.pad=xyMenu.shadowRoot.querySelector('honeycomb-ng-xy-pad')")
-  return self.page.locator('honeycomb-ng-xy-pad')
+   'xy_pad':{'x':{'service':'light.turn_on','data':{'brightness_step':'JTSJS: return variables.x;'}},**(options or {})}}
+  self.page.evaluate('config=>{window.xyMenu=ng.open(config)}',config);self.page.wait_for_function('xyMenu.shadowRoot.querySelector("jts-n-xy-pad")?.joystick');self.settle();self.page.evaluate("window.pad=xyMenu.shadowRoot.querySelector('jts-n-xy-pad')")
+  return self.page.locator('jts-n-xy-pad')
  def start(self):
-  box=self.page.locator('honeycomb-ng-xy-pad #joystick').bounding_box();self.page.mouse.move(box['x']+box['width']/2,box['y']+box['height']/2);self.page.mouse.down();self.page.mouse.move(box['x']+box['width']/2+15,box['y']+box['height']/2,steps=2)
+  box=self.page.locator('jts-n-xy-pad #joystick').bounding_box();self.page.mouse.move(box['x']+box['width']/2,box['y']+box['height']/2);self.page.mouse.down();self.page.mouse.move(box['x']+box['width']/2+15,box['y']+box['height']/2,steps=2)
  def assert_stopped(self):
   self.assertTrue(self.page.evaluate('!pad.active && !pad._interval'))
   count=self.page.evaluate('calls.length');self.page.wait_for_timeout(120);self.assertEqual(self.page.evaluate('calls.length'),count)
@@ -50,11 +50,11 @@ class XY(Cubes):
  def test_preview_Info_and_late_events_cannot_dispatch(self):
   self.open_xy({'repeat':30});self.start();self.page.wait_for_timeout(60)
   self.page.evaluate("ng.openInfoInContext(xyMenu._menuContext,{title:'Suspended XY',text:'Read only'})");self.assert_stopped();count=self.page.evaluate('calls.length')
-  self.page.evaluate("xyMenu._handleXYPad({type:'honeycomb-ng-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count);self.page.mouse.up();self.page.locator('honeycomb-ng-info .surface').press('Escape');self.assert_stopped();self.capture('xy-after-Info-return')
-  self.page.evaluate('xyMenu._menuContext.owner={preview:true}');self.start();self.assert_stopped();self.page.mouse.up();self.page.evaluate("xyMenu._handleXYPad({type:'honeycomb-ng-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count)
-  self.page.evaluate('xyMenu._menuContext.owner=null;ng.close()');self.page.evaluate("xyMenu._handleXYPad({type:'honeycomb-ng-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count)
+  self.page.evaluate("xyMenu._handleXYPad({type:'jts-n-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count);self.page.mouse.up();self.page.locator('jts-n-info-cube .surface').press('Escape');self.assert_stopped();self.capture('xy-after-Info-return')
+  self.page.evaluate('xyMenu._menuContext.owner={preview:true}');self.start();self.assert_stopped();self.page.mouse.up();self.page.evaluate("xyMenu._handleXYPad({type:'jts-n-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count)
+  self.page.evaluate('xyMenu._menuContext.owner=null;ng.close()');self.page.evaluate("xyMenu._handleXYPad({type:'jts-n-drag-interval',detail:{x:15,y:0}})");self.assertEqual(self.page.evaluate('calls.length'),count)
  def test_repeated_teardown_and_reconnect_have_no_listener_growth(self):
-  self.page.evaluate("async()=>{const transient=document.createElement('honeycomb-ng-xy-pad');transient.config={x:{}};transient.size=20;document.body.append(transient);transient.remove();await transient.updateComplete}");self.assertEqual(self.page.evaluate('xyListenerCount()'),self.baseline)
+  self.page.evaluate("async()=>{const transient=document.createElement('jts-n-xy-pad');transient.config={x:{}};transient.size=20;document.body.append(transient);transient.remove();await transient.updateComplete}");self.assertEqual(self.page.evaluate('xyListenerCount()'),self.baseline)
   for i in range(20):
    self.open_xy({'repeat':30});self.page.evaluate("pad._handleOnDragStart(new MouseEvent('mousedown'));pad._handleOnDragStart(new MouseEvent('mousedown'));pad._setPosition(pad.joystick.offsetLeft+pad.size/2+5,pad.joystick.offsetTop+pad.size/2)");self.page.evaluate('ng.close()');self.assert_stopped();self.assertEqual(self.page.evaluate('xyListenerCount()'),self.baseline)
   self.open_xy({'on_release':True});before=self.page.evaluate('xyListenerCount()');self.page.evaluate('window.parentPad=pad.parentNode;pad.remove()');self.assertEqual(self.page.evaluate('xyListenerCount()'),before-6)

@@ -32,7 +32,7 @@ test('native Browse Media is default for Hub/Control/legacy media; removed optio
   const conf=buildCubeConfig({...item,entity:A});
   assert.equal(conf._sonos.favorites,'sensor.sonos_favorites');
   assert.equal(conf._sonos.cache,undefined);
-  assert.equal(conf.menu.buttons[0].tap_action.honeycomb_nested_menu.buttons[0].mode,'sonos-favorite');
+  assert.equal(conf.menu.buttons[0].tap_action.jts_n_nested_menu.buttons[0].mode,'sonos-favorite');
   for(const removed of [{favorites_cache_sensor:C},{persistent:{favorites_cache_sensor:C}},{favorites_browse:false},{favorites_browse:true}])
    assert.throws(()=>buildCubeConfig({...item,entity:A,...removed}),/Remove|removed/);
  }
