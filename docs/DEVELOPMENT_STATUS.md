@@ -1,7 +1,7 @@
-# Jefferies Navigation v2.0.0-beta.2 candidate
+# Jefferies Navigation v2.0.0-beta.3 candidate
 
-The display-name update is based on the published v2.0.0-beta.1. The new
-Marketplace manifest needs its own tested beta before stable promotion.
+The README uses a single approved Deep Space lockup to avoid duplicate logos in
+Marketplace. The display name and runtime behavior from beta.2 carry forward.
 The release candidate remains unpublished.
 
 The rewrite is based on v1.10.0 stable, master commit

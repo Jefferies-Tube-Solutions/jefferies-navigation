@@ -5,8 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/brand/navigation-lockup-white.png#gh-dark-mode-only" alt="Jefferies Navigation full logo with white text" width="760">
-  <img src="assets/brand/navigation-lockup-deep-space.png#gh-light-mode-only" alt="Jefferies Navigation full logo with Deep Space text" width="760">
+  <img src="assets/brand/navigation-lockup-background.png" alt="Jefferies Navigation full logo on Deep Space" width="760">
 </p>
 
 # Jefferies Navigation for Home Assistant
