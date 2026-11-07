@@ -1,12 +1,12 @@
 {
-  "version": "1.10.0",
-  "issue": "https://github.com/NicolaiTandrup/honeycomb-menu-ng/issues/163",
+  "version": "2.0.0",
+  "issue": "https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/171",
   "approved_beta": {
-    "tag": "v1.10.0-beta.10",
-    "commit": "a54cd007fff030d14d89872c4026b92cf0184405",
-    "src_tree": "da8678487d3360cc1136c88ca2f7a4780144e0b4",
-    "sha256": "b9a89296839e9bab77de41673547053264617985c2adeec325174367502e15b5",
-    "bytes": 331735
+    "tag": "v2.0.0-beta.3",
+    "commit": "a8fb229678a3452f9db273160381ddce17b8a303",
+    "src_tree": "183473204f14da107012c606c48256bdfd28fcfb",
+    "sha256": "d7e604606a16bf647818743a4ce89e25ae5c9ec51cf02bb1b6924b50d8877c53",
+    "bytes": 375293
   },
   "allowed_bundle_change": "version-metadata-v2"
 }

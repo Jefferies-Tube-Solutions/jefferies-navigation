@@ -80,11 +80,13 @@ test('pinned CI attempt and public beta flags/checksum/tag cannot change',t=>{
 test('new stable publication verifies staged/downloaded bytes, repeats CI and preserves all inventory',async t=>{
     const {io,state,env,expected}=fixture(t);const release=await publish(io,expected,state.output,env,ART);
     assert.equal(release.draft,false);assert.equal(release.prerelease,false);assert.equal(state.tag,SHA);
+    const create=state.calls.find(call=>call[0]==='gh'&&call[2]==='create');
+    assert.equal(fs.readFileSync(create[create.indexOf('--notes-file')+1],'utf8'),'Owner approved synthetic notes.\n');
     assert.ok(state.calls.findIndex(c=>c[0]==='PATCH')>state.calls.findIndex(c=>c[0]==='gh'&&c[2]==='download'));
     assert.equal(state.calls.filter(c=>c[0]==='GET'&&c[1]==='actions/runs/11').length,2);
     assert.ok(!state.calls.some(c=>c[0]==='DELETE'||c.includes('--force')));
 });
-for(const reason of ['auth','existing-tag','existing-release','newer-stable','unknown-inventory','bad-notes','runtime','staged'])test(`prepublication ${reason} blocks without creating tag/draft`,async t=>{
+for(const reason of ['auth','existing-tag','existing-release','newer-stable','unknown-inventory','bad-notes','empty-notes','runtime','staged'])test(`prepublication ${reason} blocks without creating tag/draft`,async t=>{
     const {io,state,env,expected,fake}=fixture(t);
     if(reason==='auth')env.STABLE_PUBLICATION_AUTHORIZED='false';
     if(reason==='existing-tag')state.tag=SHA;
@@ -92,6 +94,7 @@ for(const reason of ['auth','existing-tag','existing-release','newer-stable','un
     if(reason==='newer-stable')state.old.push({...state.old[0],id:9,tag_name:'v2.0.0'});
     if(reason==='unknown-inventory')state.old.push({...state.old[0],id:9,tag_name:'unknown'});
     if(reason==='bad-notes')fake['RELEASE_NOTES.md']='# v1.7.0 — Stable\nwrong';
+    if(reason==='empty-notes')fake['RELEASE_NOTES.md']='# v1.7.1 — Stable\n  \n';
     if(reason==='runtime')state.hook=(op,args)=>op==='git'&&args[0]==='diff'?'unexpected runtime diff':undefined;
     if(reason==='staged')fs.writeFileSync(path.join(state.output,'SHA256SUMS.txt'),'corrupt');
     await assert.rejects(publish(io,expected,state.output,env,ART));assert.equal(state.release,null);

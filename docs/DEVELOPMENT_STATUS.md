@@ -1,8 +1,10 @@
-# Jefferies Navigation v2.0.0-beta.3 candidate
+# Jefferies Navigation v2.0.0 stable promotion
 
-The README uses a single approved Deep Space lockup to avoid duplicate logos in
-Marketplace. The display name and runtime behavior from beta.2 carry forward.
-The release candidate remains unpublished.
+The owner authorized stable after installing beta.3 in Home Assistant. The
+[approval record](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/171)
+tracks this promotion. The manifest pins the public beta.3 tag, source tree and
+bundle checksum. The stable candidate retains the tested runtime, Marketplace
+display name and single approved Deep Space product logo.
 
 The rewrite is based on v1.10.0 stable, master commit
 `25291186b07bfee81b8877fe731e00a417d56c12` (PR #169). The preceding promotion
@@ -17,11 +19,7 @@ publisher artwork and product identity. The shared renderer, positioning
 engine, action registry, module boundaries and XY Pad teardown stay in place.
 
 Run `npm ci`, `npm test`, `NODE_OPTIONS=--openssl-legacy-provider npm run build`,
-`node scripts/check-beta.js` and `node scripts/check-hacs-package.js`. CI runs
-the Chromium and documentation regression matrix. See the feature branch
-checks for results tied to its commit.
-
-Use the separate PAHA02-DEV dashboard for real Home Assistant verification.
-Publication uses the existing guarded manual beta workflow on the exact green
-feature-branch SHA, with a verification-only dispatch before publication. Keep
-release retention disabled and keep v1 stable as the default branch.
+`node scripts/check-release.js --stable` and `node scripts/check-hacs-package.js`.
+Follow the [stable publication procedure](RELEASING.md) for exact-head CI,
+master verification and guarded publication. Keep release retention disabled.
+Check the logo in Home Assistant Marketplace once it refreshes the release.

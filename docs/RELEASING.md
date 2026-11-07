@@ -9,6 +9,12 @@ The current v1.10.0 promotion pins owner-accepted public beta.10 at
 guarded stable publication after validation. See the [v1.10.0 checklist](V1_10_STABLE_RELEASE.md).
 Historical release documents retain their original approval scope.
 
+The v2.0.0 promotion uses the [v2 owner approval record](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/171).
+Confirm the public v2.0.0-beta.3 tag and uploaded bundle against the reviewed
+manifest before proceeding. The version heading in `RELEASE_NOTES.md` is an
+input check. The approved text beneath it is the public release body, with
+verification details in the separate checksum and provenance assets.
+
 ## Reviewed candidate provenance
 
 Create one cumulative promotion PR to master from the exact approved beta ancestry.

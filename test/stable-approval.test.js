@@ -10,7 +10,7 @@ const approvedRepository=new URL(approval.issue).pathname.split('/').slice(1,3).
 const onlyStable={skip:!isStableVersion(JSON.parse(fs.readFileSync('package.json')).version)};
 const io={git:args=>execFileSync('git',args,{encoding:'utf8'}).trim(),readGit:(sha,file)=>execFileSync('git',['show',`${sha}:${file}`])};
 test('stable candidate exactly preserves approved beta source, dependencies and executable bundle',onlyStable,()=>{
-    validateApproval(approval,localArtifact(true).version,'Jefferies-Tube-Solutions/honeycomb-menu-ng');
+    validateApproval(approval,localArtifact(true).version,'Jefferies-Tube-Solutions/jefferies-navigation');
     verifyApprovedSource(io,localArtifact(true),approval);
 });
 for(const field of ['version','issue','allowed_bundle_change','commit','src_tree','sha256','bytes'])

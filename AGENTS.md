@@ -65,3 +65,21 @@
   its preceding validated code commit; it need not contain its own SHA.
 - Do not move a branch during exact-head release verification/publication. Put
   unrelated work or handoff updates on a separate branch until publication ends.
+
+## JTS Brand System
+
+Use the [central JTS Brand System](https://github.com/Jefferies-Tube-Solutions/jts-brand-system)
+as the source of truth for design, product identity and documentation. Start with
+[VIS-001–003](https://github.com/Jefferies-Tube-Solutions/jts-brand-system/blob/v1.1.0/docs/README_LAYOUT.md)
+and [DOC-001](https://github.com/Jefferies-Tube-Solutions/jts-brand-system/blob/v1.1.0/docs/DOCUMENTATION_PROTOCOL.md).
+Use local copies of approved artwork with pinned provenance. Keep status badges
+truthful, preserve original attribution and maintain paired human and AI manuals
+for material changes. Check applicable Home Assistant guidance before changing
+HA surfaces or packaging. For visual changes, review rendered light/dark and
+mobile views and record the actual evidence in the pull request. If a brand
+requirement cannot be checked or an asset is awaiting approval, record that
+explicitly. Run JTS Brand Compliance before merging.
+
+Jefferies Navigation v2 uses the approved Navigation lockup and the repository
+brand validator. Preserve the original GPL attribution and follow the
+[upgrade guide](docs/V2_MIGRATION.md) for the supported v2 HACS setup.

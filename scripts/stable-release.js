@@ -120,12 +120,14 @@ async function publish(io,expected,output,env,artifact) {
     for(const name of ASSETS)assert.deepEqual(fs.readFileSync(path.join(output,name)),prepared[name],`Verified artifact ${name} changed`);
     assert.deepEqual(verify(io,env,artifact),expected,'Tested provenance changed');
     const {before,stable}=inventory(io,expected);
-    let notes=fs.readFileSync('RELEASE_NOTES.md','utf8').split('\n---\n')[0];
-    assert.ok(notes.startsWith(`# v${artifact.version} — Stable\n`),'Stable release notes/version mismatch');
+    const releaseNotes=fs.readFileSync('RELEASE_NOTES.md','utf8').split('\n---\n')[0];
+    const heading=`# v${artifact.version} — Stable\n`;
+    assert.ok(releaseNotes.startsWith(heading),'Stable release notes/version mismatch');
     assert.equal(JSON.parse(fs.readFileSync('release.json')).title,`Jefferies Navigation ${expected.tag} — Stable`);
-    notes=notes.replace(/\]\((docs\/[^)]+)\)/g,(_,file)=>`](https://github.com/${expected.repository}/blob/${expected.tag}/${file})`);
-    notes+=`\n\nTested master commit: \`${expected.commit}\`. Approved beta: \`${expected.approval.approved_beta.tag}\` at \`${expected.approval.approved_beta.commit}\`.\nBundle SHA-256: \`${expected.sha256}\` (${expected.bytes} bytes).\nValidated [master CI](https://github.com/${expected.repository}/actions/runs/${expected.ci.push.id}).\n`;
-    const noteFile=path.join(output,'release-notes.md');fs.writeFileSync(noteFile,notes);
+    const body=releaseNotes.slice(heading.length).trim();
+    assert.ok(body,'Approved stable release notes required');
+    const notes=body.replace(/\]\((docs\/[^)]+)\)/g,(_,file)=>`](https://github.com/${expected.repository}/blob/${expected.tag}/${file})`);
+    const noteFile = path.join(output,'release-notes.md');fs.writeFileSync(noteFile,notes+'\n');
     io.api('git/refs','POST',{ref:`refs/tags/${expected.tag}`,sha:expected.commit});verifyTag(io,expected.tag,expected.commit);
     io.gh(['release','create',expected.tag,'--verify-tag','--target',expected.commit,'--draft','--latest=false','--title',`Jefferies Navigation ${expected.tag} — Stable`,
         '--notes-file',noteFile,...ASSETS.map(name=>path.join(output,name))]);
