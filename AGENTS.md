@@ -70,5 +70,5 @@ explicitly. Run JTS Brand Compliance before merging.
 
 The current release remains Honeycomb Menu NG. Preserve its published identity,
 legacy logo, GPL attribution and supported HACS installation while the JTS
-migration is pending. Adopting the approved Navigation lockup requires a reviewed
-migration with pinned assets and an updated check.
+migration is pending. The v2 beta already uses the approved Navigation lockup and its own brand
+validator. Keep the stable and beta identities distinct until the reviewed migration.
