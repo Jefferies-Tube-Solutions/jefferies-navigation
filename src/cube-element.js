@@ -730,6 +730,7 @@ class CubeElement extends LitElement
 
     _runHoldAction()
     {
+        if (this._isPreview()) return;
         if (this.config.hold_action) this._executeAction(this.config.hold_action);
         else this._openMenu();
     }

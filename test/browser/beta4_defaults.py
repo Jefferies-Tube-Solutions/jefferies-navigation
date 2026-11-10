@@ -72,6 +72,11 @@ class Beta4(Beta3):
   self.page.clock.install()
   self.minimal({'style':{'left':'78%','top':'78%'},'items':[{'type':'light','entity':'light.zone_a','slot':0}]})
   center=self.cell().locator('.interaction-surface')
+  self.page.evaluate('hub.preview=true')
+  center.press('Shift+Enter')
+  self.settle()
+  self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
+  self.page.evaluate('hub.preview=false')
   self.activate(center)
   self.assertEqual(self.page.evaluate('calls.length'),1)
   for keyboard in [False,True]:
