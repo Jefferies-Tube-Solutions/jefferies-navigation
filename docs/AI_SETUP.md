@@ -940,6 +940,11 @@ and safe fitting. Back restores saved parent sizes/anchors. Explicit legacy
 small_screen:false/mobile:false retains the documented compact-phone opt-out.
 [Placement and overrides](COLLAPSIBLE_HUB.md).
 
+With `expanded_center: primary`, a tap on the expanded slot 0 collapses the Hub.
+Hold or press Shift+Enter/Shift+Space to run the primary's configured hold action.
+If slot 0 is the only visible item, hold opens its controls directly. For a
+Light, a short tap on the collapsed primary toggles the light.
+
 Use the [shared Compass preset and version interaction](NAVIGATION_COMPASS.md), never copy
 mascot bytes, version strings or separate module-specific Compass styles. Standard
 Compass tap/hold reveals the installed version; expanded root Compass tap is Back, while

@@ -346,7 +346,8 @@ class NavigationHub extends CubeElement
                 menu.size=size*3.586;
                 menu.buttons=[];
                 const descriptor=toCenterDescriptor(primary.module,primary.launcher);
-                const center=merge({},descriptor.config,{size,hold_action:{action:'jts-n-hub-expand'},autoclose:false});
+                const center=merge({},descriptor.config,{size,autoclose:false,_collapsible_primary:true});
+                if(this._placements.size>1)center.hold_action={action:'jts-n-hub-expand'};
                 if(!this._placements.has(primary.id)){menu.persistent_center=null;menu.center_button=false;}
                 else if(descriptor.kind==='persistent'){menu.persistent_center=center;menu.center_button=null;}
                 else {menu.center_button=center;menu.persistent_center=null;}
@@ -362,7 +363,12 @@ class NavigationHub extends CubeElement
                     menu.center_button=null;
                 } else {
                     const center=menu.persistent_center || menu.center_button;
-                    if(center){center.autoclose=false;center.tap_action={action:'jts-n-hub-collapse'};center.hold_action={action:'none'};delete center.double_tap_action;}
+                    if(center){
+                        center.autoclose=false;
+                        center.tap_action={action:'jts-n-hub-collapse'};
+                        center._collapsible_primary=true;
+                        delete center.double_tap_action;
+                    }
                 }
                 menu.idle_timeout=this._collapseOptions.idle_timeout;
             }
@@ -370,7 +376,7 @@ class NavigationHub extends CubeElement
         return menu;
     }
 
-    _expandHub({pointerId=null}={})
+    _expandHub({pointerId=null,directMenu=false}={})
     {
         if(!this._collapseOptions || this._hubExpanded || this.preview)return;
         if(this._collapseOptions.beam_of_origin) {
@@ -390,12 +396,13 @@ class NavigationHub extends CubeElement
             }
         }
         this._hubExpanded=true;
+        this._hubDirectMenu=directMenu;
         this._expansionReadyAt=pointerId===null?0:Date.now()+500;
         this._expansionCapture=e=>{
             if(Date.now()<this._expansionReadyAt){this._expansionReadyAt=0;e.preventDefault();e.stopImmediatePropagation();}
         };
         this._hubMenu.addEventListener('click',this._expansionCapture,true);
-        window.jefferiesNavigation.updateBase(this._menuContext,this._persistentMenuConfig());
+        if(!directMenu)window.jefferiesNavigation.updateBase(this._menuContext,this._persistentMenuConfig());
         this._hubMenu._resetIdleTimeout();
         this._expansionResize=()=>this._fitExpansion();
         window.addEventListener('resize',this._expansionResize);
@@ -551,7 +558,7 @@ class NavigationHub extends CubeElement
         document.removeEventListener('keydown',this._expansionEscape);
         this._hideExpansionPopover(this._menuContext && this._menuContext.scene);
         if(this._hubMenu)this._hubMenu.removeEventListener('click',this._expansionCapture,true);
-        this._hubExpanded=false;this._expandedRoot=null;
+        this._hubExpanded=false;this._hubDirectMenu=false;this._expandedRoot=null;
     }
 
     _collapseHub()

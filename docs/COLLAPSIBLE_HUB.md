@@ -1,7 +1,8 @@
 # Collapsible Hub
 
 Put a single room control on a picture-elements floorplan. Tap performs the
-primary action; hold opens the full Hub. It automatically enlarges on a phone, tablet or PC, preferring usable space
+primary action. Hold opens the full Hub when other items are visible or opens
+the primary's own controls when it stands alone. The Hub automatically enlarges on a phone, tablet or PC, preferring usable space
 outside the floorplan image. Tap center to return, or wait 30 seconds without activity.
 
 ```yaml
@@ -134,6 +135,8 @@ if the viewport changed. This is shared navigation, with no Sonos/slot-specific 
 
 Center is Back at the expanded root. The default keeps the primary's live visual
 appearance there; tapping it collapses instead of performing its primary action.
+Hold the primary at the expanded root to use its configured hold action, such as
+opening the Light controls.
 Choose compass center below for direct access to the primary action while expanded.
 Nested Back returns to its parent before collapsing. Escape follows the same
 navigation. There is no separate rectangular Back button.
@@ -142,8 +145,9 @@ Configure exactly one hard item at `slot: 0`. This explicit designation avoids
 ambiguity with soft/priority placement. Invisible primary items stay invisible.
 Multiple Hubs own separate contexts. Removing/reconfiguring a Hub cleans up its
 overlay and listeners. Dashboard editing previews do not execute actions.
-Keyboard: Tab to the primary, Shift+Enter/Shift+Space to expand, Enter/Space on
-the root center to collapse. With compass center, hold or Shift+Enter/Shift+Space
+Keyboard: Tab to the primary and use Shift+Enter/Shift+Space like a hold. Use Enter/Space on
+the root center to collapse. On the expanded primary, Shift+Enter/Shift+Space
+runs its hold action. With compass center, hold or Shift+Enter/Shift+Space
 reveals the installed version for three seconds without collapse. Keyboard focus
 has a visible hexagonal ring. See [shared Compass behavior](NAVIGATION_COMPASS.md).
 

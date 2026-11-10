@@ -1,12 +1,12 @@
 {
-  "version": "2.0.0",
-  "issue": "https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/171",
+  "version": "2.0.1",
+  "issue": "https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/179",
   "approved_beta": {
-    "tag": "v2.0.0-beta.3",
-    "commit": "a8fb229678a3452f9db273160381ddce17b8a303",
-    "src_tree": "183473204f14da107012c606c48256bdfd28fcfb",
-    "sha256": "d7e604606a16bf647818743a4ce89e25ae5c9ec51cf02bb1b6924b50d8877c53",
-    "bytes": 375293
+    "tag": "v2.0.1-beta.1",
+    "commit": "1e2d17dfeecb38f29619e6da7ec6028eabe94d1c",
+    "src_tree": "5bc5a978b2e078aef170b75491cbf595214a6650",
+    "sha256": "5902272400b4f289ed7cd233d690fcbd2f17e108cf2cb0fea06d9d4bfc184e92",
+    "bytes": 375700
   },
   "allowed_bundle_change": "version-metadata-v2"
 }
