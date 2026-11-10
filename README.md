@@ -538,7 +538,7 @@ script and candidate list. A hidden hard item intentionally leaves a hole.
 
 ## Manuals
 
-- [Versioned AI setup guide and six tested YAML examples](docs/AI_SETUP.md)
+- Versioned AI setup guide and six tested YAML examples
 - [Light](docs/LIGHT_MODULE.md) · [Sonos](docs/SONOS_MODULE.md) · [Classic popups](docs/CLASSIC_MENU.md)
 - [Phase 1 / Issue #78](docs/V1_7_PHASE1.md) · [Phase 2 conditions and allocation](docs/V1_7_PHASE2.md)
 - [Architecture and invariants](ARCHITECTURE.md) · [v2 release notice](RELEASE_NOTES.md)

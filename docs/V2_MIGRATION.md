@@ -47,5 +47,6 @@ rules, XY Pad axes, Beam of Origin and responsive sizing. If you use `Info Cube`
 keep its `info` descriptor and use the `jts-n-info` action. The Info Cube opens
 from a control and returns to the invoking menu.
 
-Keep a copy of the v1 resource URL and dashboard YAML together if you plan to
-switch that dashboard back to v1.
+Before migrating, delete the existing dashboards and their YAML files.
+HACS automatically restores your dashboard layouts from the installed card
+bundle after the upgrade. A backup of the dashboards is unnecessary.
