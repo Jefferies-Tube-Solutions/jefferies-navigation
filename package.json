@@ -1,7 +1,7 @@
 {
   "name": "jefferies-navigation",
   "private": true,
-  "version": "2.0.0",
+  "version": "2.0.1-beta.1",
   "description": "Hexagonal dashboard and floorplan controls for Home Assistant.",
   "scripts": {
     "build": "webpack",

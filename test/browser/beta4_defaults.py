@@ -37,6 +37,60 @@ class Beta4(Beta3):
    self.page.evaluate('o=>hub.setConfig({...hub.config,collapsible:o})',options);self.resize_floor(min(self.viewport['width']-32,900));self.expand();self.page.wait_for_timeout(550)
    self.assertEqual(self.page.locator('jts-n-menu').first.evaluate("e=>e.matches(':popover-open')"),self.viewport['width']>600 or list(options.values())[0]);self.back();self.settle()
   errors=self.page.evaluate("()=>[()=>hub.setConfig({...hub.config,collapsible:{mobile:true,small_screen:false}}),()=>hub.setConfig({...hub.config,collapsible:true,items:[{type:'light',entity:'light.zone_a',slot:2}]})].map(f=>{try{f();return null}catch(e){return e.message}})");self.assertTrue(all(errors))
+ def test_expanded_primary_opens_light_controls_and_back(self):
+  self.page.clock.install()
+  light={'type':'light','entity':'light.zone_a','name':'Kitchen','icon':'mdi:spotlight-beam',
+         'presets':{'brightness':{'entity':'number.kitchen_brightness'},'kelvin':{'entity':'number.kitchen_kelvin'}}}
+  self.page.evaluate("""pushStates([
+   ['light.zone_a','off',{supported_color_modes:['color_temp'],min_color_temp_kelvin:2000,max_color_temp_kelvin:6500}],
+   ['number.kitchen_brightness','60',{}],['number.kitchen_kelvin','3000',{}]])""")
+  self.minimal({'name':'Kitchen','style':{'left':'78%','top':'78%'},
+                'collapsible':{'expanded_center':'primary','primary_slot':1,'expanded_size':82,'beam_of_origin':True},
+                'items':[{**light,'slot':0},{**light,'slot':2}]})
+  center=self.cell().locator('.interaction-surface')
+  self.expand()
+  self.page.clock.run_for(550)
+  for surface,keyboard in [(self.cell(2).locator('.interaction-surface'),False),(center,False),(center,True)]:
+   if keyboard:
+    surface.press('Shift+Enter')
+   else:
+    self.hold_input(surface)
+   self.settle()
+   self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
+   self.assertTrue(self.page.get_by_role('button',name='White',exact=True).is_visible())
+   self.capture('expanded-primary-light-keyboard' if keyboard else 'expanded-light-controls')
+   self.activate(center)
+   self.settle()
+   self.assertTrue(self.page.evaluate('hub._hubExpanded'))
+   self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
+  self.activate(center)
+  self.settle()
+  self.assertFalse(self.page.evaluate('hub._hubExpanded'))
+  self.assertEqual(self.page.evaluate('calls.length'),0)
+
+ def test_single_primary_short_press_and_direct_light_controls(self):
+  self.page.clock.install()
+  self.minimal({'style':{'left':'78%','top':'78%'},'items':[{'type':'light','entity':'light.zone_a','slot':0}]})
+  center=self.cell().locator('.interaction-surface')
+  self.activate(center)
+  self.assertEqual(self.page.evaluate('calls.length'),1)
+  for keyboard in [False,True]:
+   if keyboard:
+    center.press('Shift+Enter')
+   else:
+    self.hold_input(center)
+   self.settle()
+   self.page.clock.run_for(550)
+   self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),1)
+   self.assertTrue(self.page.get_by_role('button',name='100%',exact=True).is_visible())
+   self.assertEqual(center.get_attribute('aria-label'),'Back')
+   self.capture('single-primary-direct-light-controls')
+   self.activate(center)
+   self.settle()
+   self.assertFalse(self.page.evaluate('hub._hubExpanded'))
+   self.assertEqual(self.controls().count(),1)
+   self.assertEqual(self.page.evaluate('calls.length'),1)
+
  def test_compass_nested_Back_rotation_edit_cleanup_no_clickthrough(self):
   self.minimal({'collapsible':{'expanded_center':'compass','primary_slot':1}});self.expand();self.page.wait_for_timeout(550);self.assertEqual(self.cell(1).evaluate('e=>e.config.entity'),'light.zone_a');self.hold_input(self.cell(1).locator('.interaction-surface'));self.settle();self.assertGreater(self.page.evaluate('hub._menuContext.stack.length'),0);self.page.keyboard.press('Escape');self.settle();self.assertTrue(self.page.evaluate('hub._hubExpanded'));self.assertEqual(self.page.evaluate('hub._menuContext.stack.length'),0)
   if self.viewport['width']<=600:

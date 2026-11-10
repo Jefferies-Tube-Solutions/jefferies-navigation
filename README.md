@@ -272,14 +272,16 @@ See the [Light menu and White palette](#light-menu-and-white-palette) for a work
 
 
 Add `collapsible: true` and a primary item in slot 0 to place a compact,
-responsive room control on a floorplan. Tap performs its action; hold expands.
+responsive room control on a floorplan. Tap performs its action. Hold reveals
+other visible cubes, or opens the primary's controls directly if it stands alone.
 On phones, tablets and PCs, the Hub opens at a comfortable size. It prefers
 space beside the floorplan, and fits safely in the viewport when there is no room.
 On constrained screens, it places actual visible controls in fitting free canvas,
 preferably below the image, at the already chosen expanded size. Desktop placement
 plans for slots 0–18 and accepts at most 15% initial downscaling in free space,
 and otherwise stays near the original floorplan anchor. Only configured cubes
-render. Tap its center to return. No extra sizing or positioning options are needed.
+render. Tap its center to return. Hold the expanded primary to open its controls
+or run its configured hold action. No extra sizing or positioning options are needed.
 
 ```yaml
 type: custom:navigation-hub

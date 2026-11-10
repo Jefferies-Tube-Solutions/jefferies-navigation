@@ -1,3 +1,19 @@
+# Slot 0 controls in collapsible Navigation Hubs
+
+Branch: `fix/expanded-primary-control`. Candidate: `v2.0.1-beta.1`, based on
+`6dba21e` after the v2.0.0 stable release. The v2.0.0 bundle reproduced the
+expanded slot 0 failure. The beta passed the new browser cases at 1800, 768 and
+390 CSS pixels, including keyboard, touch and Back. Its short press in the
+collapsed Hub performed the sole expected mock service call in the lone-item test.
+Local build and HACS package validation passed. The full local Node suite hit
+Windows shell, line-ending and symlink limitations. GitHub CI must validate the
+exact publication commit before the beta is published.
+
+Next, install and verify the public beta on Home Assistant, record acceptance,
+then prepare the v2.0.1 manifest and run the guarded stable release procedure.
+
+---
+
 # Shared JTS validation and automatic code review
 
 Branch: `governance/shared-jts-check`. Base: `c6268ba`.

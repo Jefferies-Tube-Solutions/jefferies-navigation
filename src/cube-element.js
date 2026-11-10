@@ -728,6 +728,12 @@ class CubeElement extends LitElement
         }
     }
 
+    _runHoldAction()
+    {
+        if (this.config.hold_action) this._executeAction(this.config.hold_action);
+        else this._openMenu();
+    }
+
     _handlePointerDown(e)
     {
         if (this._isPreview()) return;
@@ -758,8 +764,7 @@ class CubeElement extends LitElement
         this._holdTimer = setTimeout(() => {
             this._holdTimer = null;
             this._holdTriggered = true;
-            if (this.config.hold_action) this._executeAction(this.config.hold_action);
-            else this._openMenu();
+            this._runHoldAction();
         }, holdTime);
     }
 
@@ -1230,13 +1235,16 @@ class CubeElement extends LitElement
                     this._pointerFocus=false;this.setAttribute('keyboard-focus','');
                     if(compass.isCompass(this.config) && e.altKey && e.key.toLowerCase()==='v'){e.preventDefault();this._executeAction({action:'jts-n-compass-inspect'});return;}
                     const compassVersionHold=compass.isCompass(this.config) && this.config.hold_action && this.config.hold_action.action==='jts-n-compass-inspect';
-                    const hubExpand=this.config.hold_action && this.config.hold_action.action==='jts-n-hub-expand';
+                    const primaryHold=this.config._collapsible_primary &&
+                        (this.config.hold_action ? this.config.hold_action.action!=='none' : this.config.menu);
                     const zoom=(this.config.hold_action && (['jts-n-light-color-zoom','jts-n-light-kelvin-zoom'].includes(this.config.hold_action.action) ||
                             (this.config.hold_action.jts_n_nested_menu || {})._light_palette_request === 'opposite')) ||
                         (this.config.tap_action && this.config.tap_action.action==='jts-n-light-kelvin-apply');
                     if (zoom && e.key==='Escape') {e.preventDefault();this._dispatchAction({action:'jts-n-close'});return;}
                     if(!m.disabled && !e.repeat && ['Enter',' '].includes(e.key)) {
-                        e.preventDefault();this._executeAction((zoom || hubExpand || compassVersionHold) && e.shiftKey ? this.config.hold_action : this.config.tap_action || {action:'toggle'});
+                        e.preventDefault();
+                        if(e.shiftKey && primaryHold)this._runHoldAction();
+                        else this._executeAction((zoom || compassVersionHold) && e.shiftKey ? this.config.hold_action : this.config.tap_action || {action:'toggle'});
                     }
                 }}
                 @pointerdown=${e=>{this._pointerFocus=true;this.removeAttribute('keyboard-focus');this._handlePointerDown(e);}} @pointermove=${this._handlePointerMove}

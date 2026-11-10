@@ -110,6 +110,9 @@ function openNavigationMenu(context, config)
     if( nested && navigationConfig.nested_expand === true )
     {
         const current = context.currentConfig || {};
+        if(navigationCore.isHubRoot(current) && current._collapsible_hub && context.owner &&
+            !context.owner._hubExpanded && context.owner._placements.size===1)
+            context.owner._expandHub({directMenu:true});
         if (navigationConfig.inherit_inner && !navigationConfig._light_palette_view)
             navigationConfig._light_palette_view=current._light_palette_view;
 
@@ -451,7 +454,8 @@ window.jefferiesNavigation.openInfo=config=>openInfo(manager,config);
 function navigateBack(context = manager, { interaction = true } = {})
 {
     if (dismissInfo(context)) return true;
-    if(context.owner && context.owner._hubExpanded && context.stack.length===0)return context.owner._collapseHub();
+    if(context.owner && context.owner._hubExpanded && context.stack.length<=(context.owner._hubDirectMenu?1:0))
+        return context.owner._collapseHub();
     if( !context.scene || context.scene.closing || context.stack.length === 0 )
         return false;
 
