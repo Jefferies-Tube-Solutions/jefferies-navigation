@@ -1,20 +1,35 @@
-# Slot 0 controls in collapsible Navigation Hubs
+# Published v2.0.1 slot 0 hotfix
 
-Branch: `fix/expanded-primary-control`. Candidate: `v2.0.1-beta.1`, based on
-`6dba21e` after the v2.0.0 stable release. The v2.0.0 bundle reproduced the
-expanded slot 0 failure. The beta passed the new browser cases at 1800, 768 and
-390 CSS pixels, including keyboard, touch and Back. Its short press in the
-collapsed Hub performed the sole expected mock service call in the lone-item test.
-Local build and HACS package validation passed. The full local Node suite hit
-Windows shell, line-ending and symlink limitations. GitHub CI must validate the
-exact publication commit before the beta is published.
+[v2.0.1 stable](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/releases/tag/v2.0.1)
+is public and latest at master `e3495665a7e3486c4c447e00f1b852c1a70679b5`.
+The immutable beta is `v2.0.1-beta.1` at
+`1e2d17dfeecb38f29619e6da7ec6028eabe94d1c`. The stable runtime passes
+the source-tree and byte-equivalence guard against that beta.
 
-The `release/v2.0.1` draft promotion pins beta commit
-`1e2d17dfeecb38f29619e6da7ec6028eabe94d1c`. It starts CI while the beta runs
-through publication and Home Assistant testing. The
-[approval and validation record](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/179)
-tracks live beta acceptance. Merge only after acceptance and green exact-head
-checks, then run the guarded stable release procedure.
+The owner authorized stable after successful beta validation. The affected Home
+Assistant floorplan was tested with both the Marketplace-installed beta and stable.
+Hold expanded the Hub, then hold on slot 0 opened the Light controls. Back returned
+through the Hub to the floorplan. The lone-visible-primary path, short-press mock
+service call, touch, keyboard, preview guard and dynamic visibility were verified
+with synthetic entities at desktop, tablet and mobile sizes. Local build, HACS,
+brand and focused Node/browser checks passed. Local full Node checks hit Windows
+shell, line-ending and symlink limitations. The complete GitHub suite passed.
+
+The public stable bundle and the Home Assistant-served file both have SHA-256
+`e6d3762e0c57886d4c44f8fd17dde445740360da0cb78e4cbe247077ce7f26d0`
+and size 375679 bytes. All three public assets, tag and provenance were verified.
+The publisher verified historical release retention; cleanup was skipped.
+Home Assistant is on stable with prerelease tracking off.
+
+- [Merged PR #180](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/pull/180)
+- [Closed approval record #179](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/179)
+- [Exact-master Build CI](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/actions/runs/42902416174)
+- [Verification-only workflow](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/actions/runs/42909406674)
+- [Publication and retention report](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/actions/runs/42909533711)
+
+Handoff branch: `docs/v2.0.1-published-handoff`. This hotfix is complete.
+There is no remaining release action for it. Reconstruct current master and new
+owner requests before starting unrelated work.
 
 ---
 
