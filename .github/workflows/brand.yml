@@ -17,5 +17,4 @@ jobs:
       - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - name: Check current JTS adoption baseline
-        run: python3 tools/validate_brand.py
+      - uses: Jefferies-Tube-Solutions/jts-brand-checks@636d896ab6e7d0caecf65955485c4c6aa49c9393

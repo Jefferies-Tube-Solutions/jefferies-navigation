@@ -83,3 +83,17 @@ explicitly. Run JTS Brand Compliance before merging.
 Jefferies Navigation v2 uses the approved Navigation lockup and the repository
 brand validator. Preserve the original GPL attribution and follow the
 [upgrade guide](docs/V2_MIGRATION.md) for the supported v2 HACS setup.
+
+The required `Validate JTS design and documentation` job uses the
+[shared JTS check](https://github.com/Jefferies-Tube-Solutions/jts-brand-checks)
+pinned in `.github/workflows/brand.yml`. It verifies the approved Navigation
+validator before running it and preserves the legacy Honeycomb brand checks.
+
+## Code Review Rules
+
+- Under DOC-001, compare changes to dashboard setup, action dispatch, migration
+  and recovery with the human documentation, AI setup reference and runtime.
+  Flag instructions that could erase dashboards or trigger real controls.
+- Apply VIS-001–003 and HA-001–002 to changes in published branding, release
+  status, resource and card identifiers, or Home Assistant compatibility.
+  Cite the applicable JTS rule and distinguish synthetic tests from live checks.
