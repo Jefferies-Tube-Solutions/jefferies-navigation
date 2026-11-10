@@ -1,3 +1,16 @@
+# Shared JTS validation and automatic code review
+
+Branch: `governance/shared-jts-check`. Base: `c6268ba`.
+Checkpoint: **Use the shared JTS Brand System action**.
+
+The existing required brand job uses the Navigation profile at
+`636d896ab6e7d0caecf65955485c4c6aa49c9393`. Local verification covered the
+current v2 checkout, a legacy v1.10.0 checkout with the JTS policy reference
+required by the governance baseline, and rejection of a changed v2 validator.
+Codex is configured for all pull requests and new commits.
+
+---
+
 # Jefferies Navigation v2.0.0 stable promotion
 
 The owner authorized stable after installing beta.3 in Home Assistant. The
