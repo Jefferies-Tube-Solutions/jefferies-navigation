@@ -9,8 +9,12 @@ Local build and HACS package validation passed. The full local Node suite hit
 Windows shell, line-ending and symlink limitations. GitHub CI must validate the
 exact publication commit before the beta is published.
 
-Next, install and verify the public beta on Home Assistant, record acceptance,
-then prepare the v2.0.1 manifest and run the guarded stable release procedure.
+The `release/v2.0.1` draft promotion pins beta commit
+`1e2d17dfeecb38f29619e6da7ec6028eabe94d1c`. It starts CI while the beta runs
+through publication and Home Assistant testing. The
+[approval and validation record](https://github.com/Jefferies-Tube-Solutions/jefferies-navigation/issues/179)
+tracks live beta acceptance. Merge only after acceptance and green exact-head
+checks, then run the guarded stable release procedure.
 
 ---
 

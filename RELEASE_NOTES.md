@@ -1,4 +1,4 @@
-# v2.0.1-beta.1
+# v2.0.1 — Stable
 
 A long press on a lone slot-0 cube now opens its controls directly. With other
 visible cubes, a long press expands the Hub first, then opens slot 0's own controls
